@@ -81,7 +81,10 @@ export default function CompanyDetailPage({
       resetAdmin();
     } catch (error) {
       console.error(error);
-      setAdminError("email", { message: t.companyAdmins.addError });
+      const detail = error instanceof Error ? error.message : undefined;
+      setAdminError("email", {
+        message: detail ? `${t.companyAdmins.addError} (${detail})` : t.companyAdmins.addError,
+      });
     }
   }
 
