@@ -16,7 +16,11 @@ import { t } from "@/i18n/de";
 export default function CompaniesPage() {
   const router = useRouter();
   const { session, isLoading: sessionLoading } = useAuthStore();
-  const { data: isPlatformAdmin, isLoading: roleLoading } = useIsPlatformAdmin();
+  const {
+    data: isPlatformAdmin,
+    isLoading: roleLoading,
+    isError: roleError,
+  } = useIsPlatformAdmin();
   const { data: companies, isLoading: companiesLoading } = useCompanies();
   const createCompany = useCreateCompany();
 
@@ -42,6 +46,14 @@ export default function CompaniesPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <p className="text-muted-foreground">{t.common.loading}</p>
+      </div>
+    );
+  }
+
+  if (roleError) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8 text-center">
+        <p className="text-destructive">{t.common.error}</p>
       </div>
     );
   }
