@@ -1,0 +1,21 @@
+{
+  "pages": [
+    { "id": "page-brand", "name": "Corporate Design" },
+    { "id": "page-screens", "name": "App-Screens" }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1180, "h": 1150, "title": "Moodboard & Positionierung", "page": "page-brand" },
+    { "file": "Logo.dc.html", "x": 1280, "y": 0, "w": 1180, "h": 1020, "page": "page-brand" },
+    { "file": "Colors.dc.html", "x": 2560, "y": 0, "w": 1300, "h": 1450, "page": "page-brand" },
+    { "file": "Typography.dc.html", "x": 3960, "y": 0, "w": 1180, "h": 1420, "page": "page-brand" },
+    { "file": "UIKit.dc.html", "x": 5240, "y": 0, "w": 1280, "h": 1700, "page": "page-brand" },
+
+    { "file": "StudiosList.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "page": "page-screens" },
+    { "file": "StudioDetail.dc.html", "x": 1540, "y": 0, "w": 1440, "h": 1000, "page": "page-screens" },
+    { "file": "PlanCreate.dc.html", "x": 3080, "y": 0, "w": 1440, "h": 1000, "page": "page-screens" },
+    { "file": "Monitoring.dc.html", "x": 4620, "y": 0, "w": 1440, "h": 950, "page": "page-screens" },
+    { "file": "TrainerCourses.dc.html", "x": 6160, "y": 0, "w": 390, "h": 844, "page": "page-screens" },
+    { "file": "TrainerLogCourse.dc.html", "x": 6650, "y": 0, "w": 390, "h": 844, "page": "page-screens" }
+  ],
+  "launch": { "view": "canvas", "page": "page-screens" }
+}

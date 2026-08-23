@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #6C6ADD; }
+    a:hover { color: #5450C4; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; height:44px; padding:0 20px; border-radius:8px; font-family:'Source Sans 3',sans-serif; font-weight:600; font-size:14.5px; white-space:nowrap; }
+    .lbl { font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#A9A59C; text-align:center; margin-bottom:8px; }
+  </style>
+</helmet>
+<div style="background:#FAFAF9; min-height:100%; font-family:'Source Sans 3', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color:#201F1C; padding:56px 64px;">
+
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom:36px;">
+    <div style="width:8px; height:8px; border-radius:50%; background:#1F5F5C;"></div>
+    <span style="font-family:'Source Sans 3',sans-serif; font-weight:700; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#7C7870;">class-y Corporate Design &nbsp;·&nbsp; 05 UI-Stilguide</span>
+  </div>
+
+  <!-- Buttons -->
+  <div style="margin-bottom:44px;">
+    <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:16px; color:#201F1C; margin-bottom:2px;">Buttons</div>
+    <div style="font-size:12.5px; color:#7C7870; margin-bottom:18px;">44px Höhe (Touch-Ziel), radius 8px, Source Sans 3 Semibold 14.5px</div>
+
+    <div style="display:grid; grid-template-columns: 110px repeat(4, minmax(0,1fr)); gap:12px; align-items:end; margin-bottom:14px;">
+      <div></div>
+      <div class="lbl">Default</div>
+      <div class="lbl">Hover</div>
+      <div class="lbl">Active</div>
+      <div class="lbl">Disabled</div>
+    </div>
+
+    <!-- Primary -->
+    <div style="display:grid; grid-template-columns: 110px repeat(4, minmax(0,1fr)); gap:12px; align-items:center; margin-bottom:12px;">
+      <div style="font-size:13px; font-weight:600; color:#45423D;">Primary</div>
+      <div class="btn" style="background:#1F5F5C; color:#FFFFFF;">Kurs speichern</div>
+      <div class="btn" style="background:#184C4A; color:#FFFFFF;">Kurs speichern</div>
+      <div class="btn" style="background:#133B3A; color:#FFFFFF;">Kurs speichern</div>
+      <div class="btn" style="background:#E5E3DF; color:#A9A59C;">Kurs speichern</div>
+    </div>
+
+    <!-- Secondary -->
+    <div style="display:grid; grid-template-columns: 110px repeat(4, minmax(0,1fr)); gap:12px; align-items:center; margin-bottom:12px;">
+      <div style="font-size:13px; font-weight:600; color:#45423D;">Secondary</div>
+      <div class="btn" style="background:#FFFFFF; color:#1F5F5C; border:1.5px solid #1F5F5C;">Abbrechen</div>
+      <div class="btn" style="background:#EEF5F5; color:#1F5F5C; border:1.5px solid #1F5F5C;">Abbrechen</div>
+      <div class="btn" style="background:#D3E6E5; color:#184C4A; border:1.5px solid #184C4A;">Abbrechen</div>
+      <div class="btn" style="background:#FFFFFF; color:#A9A59C; border:1.5px solid #E5E3DF;">Abbrechen</div>
+    </div>
+
+    <!-- Ghost -->
+    <div style="display:grid; grid-template-columns: 110px repeat(4, minmax(0,1fr)); gap:12px; align-items:center; margin-bottom:12px;">
+      <div style="font-size:13px; font-weight:600; color:#45423D;">Ghost</div>
+      <div class="btn" style="background:transparent; color:#45423D;">Details ansehen</div>
+      <div class="btn" style="background:#F2F1EF; color:#45423D;">Details ansehen</div>
+      <div class="btn" style="background:#E5E3DF; color:#302E2A;">Details ansehen</div>
+      <div class="btn" style="background:transparent; color:#A9A59C;">Details ansehen</div>
+    </div>
+
+    <!-- Destructive -->
+    <div style="display:grid; grid-template-columns: 110px repeat(4, minmax(0,1fr)); gap:12px; align-items:center;">
+      <div style="font-size:13px; font-weight:600; color:#45423D;">Destructive</div>
+      <div class="btn" style="background:#DC2626; color:#FFFFFF;">Kurs absagen</div>
+      <div class="btn" style="background:#B91C1C; color:#FFFFFF;">Kurs absagen</div>
+      <div class="btn" style="background:#991B1B; color:#FFFFFF;">Kurs absagen</div>
+      <div class="btn" style="background:#E5E3DF; color:#A9A59C;">Kurs absagen</div>
+    </div>
+  </div>
+
+  <!-- Cards -->
+  <div style="margin-bottom:44px;">
+    <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:16px; color:#201F1C; margin-bottom:2px;">Cards</div>
+    <div style="font-size:12.5px; color:#7C7870; margin-bottom:18px;">radius 12px, Rand neutral-200, dezenter Schatten &mdash; kein Glow</div>
+    <div style="display:flex; gap:20px;">
+      <div>
+        <div class="lbl" style="text-align:left;">Default</div>
+        <div style="width:280px; background:#FFFFFF; border:1px solid #E5E3DF; border-radius:12px; padding:20px; box-shadow:0 1px 2px rgba(20,20,18,0.04);">
+          <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:16px; color:#201F1C; margin-bottom:4px;">Yoga Flow</div>
+          <div style="font-size:13px; color:#7C7870; margin-bottom:14px;">Di, 18:30 &ndash; 19:30 &middot; Sabine K.</div>
+          <div style="display:inline-flex; align-items:center; gap:6px; background:#EEF5F5; border-radius:100px; padding:5px 12px;">
+            <span style="width:6px; height:6px; border-radius:50%; background:#1D8A5F;"></span>
+            <span style="font-size:12px; font-weight:600; color:#166B48;">12 / 16 belegt</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="lbl" style="text-align:left;">Hover</div>
+        <div style="width:280px; background:#FFFFFF; border:1px solid #A7CDCB; border-radius:12px; padding:20px; box-shadow:0 4px 12px rgba(20,20,18,0.08);">
+          <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:16px; color:#201F1C; margin-bottom:4px;">Yoga Flow</div>
+          <div style="font-size:13px; color:#7C7870; margin-bottom:14px;">Di, 18:30 &ndash; 19:30 &middot; Sabine K.</div>
+          <div style="display:inline-flex; align-items:center; gap:6px; background:#EEF5F5; border-radius:100px; padding:5px 12px;">
+            <span style="width:6px; height:6px; border-radius:50%; background:#1D8A5F;"></span>
+            <span style="font-size:12px; font-weight:600; color:#166B48;">12 / 16 belegt</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inputs -->
+  <div style="margin-bottom:44px;">
+    <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:16px; color:#201F1C; margin-bottom:2px;">Eingabefelder</div>
+    <div style="font-size:12.5px; color:#7C7870; margin-bottom:18px;">44px Höhe, radius 8px, Label Source Sans 3 Semibold 14px</div>
+    <div style="display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:16px;">
+      <div>
+        <div class="lbl" style="text-align:left;">Default</div>
+        <div style="font-size:14px; font-weight:600; color:#45423D; margin-bottom:6px;">Kursname</div>
+        <div style="height:44px; border:1px solid #D3D0C9; border-radius:8px; background:#FFFFFF; display:flex; align-items:center; padding:0 14px; font-size:14.5px; color:#201F1C;">Yoga Flow</div>
+      </div>
+      <div>
+        <div class="lbl" style="text-align:left;">Focus</div>
+        <div style="font-size:14px; font-weight:600; color:#45423D; margin-bottom:6px;">Kursname</div>
+        <div style="height:44px; border:1.5px solid #2E7672; border-radius:8px; background:#FFFFFF; box-shadow:0 0 0 3px #D3E6E5; display:flex; align-items:center; padding:0 13.5px; font-size:14.5px; color:#201F1C;">Yoga Flow</div>
+      </div>
+      <div>
+        <div class="lbl" style="text-align:left;">Error</div>
+        <div style="font-size:14px; font-weight:600; color:#45423D; margin-bottom:6px;">Kursname</div>
+        <div style="height:44px; border:1.5px solid #DC2626; border-radius:8px; background:#FFFFFF; display:flex; align-items:center; padding:0 13.5px; font-size:14.5px; color:#201F1C; margin-bottom:6px;">Yoga</div>
+        <div style="font-size:12.5px; color:#DC2626;">Bitte vollständigen Namen eingeben</div>
+      </div>
+      <div>
+        <div class="lbl" style="text-align:left;">Disabled</div>
+        <div style="font-size:14px; font-weight:600; color:#A9A59C; margin-bottom:6px;">Kursname</div>
+        <div style="height:44px; border:1px solid #E5E3DF; border-radius:8px; background:#F2F1EF; display:flex; align-items:center; padding:0 14px; font-size:14.5px; color:#A9A59C;">Yoga Flow</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- In context -->
+  <div>
+    <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:16px; color:#201F1C; margin-bottom:2px;">Im Zusammenspiel</div>
+    <div style="font-size:12.5px; color:#7C7870; margin-bottom:18px;">Ausschnitt Studio-Admin &mdash; Monitoring-Zeile</div>
+    <div style="background:#FFFFFF; border:1px solid #E5E3DF; border-radius:12px; padding:16px 20px; max-width:640px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="width:40px; height:40px; border-radius:8px; background:#EEF5F5; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F5F5C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14.5px; color:#201F1C;">HIIT Circuit &mdash; Mi 07:00</div>
+          <div style="font-size:12.5px; color:#7C7870;">Studio Mitte &middot; Marco T.</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <div style="display:inline-flex; align-items:center; gap:6px; background:#FCF1DC; border-radius:100px; padding:5px 12px;">
+          <span style="width:6px; height:6px; border-radius:50%; background:#B87503;"></span>
+          <span style="font-size:12px; font-weight:600; color:#8A5900;">Fast voll</span>
+        </div>
+        <div class="btn" style="background:transparent; color:#45423D; height:36px; padding:0 14px; font-size:13.5px;">Details</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

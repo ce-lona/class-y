@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #6C6ADD; }
+    a:hover { color: #5450C4; }
+    .sw { border-radius:8px; height:64px; display:flex; align-items:flex-end; padding:6px; font-family:'Source Sans 3',monospace; font-size:10.5px; font-weight:600; }
+  </style>
+</helmet>
+<div style="background:#FAFAF9; min-height:100%; font-family:'Source Sans 3', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color:#201F1C; padding:56px 64px;">
+
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom:36px;">
+    <div style="width:8px; height:8px; border-radius:50%; background:#1F5F5C;"></div>
+    <span style="font-family:'Source Sans 3',sans-serif; font-weight:700; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#7C7870;">class-y Corporate Design &nbsp;·&nbsp; 03 Farbpalette</span>
+  </div>
+
+  <div style="font-size:16px; line-height:1.6; color:#302E2A; max-width:900px; margin-bottom:36px;">
+    Petrol als Marken- und Aktionsfarbe (ruhig, vertrauenswürdig), warmes Grau statt kaltem Grau, Indigo als zweiter Akzent für Links/Badges. Status-Farben (Erfolg/Warnung/Fehler) bleiben bewusst außerhalb dieser beiden Akzente &mdash; in der Monitoring-Übersicht darf Farbe nie zweideutig sein.
+  </div>
+
+  <!-- Primary ramp -->
+  <div style="margin-bottom:30px;">
+    <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#201F1C; margin-bottom:2px;">Primary &mdash; Petrol</div>
+    <div style="font-size:12.5px; color:#7C7870; margin-bottom:12px;">Tailwind-Token: primary-50 … primary-950 &mdash; Basis primary-600</div>
+    <div style="display:grid; grid-template-columns: repeat(11, minmax(0,1fr)); gap:6px;">
+      <div class="sw" style="background:#EEF5F5; color:#0F2E2D;">50<br>#EEF5F5</div>
+      <div class="sw" style="background:#D3E6E5; color:#0F2E2D;">100<br>#D3E6E5</div>
+      <div class="sw" style="background:#A7CDCB; color:#0F2E2D;">200<br>#A7CDCB</div>
+      <div class="sw" style="background:#79B0AD; color:#0F2E2D;">300<br>#79B0AD</div>
+      <div class="sw" style="background:#4C928E; color:#FAFAF9;">400<br>#4C928E</div>
+      <div class="sw" style="background:#2E7672; color:#FAFAF9;">500<br>#2E7672</div>
+      <div class="sw" style="background:#1F5F5C; color:#FAFAF9;">600<br>#1F5F5C</div>
+      <div class="sw" style="background:#184C4A; color:#FAFAF9;">700<br>#184C4A</div>
+      <div class="sw" style="background:#133B3A; color:#FAFAF9;">800<br>#133B3A</div>
+      <div class="sw" style="background:#0F2E2D; color:#FAFAF9;">900<br>#0F2E2D</div>
+      <div class="sw" style="background:#081918; color:#FAFAF9;">950<br>#081918</div>
+    </div>
+  </div>
+
+  <!-- Neutral ramp -->
+  <div style="margin-bottom:30px;">
+    <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#201F1C; margin-bottom:2px;">Neutral &mdash; Warmgrau</div>
+    <div style="font-size:12.5px; color:#7C7870; margin-bottom:12px;">Tailwind-Token: neutral-50 … neutral-950 &mdash; Text, Flächen, Ränder</div>
+    <div style="display:grid; grid-template-columns: repeat(11, minmax(0,1fr)); gap:6px;">
+      <div class="sw" style="background:#FAFAF9; color:#201F1C; border:1px solid #E5E3DF;">50<br>#FAFAF9</div>
+      <div class="sw" style="background:#F2F1EF; color:#201F1C;">100<br>#F2F1EF</div>
+      <div class="sw" style="background:#E5E3DF; color:#201F1C;">200<br>#E5E3DF</div>
+      <div class="sw" style="background:#D3D0C9; color:#201F1C;">300<br>#D3D0C9</div>
+      <div class="sw" style="background:#A9A59C; color:#201F1C;">400<br>#A9A59C</div>
+      <div class="sw" style="background:#7C7870; color:#FAFAF9;">500<br>#7C7870</div>
+      <div class="sw" style="background:#5C5952; color:#FAFAF9;">600<br>#5C5952</div>
+      <div class="sw" style="background:#45423D; color:#FAFAF9;">700<br>#45423D</div>
+      <div class="sw" style="background:#302E2A; color:#FAFAF9;">800<br>#302E2A</div>
+      <div class="sw" style="background:#201F1C; color:#FAFAF9;">900<br>#201F1C</div>
+      <div class="sw" style="background:#131211; color:#FAFAF9;">950<br>#131211</div>
+    </div>
+  </div>
+
+  <!-- Accent -->
+  <div style="margin-bottom:30px;">
+    <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#201F1C; margin-bottom:2px;">Accent &mdash; Indigo</div>
+    <div style="font-size:12.5px; color:#7C7870; margin-bottom:12px;">Tailwind-Token: accent-400 / 500 / 600 &mdash; Links, Fokus-Ring, Badges (nie für Status)</div>
+    <div style="display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:6px; max-width:340px;">
+      <div class="sw" style="background:#8B8AE8; color:#0F2E2D;">400<br>#8B8AE8</div>
+      <div class="sw" style="background:#6C6ADD; color:#FAFAF9;">500<br>#6C6ADD</div>
+      <div class="sw" style="background:#5450C4; color:#FAFAF9;">600<br>#5450C4</div>
+    </div>
+  </div>
+
+  <!-- Semantic -->
+  <div style="margin-bottom:36px;">
+    <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#201F1C; margin-bottom:2px;">Status-Farben</div>
+    <div style="font-size:12.5px; color:#7C7870; margin-bottom:14px;">success / warning / error &mdash; je base + bg-light, aus dem Petrol/Indigo-Hue-Bereich ausgeschlossen</div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:8px; background:#E7F6EE; border-radius:100px; padding:8px 16px 8px 10px;">
+        <span style="width:8px; height:8px; border-radius:50%; background:#1D8A5F; flex-shrink:0;"></span>
+        <span style="font-size:13.5px; font-weight:600; color:#166B48;">Kurs bestätigt</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:#FCF1DC; border-radius:100px; padding:8px 16px 8px 10px;">
+        <span style="width:8px; height:8px; border-radius:50%; background:#B87503; flex-shrink:0;"></span>
+        <span style="font-size:13.5px; font-weight:600; color:#8A5900;">Fast ausgebucht</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:#FDECEC; border-radius:100px; padding:8px 16px 8px 10px;">
+        <span style="width:8px; height:8px; border-radius:50%; background:#DC2626; flex-shrink:0;"></span>
+        <span style="font-size:13.5px; font-weight:600; color:#B91C1C;">Kurs abgesagt</span>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:20px; max-width:640px; margin-top:16px; font-family:'Source Sans 3',monospace; font-size:12px; color:#5C5952;">
+      <div>success<br>#1D8A5F · bg #E7F6EE</div>
+      <div>warning<br>#B87503 · bg #FCF1DC</div>
+      <div>error<br>#DC2626 · bg #FDECEC</div>
+    </div>
+    <div style="font-size:12px; color:#A9A59C; margin-top:14px;">Erweiterung für kräftigen Text auf hellem Grund / Button-States: success-700 #166B48 &middot; warning-700 #8A5900 &middot; error-600 (Hover) #B91C1C &middot; error-700 (Active) #991B1B</div>
+  </div>
+
+  <!-- Dark mode demo -->
+  <div>
+    <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#201F1C; margin-bottom:2px;">Dark-Kontext</div>
+    <div style="font-size:12.5px; color:#7C7870; margin-bottom:14px;">background neutral-950, card neutral-900, primary-500 als Aktionsfarbe (statt 600, für Kontrast)</div>
+    <div style="background:#131211; border-radius:14px; padding:24px; max-width:420px;">
+      <div style="background:#201F1C; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px;">
+        <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:15px; color:#FAFAF9; margin-bottom:6px;">Yoga Flow &mdash; Di 18:30</div>
+        <div style="font-size:13px; color:#D3D0C9; margin-bottom:14px;">12 / 16 Plätze belegt</div>
+        <div style="display:inline-block; background:#2E7672; color:#FFFFFF; font-size:13px; font-weight:600; border-radius:8px; padding:9px 16px;">Details ansehen</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

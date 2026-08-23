@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Kurstracking für Trainer:innen und Studios",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#1e293b",
+    background_color: "#FAFAF9",
+    theme_color: "#1F5F5C",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
