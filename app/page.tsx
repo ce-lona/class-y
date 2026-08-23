@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
+import { buttonVariants } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
-import { signOut } from "@/lib/auth";
 import { t } from "@/i18n/de";
 
 export default function Home() {
@@ -11,14 +11,14 @@ export default function Home() {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4">
-      <h1 className="text-2xl font-semibold">{t.common.appName}</h1>
+      <h1 className="text-4xl">
+        <Logo aria-hidden="true" />
+        <span className="sr-only">{t.common.appName}</span>
+      </h1>
       {isLoading ? (
         <p className="text-muted-foreground">{t.common.loading}</p>
       ) : session ? (
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-muted-foreground">{session.user.email}</p>
-          <Button onClick={() => signOut()}>{t.auth.logout}</Button>
-        </div>
+        <p className="text-muted-foreground">{session.user.email}</p>
       ) : (
         <Link href="/login" className={buttonVariants()}>
           {t.auth.login}

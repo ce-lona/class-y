@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAuthListener } from "@/hooks/useAuth";
+import { Nav } from "@/components/nav";
 
 function AuthListener() {
   useAuthListener();
@@ -15,6 +16,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthListener />
+      <Nav />
       {children}
     </QueryClientProvider>
   );
