@@ -22,12 +22,18 @@ export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export const resetPasswordSchema = z.object({ password });
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
+export const countryOptions = [
+  { value: "DE", label: "Deutschland" },
+  { value: "AT", label: "Österreich" },
+  { value: "CH", label: "Schweiz" },
+] as const;
+
 export const createCompanySchema = z.object({
   name: z.string().min(1, t.companies.nameRequired),
   street: z.string().optional(),
   house_number: z.string().optional(),
   postal_code: z.string().optional(),
   city: z.string().optional(),
-  country: z.string().optional(),
+  country: z.enum(["DE", "AT", "CH"]),
 });
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;

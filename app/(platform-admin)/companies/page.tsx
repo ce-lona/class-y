@@ -2,15 +2,26 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuthStore } from "@/store/authStore";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
 import { useCompanies, useCreateCompany } from "@/hooks/useCompanies";
-import { createCompanySchema, type CreateCompanyInput } from "@/lib/validators";
+import {
+  createCompanySchema,
+  countryOptions,
+  type CreateCompanyInput,
+} from "@/lib/validators";
 import { t } from "@/i18n/de";
 
 export default function CompaniesPage() {
@@ -27,9 +38,13 @@ export default function CompaniesPage() {
   const {
     register,
     handleSubmit,
+    control,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateCompanyInput>({ resolver: zodResolver(createCompanySchema) });
+  } = useForm<CreateCompanyInput>({
+    resolver: zodResolver(createCompanySchema),
+    defaultValues: { country: "DE" },
+  });
 
   useEffect(() => {
     if (!sessionLoading && !session) {
@@ -103,7 +118,24 @@ export default function CompaniesPage() {
 
         <div className="space-y-1.5">
           <Label htmlFor="country">{t.companies.country}</Label>
-          <Input id="country" placeholder="DE" {...register("country")} />
+          <Controller
+            control={control}
+            name="country"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="country" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {countryOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
         </div>
 
         {createCompany.isError && (
