@@ -60,4 +60,12 @@ export const t = {
     empty: "Noch keine Studios angelegt.",
     back: "Zurück zu Companies",
   },
+  companyAdmins: {
+    title: "Admins",
+    email: "E-Mail-Adresse",
+    add: "Admin hinzufügen",
+    empty: "Noch keine Admins zugewiesen.",
+    userNotFound: "Diese E-Mail hat noch kein Konto. Person muss sich zuerst registrieren.",
+    addError: "Admin konnte nicht hinzugefügt werden.",
+  },
 } as const;

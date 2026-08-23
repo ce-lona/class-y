@@ -43,3 +43,6 @@ export const createStudioSchema = z.object({
   address: z.string().optional(),
 });
 export type CreateStudioInput = z.infer<typeof createStudioSchema>;
+
+export const addCompanyAdminSchema = z.object({ email });
+export type AddCompanyAdminInput = z.infer<typeof addCompanyAdminSchema>;
