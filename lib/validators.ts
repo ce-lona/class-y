@@ -24,6 +24,10 @@ export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 export const createCompanySchema = z.object({
   name: z.string().min(1, t.companies.nameRequired),
-  billing_address: z.string().optional(),
+  street: z.string().optional(),
+  house_number: z.string().optional(),
+  postal_code: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
 });
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;

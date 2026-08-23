@@ -79,9 +79,31 @@ export default function CompaniesPage() {
           )}
         </div>
 
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2 space-y-1.5">
+            <Label htmlFor="street">{t.companies.street}</Label>
+            <Input id="street" {...register("street")} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="house_number">{t.companies.houseNumber}</Label>
+            <Input id="house_number" {...register("house_number")} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="postal_code">{t.companies.postalCode}</Label>
+            <Input id="postal_code" {...register("postal_code")} />
+          </div>
+          <div className="col-span-2 space-y-1.5">
+            <Label htmlFor="city">{t.companies.city}</Label>
+            <Input id="city" {...register("city")} />
+          </div>
+        </div>
+
         <div className="space-y-1.5">
-          <Label htmlFor="billing_address">{t.companies.billingAddress}</Label>
-          <Input id="billing_address" {...register("billing_address")} />
+          <Label htmlFor="country">{t.companies.country}</Label>
+          <Input id="country" placeholder="DE" {...register("country")} />
         </div>
 
         {createCompany.isError && (
@@ -101,9 +123,15 @@ export default function CompaniesPage() {
             {companies.map((company) => (
               <li key={company.id} className="p-3">
                 <p className="font-medium">{company.name}</p>
-                {company.billing_address && (
+                {(company.street || company.city) && (
                   <p className="text-sm text-muted-foreground">
-                    {company.billing_address}
+                    {[
+                      [company.street, company.house_number].filter(Boolean).join(" "),
+                      [company.postal_code, company.city].filter(Boolean).join(" "),
+                      company.country,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
                   </p>
                 )}
               </li>

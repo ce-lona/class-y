@@ -3,7 +3,11 @@ import { createClient } from "@/lib/supabase/client";
 export interface Company {
   id: string;
   name: string;
-  billing_address: string | null;
+  street: string | null;
+  house_number: string | null;
+  postal_code: string | null;
+  city: string | null;
+  country: string;
   created_at: string;
 }
 
@@ -19,7 +23,11 @@ export async function getCompanies(): Promise<Company[]> {
 
 export async function createCompany(input: {
   name: string;
-  billing_address?: string;
+  street?: string;
+  house_number?: string;
+  postal_code?: string;
+  city?: string;
+  country?: string;
 }): Promise<Company> {
   const supabase = createClient();
   const { data, error } = await supabase

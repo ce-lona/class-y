@@ -39,7 +39,11 @@ export const t = {
   companies: {
     title: "Companies",
     name: "Name",
-    billingAddress: "Rechnungsadresse",
+    street: "Straße",
+    houseNumber: "Hausnummer",
+    postalCode: "PLZ",
+    city: "Ort",
+    country: "Land",
     create: "Company anlegen",
     createError: "Company konnte nicht angelegt werden.",
     nameRequired: "Name ist erforderlich",
