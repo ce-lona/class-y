@@ -1,9 +1,13 @@
+@AGENTS.md
+
 # class-y
 
-Mobile App (iOS/Android) für Gyms/Studios und ihre Trainer:innen, um gegebene Kurse zu tracken,
-Studios eine Monitoring-Übersicht zu geben und (Phase 2, später) Gutschriften/Belege
-automatisiert abzuwickeln. UI-Sprache ist Deutsch (analog `i18n/de.ts` bei classy), es gibt
-aktuell keine weiteren Sprachen. Code ist Englisch.
+Web-App für Gyms/Studios und ihre Trainer:innen, um gegebene Kurse zu tracken, Studios eine
+Monitoring-Übersicht zu geben und (Phase 2, später) Gutschriften/Belege automatisiert
+abzuwickeln. Als PWA über die Website installierbar (kein App-Store-Vertrieb) — Trainer:innen
+nutzen sie primär mobil (Kurse eintragen unterwegs), Studios primär am Desktop (Verwaltung/
+Monitoring). UI-Sprache ist Deutsch (analog `i18n/de.ts` bei classy), es gibt aktuell keine
+weiteren Sprachen. Code ist Englisch.
 
 Nicht zu verwechseln mit dem separaten, bestehenden Projekt `classy` (ohne Bindestrich) unter
 `../classy` — beide Projekte existieren parallel.
@@ -13,19 +17,22 @@ noch geschrieben wird. Details, Datenmodell und Roadmap: siehe [`PLANNING.md`](.
 
 ## Stack (geplant)
 
-- **Expo** (managed workflow) + **EAS Build/Submit**
-- **React Native / expo-router** (dateibasiert, Ordner `app/`)
+- **Next.js** (App Router, dateibasiert, Ordner `app/`)
+- Zusätzlich als **PWA** installierbar (Manifest + Service Worker) — Download/Installation läuft
+  über die Website, kein App-Store-Vertrieb. Auf iOS nur manuell möglich (Safari-Share-Menü →
+  "Zum Home-Bildschirm"), auf Android mit nativem Install-Prompt.
 - **TypeScript**, `strict: true`
-- **NativeWind** (Tailwind-Klassen in RN-Komponenten)
+- **Tailwind CSS** + **shadcn/ui** für UI-Komponenten
 - **Zustand** für Client-State
 - **TanStack Query** für Server-State/Caching
 - **React Hook Form + Zod** für Formulare/Validierung
 - **Supabase** als Backend: Auth, Postgres (RLS), Edge Functions
 - **Storybook** + **Chromatic** für visuelle Regression
-- **Detox** für E2E-Tests — bewusst keine separaten Unit-Tests
+- **Playwright** für E2E-Tests — bewusst keine separaten Unit-Tests
 
 Das ursprüngliche Next.js-Boilerplate in diesem Repo (`create-next-app`, unbenutzt) wurde
-entfernt und durch dieses Planungsdokument ersetzt; das Expo-Projekt wird als Nächstes gescaffoldet.
+entfernt und durch dieses Planungsdokument ersetzt; ein neues Next.js-Projekt wird als Nächstes
+gescaffoldet.
 
 ## Rollenmodell
 
@@ -57,16 +64,17 @@ ausschließlich von Company-Admins gepflegt, Trainer sehen sie nur lesend.
 
 ## Ordnerstruktur (geplant, analog classy)
 
-- `app/` — Screens/Routing (expo-router), Gruppen für `(auth)`, `(trainer)`, `(studio-admin)`,
+- `app/` — Routes (Next.js App Router), Gruppen für `(auth)`, `(trainer)`, `(studio-admin)`,
   `(platform-admin)` je nach finaler Rollen-Navigation
-- `components/` — wiederverwendbare UI-Komponenten, `components/ui/` = generische Bausteine
+- `components/` — wiederverwendbare UI-Komponenten, `components/ui/` = shadcn/ui-Bausteine
 - `hooks/` — TanStack-Query-Hooks pro Entität
 - `lib/` — Datenzugriff/Logik ohne React-Bindung (`supabase.ts`, `courses.ts`, `plans.ts`, …)
 - `store/` — Zustand-Stores
 - `constants/` — statische Werte
 - `i18n/de.ts` — alle UI-Texte zentral
 - `supabase/migrations/` — SQL-Migrationen inkl. RLS
-- `e2e/` — Detox-Tests
+- `public/manifest.json` + Service Worker — PWA-Installierbarkeit
+- `e2e/` — Playwright-Tests
 
 ## Offene Punkte
 
