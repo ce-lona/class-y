@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
           <p className="text-muted-foreground">{t.auth.forgotPasswordSubtitle}</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="email">{t.auth.email}</Label>
             <Input id="email" type="email" autoComplete="email" {...register("email")} />

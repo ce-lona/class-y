@@ -35,7 +35,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-sm space-y-6">
         <h1 className="text-2xl font-semibold">{t.auth.resetPasswordTitle}</h1>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="password">{t.auth.newPassword}</Label>
             <Input
