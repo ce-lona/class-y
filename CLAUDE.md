@@ -61,6 +61,11 @@ ausschließlich von Company-Admins gepflegt, Trainer sehen sie nur lesend.
   der Company eingesetzt werden.
 - Ad-hoc-Kurse (ohne Plan-Slot) und spontane Vertretungen (Trainer loggt fremden Slot) sind ab
   Phase 1 explizit erlaubt und kein Sonderfall.
+- Jeder neu implementierte Basis-Flow (z.B. Company/Studio anlegen, Login/Registrierung) bekommt
+  direkt einen Playwright-Test in `e2e/` mit Video-Aufzeichnung (`playwright.config.ts`,
+  `video: "on"`), damit er sich als Recording anschauen lässt — nicht erst nachträglich.
+  Login-abhängige Tests nutzen `E2E_PLATFORM_ADMIN_EMAIL`/`_PASSWORD` aus `.env.local`
+  (`e2e/helpers.ts`).
 
 ## Ordnerstruktur (geplant, analog classy)
 
