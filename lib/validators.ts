@@ -21,3 +21,9 @@ export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z.object({ password });
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export const createCompanySchema = z.object({
+  name: z.string().min(1, t.companies.nameRequired),
+  billing_address: z.string().optional(),
+});
+export type CreateCompanyInput = z.infer<typeof createCompanySchema>;

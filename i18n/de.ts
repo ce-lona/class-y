@@ -36,4 +36,14 @@ export const t = {
     loginError: "Anmeldung fehlgeschlagen. Bitte prüfe deine Zugangsdaten.",
     registerError: "Registrierung fehlgeschlagen. Bitte versuche es erneut.",
   },
+  companies: {
+    title: "Companies",
+    name: "Name",
+    billingAddress: "Rechnungsadresse",
+    create: "Company anlegen",
+    createError: "Company konnte nicht angelegt werden.",
+    nameRequired: "Name ist erforderlich",
+    empty: "Noch keine Companies angelegt.",
+    unauthorized: "Nur Platform-Admins können Companies verwalten.",
+  },
 } as const;
