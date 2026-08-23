@@ -124,7 +124,11 @@ export default function CompaniesPage() {
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger id="country" className="w-full">
-                  <SelectValue />
+                  <SelectValue>
+                    {(value: string) =>
+                      countryOptions.find((option) => option.value === value)?.label
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {countryOptions.map((option) => (
