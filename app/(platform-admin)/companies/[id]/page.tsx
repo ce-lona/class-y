@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -41,6 +41,7 @@ export default function CompanyDetailPage({
   const createStudio = useCreateStudio(id);
   const { data: companyAdmins, isLoading: companyAdminsLoading } = useCompanyAdmins(id);
   const addCompanyAdmin = useAddCompanyAdmin(id);
+  const [adminSuccess, setAdminSuccess] = useState<string | null>(null);
 
   const {
     register,
@@ -73,16 +74,14 @@ export default function CompanyDetailPage({
   }
 
   async function onSubmitAdmin(values: AddCompanyAdminInput) {
+    setAdminSuccess(null);
     try {
-      await addCompanyAdmin.mutateAsync(values.email);
+      const result = await addCompanyAdmin.mutateAsync(values.email);
+      setAdminSuccess(result.invited ? t.companyAdmins.invited : t.companyAdmins.added);
       resetAdmin();
     } catch (error) {
       console.error(error);
-      const message =
-        error instanceof Error && error.message === "user_not_found"
-          ? t.companyAdmins.userNotFound
-          : t.companyAdmins.addError;
-      setAdminError("email", { message });
+      setAdminError("email", { message: t.companyAdmins.addError });
     }
   }
 
@@ -141,6 +140,8 @@ export default function CompanyDetailPage({
             {t.companyAdmins.add}
           </Button>
         </form>
+
+        {adminSuccess && <p className="text-sm text-success">{adminSuccess}</p>}
 
         <div className="space-y-2">
           {companyAdminsLoading ? (

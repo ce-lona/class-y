@@ -65,7 +65,8 @@ export const t = {
     email: "E-Mail-Adresse",
     add: "Admin hinzufügen",
     empty: "Noch keine Admins zugewiesen.",
-    userNotFound: "Diese E-Mail hat noch kein Konto. Person muss sich zuerst registrieren.",
+    added: "Admin hinzugefügt.",
+    invited: "Person hat noch kein Konto — Einladungs-E-Mail wurde verschickt.",
     addError: "Admin konnte nicht hinzugefügt werden.",
   },
   studioAdmin: {

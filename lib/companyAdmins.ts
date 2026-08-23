@@ -33,11 +33,26 @@ export async function getCompanyAdmins(companyId: string): Promise<CompanyAdmin[
   return data;
 }
 
-export async function addCompanyAdmin(companyId: string, email: string): Promise<void> {
+export async function addCompanyAdmin(
+  companyId: string,
+  email: string,
+): Promise<{ invited: boolean }> {
   const supabase = createClient();
-  const { error } = await supabase.rpc("add_company_admin", {
-    target_company_id: companyId,
-    target_email: email,
+  const { data, error } = await supabase.functions.invoke("invite-company-admin", {
+    body: {
+      company_id: companyId,
+      email,
+      redirectTo: `${window.location.origin}/auth/confirm?next=/reset-password`,
+    },
   });
-  if (error) throw error;
+
+  if (error) {
+    if ("context" in error && error.context instanceof Response) {
+      const body = await error.context.json().catch(() => null);
+      throw new Error(body?.error ?? error.message);
+    }
+    throw error;
+  }
+
+  return data;
 }
