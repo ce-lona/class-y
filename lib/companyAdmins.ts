@@ -1,4 +1,22 @@
 import { createClient } from "@/lib/supabase/client";
+import type { Company } from "@/lib/companies";
+
+export async function getMyCompanies(): Promise<Company[]> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("company_admins")
+    .select("companies(*)")
+    .eq("user_id", user.id);
+  if (error) throw error;
+  return data
+    .map((row) => row.companies as unknown as Company | null)
+    .filter((c): c is Company => c !== null);
+}
 
 export interface CompanyAdmin {
   user_id: string;

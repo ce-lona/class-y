@@ -23,6 +23,17 @@ export async function getStudios(companyId: string): Promise<Studio[]> {
   return data;
 }
 
+export async function getStudio(id: string): Promise<Studio> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("studios")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function createStudio(input: {
   company_id: string;
   name: string;

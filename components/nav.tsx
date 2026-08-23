@@ -5,12 +5,14 @@ import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
+import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { signOut } from "@/lib/auth";
 import { t } from "@/i18n/de";
 
 export function Nav() {
   const session = useAuthStore((state) => state.session);
   const { data: isPlatformAdmin } = useIsPlatformAdmin();
+  const { data: myCompany } = useMyCompany();
 
   if (!session) return null;
 
@@ -25,6 +27,11 @@ export function Nav() {
         {isPlatformAdmin && (
           <Link href="/companies" className="text-sm text-muted-foreground hover:underline">
             {t.companies.title}
+          </Link>
+        )}
+        {myCompany && (
+          <Link href="/studios" className="text-sm text-muted-foreground hover:underline">
+            {t.studios.title}
           </Link>
         )}
         <Button variant="outline" size="sm" onClick={() => signOut()}>
