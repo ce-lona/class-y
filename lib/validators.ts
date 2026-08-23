@@ -28,19 +28,26 @@ export const countryOptions = [
   { value: "CH", label: "Schweiz" },
 ] as const;
 
-export const createCompanySchema = z.object({
-  name: z.string().min(1, t.companies.nameRequired),
+// Jede Adresse im Formular besteht immer aus diesen Einzelfeldern, nie
+// einem einzelnen Freitext-Feld.
+export const addressFields = {
   street: z.string().optional(),
   house_number: z.string().optional(),
   postal_code: z.string().optional(),
   city: z.string().optional(),
   country: z.enum(["DE", "AT", "CH"]),
+};
+export type AddressInput = z.infer<z.ZodObject<typeof addressFields>>;
+
+export const createCompanySchema = z.object({
+  name: z.string().min(1, t.companies.nameRequired),
+  ...addressFields,
 });
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;
 
 export const createStudioSchema = z.object({
   name: z.string().min(1, t.studios.nameRequired),
-  address: z.string().optional(),
+  ...addressFields,
 });
 export type CreateStudioInput = z.infer<typeof createStudioSchema>;
 

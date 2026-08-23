@@ -3,26 +3,17 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { AddressFields } from "@/components/address-fields";
 import { useAuthStore } from "@/store/authStore";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
 import { useCompanies, useCreateCompany } from "@/hooks/useCompanies";
-import {
-  createCompanySchema,
-  countryOptions,
-  type CreateCompanyInput,
-} from "@/lib/validators";
+import { createCompanySchema, type CreateCompanyInput } from "@/lib/validators";
+import { formatAddress } from "@/lib/address";
 import { t } from "@/i18n/de";
 
 export default function CompaniesPage() {
@@ -95,53 +86,7 @@ export default function CompaniesPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2 space-y-1.5">
-            <Label htmlFor="street">{t.companies.street}</Label>
-            <Input id="street" {...register("street")} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="house_number">{t.companies.houseNumber}</Label>
-            <Input id="house_number" {...register("house_number")} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="postal_code">{t.companies.postalCode}</Label>
-            <Input id="postal_code" {...register("postal_code")} />
-          </div>
-          <div className="col-span-2 space-y-1.5">
-            <Label htmlFor="city">{t.companies.city}</Label>
-            <Input id="city" {...register("city")} />
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="country">{t.companies.country}</Label>
-          <Controller
-            control={control}
-            name="country"
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="country" className="w-full">
-                  <SelectValue>
-                    {(value: string) =>
-                      countryOptions.find((option) => option.value === value)?.label
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {countryOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
+        <AddressFields register={register} control={control} />
 
         {createCompany.isError && (
           <p className="text-sm text-destructive">{t.companies.createError}</p>
@@ -164,15 +109,9 @@ export default function CompaniesPage() {
                   className="block p-3 hover:bg-muted"
                 >
                   <p className="font-medium">{company.name}</p>
-                  {(company.street || company.city) && (
+                  {formatAddress(company) && (
                     <p className="text-sm text-muted-foreground">
-                      {[
-                        [company.street, company.house_number].filter(Boolean).join(" "),
-                        [company.postal_code, company.city].filter(Boolean).join(" "),
-                        company.country,
-                      ]
-                        .filter(Boolean)
-                        .join(", ")}
+                      {formatAddress(company)}
                     </p>
                   )}
                 </Link>

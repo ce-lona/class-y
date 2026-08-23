@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AddressFields } from "@/components/address-fields";
 import { useAuthStore } from "@/store/authStore";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
 import { useCompany } from "@/hooks/useCompanies";
@@ -19,6 +20,7 @@ import {
   addCompanyAdminSchema,
   type AddCompanyAdminInput,
 } from "@/lib/validators";
+import { formatAddress } from "@/lib/address";
 import { t } from "@/i18n/de";
 
 export default function CompanyDetailPage({
@@ -43,9 +45,13 @@ export default function CompanyDetailPage({
   const {
     register,
     handleSubmit,
+    control,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateStudioInput>({ resolver: zodResolver(createStudioSchema) });
+  } = useForm<CreateStudioInput>({
+    resolver: zodResolver(createStudioSchema),
+    defaultValues: { country: "DE" },
+  });
 
   const {
     register: registerAdmin,
@@ -71,6 +77,7 @@ export default function CompanyDetailPage({
       await addCompanyAdmin.mutateAsync(values.email);
       resetAdmin();
     } catch (error) {
+      console.error(error);
       const message =
         error instanceof Error && error.message === "user_not_found"
           ? t.companyAdmins.userNotFound
@@ -167,10 +174,7 @@ export default function CompanyDetailPage({
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="address">{t.studios.address}</Label>
-            <Input id="address" {...register("address")} />
-          </div>
+          <AddressFields register={register} control={control} />
 
           {createStudio.isError && (
             <p className="text-sm text-destructive">{t.studios.createError}</p>
@@ -189,8 +193,10 @@ export default function CompanyDetailPage({
               {studios.map((studio) => (
                 <li key={studio.id} className="p-3">
                   <p className="font-medium">{studio.name}</p>
-                  {studio.address && (
-                    <p className="text-sm text-muted-foreground">{studio.address}</p>
+                  {formatAddress(studio) && (
+                    <p className="text-sm text-muted-foreground">
+                      {formatAddress(studio)}
+                    </p>
                   )}
                 </li>
               ))}

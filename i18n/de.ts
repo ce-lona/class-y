@@ -53,7 +53,6 @@ export const t = {
   studios: {
     title: "Studios",
     name: "Name",
-    address: "Adresse",
     create: "Studio anlegen",
     createError: "Studio konnte nicht angelegt werden.",
     nameRequired: "Name ist erforderlich",
