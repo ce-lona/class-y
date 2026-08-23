@@ -21,6 +21,17 @@ export async function getCompanies(): Promise<Company[]> {
   return data;
 }
 
+export async function getCompany(id: string): Promise<Company> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("companies")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function createCompany(input: {
   name: string;
   street?: string;

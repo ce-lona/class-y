@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -157,19 +158,24 @@ export default function CompaniesPage() {
         ) : companies && companies.length > 0 ? (
           <ul className="divide-y divide-border rounded-lg border">
             {companies.map((company) => (
-              <li key={company.id} className="p-3">
-                <p className="font-medium">{company.name}</p>
-                {(company.street || company.city) && (
-                  <p className="text-sm text-muted-foreground">
-                    {[
-                      [company.street, company.house_number].filter(Boolean).join(" "),
-                      [company.postal_code, company.city].filter(Boolean).join(" "),
-                      company.country,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </p>
-                )}
+              <li key={company.id}>
+                <Link
+                  href={`/companies/${company.id}`}
+                  className="block p-3 hover:bg-muted"
+                >
+                  <p className="font-medium">{company.name}</p>
+                  {(company.street || company.city) && (
+                    <p className="text-sm text-muted-foreground">
+                      {[
+                        [company.street, company.house_number].filter(Boolean).join(" "),
+                        [company.postal_code, company.city].filter(Boolean).join(" "),
+                        company.country,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
+                  )}
+                </Link>
               </li>
             ))}
           </ul>

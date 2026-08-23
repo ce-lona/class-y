@@ -50,4 +50,14 @@ export const t = {
     empty: "Noch keine Companies angelegt.",
     unauthorized: "Nur Platform-Admins können Companies verwalten.",
   },
+  studios: {
+    title: "Studios",
+    name: "Name",
+    address: "Adresse",
+    create: "Studio anlegen",
+    createError: "Studio konnte nicht angelegt werden.",
+    nameRequired: "Name ist erforderlich",
+    empty: "Noch keine Studios angelegt.",
+    back: "Zurück zu Companies",
+  },
 } as const;

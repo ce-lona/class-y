@@ -37,3 +37,9 @@ export const createCompanySchema = z.object({
   country: z.enum(["DE", "AT", "CH"]),
 });
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;
+
+export const createStudioSchema = z.object({
+  name: z.string().min(1, t.studios.nameRequired),
+  address: z.string().optional(),
+});
+export type CreateStudioInput = z.infer<typeof createStudioSchema>;
