@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { LayoutGrid, Calendar, Building2, Users } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
+import { signOut } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
 const navItems = [
@@ -26,6 +30,7 @@ export default function StudioAdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { session, isLoading: sessionLoading } = useAuthStore();
   const { data: company, isLoading: companyLoading } = useMyCompany();
 
@@ -54,48 +59,55 @@ export default function StudioAdminLayout({
   const initials = (session?.user.email ?? "??").slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex flex-1">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-card px-4 py-6">
-        <div className="mb-8 px-2 text-xl">
-          <Logo aria-hidden="true" />
+    <div className="flex min-h-full flex-1 flex-col">
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-sidebar px-8">
+        <div className="flex items-center gap-9">
+          <div className="text-xl">
+            <Logo aria-hidden="true" />
+          </div>
+
+          <nav className="flex items-center gap-0.5">
+            {navItems.map((item) => {
+              const enabled = enabledHrefs.has(item.href);
+              const active = pathname?.startsWith(item.href);
+              const Icon = item.icon;
+              const className = cn(
+                "flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold",
+                active
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : enabled
+                    ? "text-muted-foreground hover:bg-muted"
+                    : "cursor-not-allowed text-muted-foreground/50"
+              );
+
+              return enabled ? (
+                <Link key={item.href} href={item.href} className={className}>
+                  <Icon className="size-[17px]" />
+                  <span>{item.label}</span>
+                </Link>
+              ) : (
+                <span key={item.href} className={className}>
+                  <Icon className="size-[17px]" />
+                  <span>{item.label}</span>
+                </span>
+              );
+            })}
+          </nav>
         </div>
 
-        <nav className="flex flex-col gap-0.5">
-          {navItems.map((item) => {
-            const enabled = enabledHrefs.has(item.href);
-            const Icon = item.icon;
-            const className =
-              "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-semibold " +
-              (enabled
-                ? "text-foreground/80 hover:bg-muted"
-                : "cursor-not-allowed text-muted-foreground/50");
-
-            return enabled ? (
-              <Link key={item.href} href={item.href} className={className}>
-                <Icon className="size-[18px]" />
-                <span>{item.label}</span>
-              </Link>
-            ) : (
-              <span key={item.href} className={className}>
-                <Icon className="size-[18px]" />
-                <span>{item.label}</span>
-              </span>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto flex items-center gap-2.5 border-t border-border pt-4">
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <span className="text-sm text-muted-foreground">{company.name}</span>
           <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
             {initials}
           </div>
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold">{company.name}</div>
-            <div className="text-xs text-muted-foreground">{t.studioAdmin.roleLabel}</div>
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => signOut()}>
+            {t.auth.logout}
+          </Button>
         </div>
-      </aside>
+      </header>
 
-      <div className="min-w-0 flex-1 p-10">{children}</div>
+      <div className="min-w-0 flex-1 bg-background p-10">{children}</div>
     </div>
   );
 }

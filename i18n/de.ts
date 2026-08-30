@@ -74,6 +74,31 @@ export const t = {
     testAdminCreated: "Testkonto erstellt — direkt unter /login nutzbar.",
     testAdminError: "Testkonto konnte nicht erstellt werden.",
   },
+  landing: {
+    eyebrow: "Für Gyms, Studios und ihre Trainer:innen",
+    headline: "Kurse tracken. Studios im Blick. Fertig.",
+    subheadline:
+      "class-y verbindet, was Trainer:innen unterwegs erfassen, mit dem, was Studios wissen müssen — in einer ruhigen, gemeinsamen Oberfläche.",
+    ctaRegister: "Kostenlos registrieren",
+    audienceTrainerTitle: "Trainer:innen — mobil",
+    audienceTrainerText:
+      "Kurs schnell eintragen, unterwegs, mit dem Daumen. Große Touch-Ziele, wenig Tipparbeit.",
+    audienceStudioTitle: "Studio-Admins — Desktop",
+    audienceStudioText:
+      "Verwaltung & Monitoring im Überblick. Dichte Tabellen, klare Status, ruhige Farbsprache.",
+    featuresTitle: "Was class-y konkret abnimmt",
+    feature1Title: "Kurspläne mit sauberer Historie",
+    feature1Text:
+      "Jede Änderung archiviert den alten Plan automatisch — vergangene Kurse bleiben nachvollziehbar zugeordnet.",
+    feature2Title: "Ad-hoc-Kurse & Vertretungen",
+    feature2Text:
+      "Kein Sonderfall: spontane Vertretungen und Kurse außerhalb des Plans werden direkt beim Erfassen sichtbar.",
+    feature3Title: "Monitoring auf einen Blick",
+    feature3Text:
+      "Welche Kurse erfasst, offen oder überfällig sind — pro Studio, ohne Nachfragen.",
+    ctaFinalTitle: "Bereit, den Überblick zu behalten?",
+    footerCopyright: "© 2026 class-y",
+  },
   studioAdmin: {
     nav: {
       monitoring: "Monitoring",

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
@@ -9,12 +10,20 @@ import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { signOut } from "@/lib/auth";
 import { t } from "@/i18n/de";
 
+// Diese Routen haben ihre eigene Header-Nav (siehe app/(studio-admin)/layout.tsx)
+// — die globale Nav würde sonst doppelt erscheinen.
+const ownHeaderPrefixes = ["/monitoring", "/plans", "/studios", "/trainers"];
+
 export function Nav() {
+  const pathname = usePathname();
   const session = useAuthStore((state) => state.session);
   const { data: isPlatformAdmin } = useIsPlatformAdmin();
   const { data: myCompany } = useMyCompany();
 
   if (!session) return null;
+  if (ownHeaderPrefixes.some((prefix) => pathname?.startsWith(prefix))) {
+    return null;
+  }
 
   return (
     <header className="flex items-center justify-between border-b border-border px-6 py-3">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Manrope, Newsreader, Source_Sans_3 } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import { PwaRegister } from "@/components/pwa-register";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -47,10 +48,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="de"
       className={`${manrope.variable} ${newsreader.variable} ${sourceSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
-        <PwaRegister />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Providers>{children}</Providers>
+          <PwaRegister />
+        </ThemeProvider>
       </body>
     </html>
   );

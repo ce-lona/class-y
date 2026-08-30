@@ -120,7 +120,7 @@
   --warning-bg: #FCF1DC;
   --destructive-bg: #FDECEC;
 
-  --background: var(--neutral-50);
+  --background: var(--primary-50);
   --foreground: var(--neutral-900);
   --card: #FFFFFF;
   --card-foreground: var(--neutral-900);
@@ -128,11 +128,11 @@
   --popover-foreground: var(--neutral-900);
   --primary: var(--primary-600);
   --primary-foreground: var(--neutral-50);
-  --secondary: var(--neutral-100);
+  --secondary: var(--neutral-200);
   --secondary-foreground: var(--neutral-900);
-  --muted: var(--neutral-100);
+  --muted: var(--neutral-200);
   --muted-foreground: var(--neutral-500);
-  --accent: var(--primary-50);
+  --accent: var(--primary-100);
   --accent-foreground: var(--primary-700);
   --destructive: #DC2626;
   --border: var(--neutral-200);
@@ -144,13 +144,13 @@
   --chart-4: var(--primary-700);
   --chart-5: var(--warning);
   --radius: 0.5rem;
-  --sidebar: var(--neutral-50);
+  --sidebar: #FFFFFF;
   --sidebar-foreground: var(--neutral-900);
   --sidebar-primary: var(--primary-600);
   --sidebar-primary-foreground: var(--neutral-50);
-  --sidebar-accent: var(--primary-50);
+  --sidebar-accent: var(--primary-100);
   --sidebar-accent-foreground: var(--primary-700);
-  --sidebar-border: var(--neutral-200);
+  --sidebar-border: var(--primary-100);
   --sidebar-ring: var(--primary-500);
 }
 
