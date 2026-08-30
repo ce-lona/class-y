@@ -1,5 +1,14 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Company } from "@/lib/companies";
+import type { FunctionsError } from "@supabase/supabase-js";
+
+async function unwrapFunctionError(error: FunctionsError): Promise<never> {
+  if ("context" in error && error.context instanceof Response) {
+    const body = await error.context.json().catch(() => null);
+    throw new Error(body?.error ?? error.message);
+  }
+  throw error;
+}
 
 export async function getMyCompanies(): Promise<Company[]> {
   const supabase = createClient();
@@ -46,13 +55,24 @@ export async function addCompanyAdmin(
     },
   });
 
-  if (error) {
-    if ("context" in error && error.context instanceof Response) {
-      const body = await error.context.json().catch(() => null);
-      throw new Error(body?.error ?? error.message);
-    }
-    throw error;
-  }
+  if (error) return unwrapFunctionError(error);
+
+  return data;
+}
+
+// Dev-Hilfsfunktion für Testkonten ohne echten E-Mail-Versand (siehe
+// supabase/functions/create-test-admin) — nicht für echte Einladungen.
+export async function createTestAdmin(
+  companyId: string,
+  email: string,
+  password: string,
+): Promise<{ user_id: string }> {
+  const supabase = createClient();
+  const { data, error } = await supabase.functions.invoke("create-test-admin", {
+    body: { company_id: companyId, email, password },
+  });
+
+  if (error) return unwrapFunctionError(error);
 
   return data;
 }

@@ -53,3 +53,6 @@ export type CreateStudioInput = z.infer<typeof createStudioSchema>;
 
 export const addCompanyAdminSchema = z.object({ email });
 export type AddCompanyAdminInput = z.infer<typeof addCompanyAdminSchema>;
+
+export const createTestAdminSchema = z.object({ email, password });
+export type CreateTestAdminInput = z.infer<typeof createTestAdminSchema>;

@@ -68,6 +68,11 @@ export const t = {
     added: "Admin hinzugefügt.",
     invited: "Person hat noch kein Konto — Einladungs-E-Mail wurde verschickt.",
     addError: "Admin konnte nicht hinzugefügt werden.",
+    testAdminTitle: "Testkonto anlegen (Dev)",
+    testAdminHint: "Legt sofort ein bestätigtes Konto an, ohne E-Mail-Versand — für Tests.",
+    testAdminCreate: "Testkonto erstellen",
+    testAdminCreated: "Testkonto erstellt — direkt unter /login nutzbar.",
+    testAdminError: "Testkonto konnte nicht erstellt werden.",
   },
   studioAdmin: {
     nav: {

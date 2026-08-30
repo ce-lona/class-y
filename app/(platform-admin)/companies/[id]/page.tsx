@@ -13,12 +13,18 @@ import { useAuthStore } from "@/store/authStore";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
 import { useCompany } from "@/hooks/useCompanies";
 import { useStudios, useCreateStudio } from "@/hooks/useStudios";
-import { useCompanyAdmins, useAddCompanyAdmin } from "@/hooks/useCompanyAdmins";
+import {
+  useCompanyAdmins,
+  useAddCompanyAdmin,
+  useCreateTestAdmin,
+} from "@/hooks/useCompanyAdmins";
 import {
   createStudioSchema,
   type CreateStudioInput,
   addCompanyAdminSchema,
   type AddCompanyAdminInput,
+  createTestAdminSchema,
+  type CreateTestAdminInput,
 } from "@/lib/validators";
 import { formatAddress } from "@/lib/address";
 import { t } from "@/i18n/de";
@@ -41,7 +47,9 @@ export default function CompanyDetailPage({
   const createStudio = useCreateStudio(id);
   const { data: companyAdmins, isLoading: companyAdminsLoading } = useCompanyAdmins(id);
   const addCompanyAdmin = useAddCompanyAdmin(id);
+  const createTestAdmin = useCreateTestAdmin(id);
   const [adminSuccess, setAdminSuccess] = useState<string | null>(null);
+  const [testAdminSuccess, setTestAdminSuccess] = useState<string | null>(null);
 
   const {
     register,
@@ -61,6 +69,14 @@ export default function CompanyDetailPage({
     setError: setAdminError,
     formState: { errors: adminErrors, isSubmitting: isSubmittingAdmin },
   } = useForm<AddCompanyAdminInput>({ resolver: zodResolver(addCompanyAdminSchema) });
+
+  const {
+    register: registerTestAdmin,
+    handleSubmit: handleSubmitTestAdmin,
+    reset: resetTestAdmin,
+    setError: setTestAdminError,
+    formState: { errors: testAdminErrors, isSubmitting: isSubmittingTestAdmin },
+  } = useForm<CreateTestAdminInput>({ resolver: zodResolver(createTestAdminSchema) });
 
   useEffect(() => {
     if (!sessionLoading && !session) {
@@ -84,6 +100,23 @@ export default function CompanyDetailPage({
       const detail = error instanceof Error ? error.message : undefined;
       setAdminError("email", {
         message: detail ? `${t.companyAdmins.addError} (${detail})` : t.companyAdmins.addError,
+      });
+    }
+  }
+
+  async function onSubmitTestAdmin(values: CreateTestAdminInput) {
+    setTestAdminSuccess(null);
+    try {
+      await createTestAdmin.mutateAsync(values);
+      setTestAdminSuccess(t.companyAdmins.testAdminCreated);
+      resetTestAdmin();
+    } catch (error) {
+      console.error(error);
+      const detail = error instanceof Error ? error.message : undefined;
+      setTestAdminError("email", {
+        message: detail
+          ? `${t.companyAdmins.testAdminError} (${detail})`
+          : t.companyAdmins.testAdminError,
       });
     }
   }
@@ -162,6 +195,53 @@ export default function CompanyDetailPage({
             </ul>
           ) : (
             <p className="text-muted-foreground">{t.companyAdmins.empty}</p>
+          )}
+        </div>
+
+        <div className="rounded-lg border border-dashed border-border p-4">
+          <h3 className="text-sm font-semibold">{t.companyAdmins.testAdminTitle}</h3>
+          <p className="mb-3 text-sm text-muted-foreground">{t.companyAdmins.testAdminHint}</p>
+
+          <form
+            onSubmit={handleSubmitTestAdmin(onSubmitTestAdmin)}
+            noValidate
+            className="flex flex-wrap gap-2"
+          >
+            <div className="min-w-48 flex-1 space-y-1.5">
+              <Label htmlFor="test-admin-email" className="sr-only">
+                {t.companyAdmins.email}
+              </Label>
+              <Input
+                id="test-admin-email"
+                type="email"
+                placeholder={t.companyAdmins.email}
+                {...registerTestAdmin("email")}
+              />
+              {testAdminErrors.email && (
+                <p className="text-sm text-destructive">{testAdminErrors.email.message}</p>
+              )}
+            </div>
+            <div className="min-w-40 flex-1 space-y-1.5">
+              <Label htmlFor="test-admin-password" className="sr-only">
+                {t.auth.password}
+              </Label>
+              <Input
+                id="test-admin-password"
+                type="password"
+                placeholder={t.auth.password}
+                {...registerTestAdmin("password")}
+              />
+              {testAdminErrors.password && (
+                <p className="text-sm text-destructive">{testAdminErrors.password.message}</p>
+              )}
+            </div>
+            <Button type="submit" variant="outline" disabled={isSubmittingTestAdmin}>
+              {t.companyAdmins.testAdminCreate}
+            </Button>
+          </form>
+
+          {testAdminSuccess && (
+            <p className="mt-2 text-sm text-success">{testAdminSuccess}</p>
           )}
         </div>
       </div>
