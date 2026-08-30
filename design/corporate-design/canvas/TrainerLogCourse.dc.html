@@ -12,67 +12,86 @@
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; }
-    .field-label { font-size:13.5px; font-weight:600; color:#45423D; margin-bottom:6px; }
-    .field { height:44px; border:1px solid #D3D0C9; border-radius:8px; background:#FFFFFF; display:flex; align-items:center; justify-content:space-between; padding:0 14px; font-size:14.5px; color:#201F1C; margin-bottom:16px; }
+    .field-label { font-size:13.5px; font-weight:600; margin-bottom:6px; }
+    .field { height:44px; border-radius:8px; display:flex; align-items:center; justify-content:space-between; padding:0 14px; font-size:14.5px; margin-bottom:16px; }
   </style>
 </helmet>
-<div style="display:flex; flex-direction:column; height:100%; background:#FAFAF9; font-family:'Source Sans 3', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color:#201F1C;">
+<div style="display:flex; flex-direction:column; height:100%; background:{{c.page}}; font-family:'Source Sans 3', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color:{{c.text}};">
 
   <!-- Header -->
-  <div style="flex-shrink:0; padding:16px 20px; border-bottom:1px solid #E5E3DF; background:#FFFFFF; display:flex; align-items:center; gap:12px;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#45423D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
-    <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:16px; color:#201F1C;">Kurs eintragen</span>
+  <div style="flex-shrink:0; padding:16px 20px; border-bottom:1px solid {{c.surfaceBorder}}; background:{{c.surface}}; display:flex; align-items:center; gap:12px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{c.text}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
+    <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:16px; color:{{c.text}};">Kurs eintragen</span>
   </div>
 
   <!-- Content -->
   <div style="flex:1; min-height:0; overflow:auto; padding:20px;">
 
-    <div style="display:inline-flex; background:#F2F1EF; border-radius:9px; padding:3px; margin-bottom:20px; width:100%;">
-      <div style="flex:1; text-align:center; padding:8px; border-radius:7px; font-size:13px; font-weight:600; color:#7C7870;">Geplanter Kurs</div>
-      <div style="flex:1; text-align:center; padding:8px; border-radius:7px; background:#FFFFFF; font-size:13px; font-weight:600; color:#201F1C; box-shadow:0 1px 2px rgba(20,20,18,0.06);">Ad-hoc</div>
+    <div style="display:inline-flex; background:{{c.panel}}; border-radius:9px; padding:3px; margin-bottom:20px; width:100%;">
+      <div style="flex:1; text-align:center; padding:8px; border-radius:7px; font-size:13px; font-weight:600; color:{{c.textMuted}};">Geplanter Kurs</div>
+      <div style="flex:1; text-align:center; padding:8px; border-radius:7px; background:{{c.surface}}; font-size:13px; font-weight:600; color:{{c.text}}; box-shadow:0 1px 2px rgba(20,20,18,0.06);">Ad-hoc</div>
     </div>
 
-    <div class="field-label">Studio</div>
-    <div class="field">Studio Mitte<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A9A59C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="field-label" style="color:{{c.text}};">Studio</div>
+    <div class="field" style="border:1px solid {{c.inputBorder}}; background:{{c.surface}}; color:{{c.text}};">Studio Mitte<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{c.textMuted}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
 
     <div style="display:flex; gap:12px;">
       <div style="flex:1;">
-        <div class="field-label">Datum</div>
-        <div class="field">08.03.2026</div>
+        <div class="field-label" style="color:{{c.text}};">Datum</div>
+        <div class="field" style="border:1px solid {{c.inputBorder}}; background:{{c.surface}}; color:{{c.text}};">08.03.2026</div>
       </div>
     </div>
 
     <div style="display:flex; gap:12px;">
       <div style="flex:1;">
-        <div class="field-label">Start</div>
-        <div class="field">19:00</div>
+        <div class="field-label" style="color:{{c.text}};">Start</div>
+        <div class="field" style="border:1px solid {{c.inputBorder}}; background:{{c.surface}}; color:{{c.text}};">19:00</div>
       </div>
       <div style="flex:1;">
-        <div class="field-label">Ende</div>
-        <div class="field">20:00</div>
+        <div class="field-label" style="color:{{c.text}};">Ende</div>
+        <div class="field" style="border:1px solid {{c.inputBorder}}; background:{{c.surface}}; color:{{c.text}};">20:00</div>
       </div>
     </div>
 
-    <div class="field-label">Kurstyp</div>
-    <div class="field">Yoga Flow<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A9A59C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="field-label" style="color:{{c.text}};">Kurstyp</div>
+    <div class="field" style="border:1px solid {{c.inputBorder}}; background:{{c.surface}}; color:{{c.text}};">Yoga Flow<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{c.textMuted}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
 
     <label style="display:flex; align-items:center; gap:10px; margin-bottom:20px; cursor:pointer;">
-      <span style="width:20px; height:20px; border:1.5px solid #D3D0C9; border-radius:5px; flex-shrink:0;"></span>
-      <span style="font-size:14px; color:#302E2A;">Das war eine Vertretung</span>
+      <span style="width:20px; height:20px; border:1.5px solid {{c.inputBorder}}; border-radius:5px; flex-shrink:0;"></span>
+      <span style="font-size:14px; color:{{c.text}};">Das war eine Vertretung</span>
     </label>
 
-    <div class="field-label">Notizen (optional)</div>
-    <div style="min-height:76px; border:1px solid #D3D0C9; border-radius:8px; background:#FFFFFF; padding:12px 14px; font-size:14px; color:#A9A59C;">z. B. Raumwechsel, Besonderheiten …</div>
+    <div class="field-label" style="color:{{c.text}};">Notizen (optional)</div>
+    <div style="min-height:76px; border:1px solid {{c.inputBorder}}; border-radius:8px; background:{{c.surface}}; padding:12px 14px; font-size:14px; color:{{c.textMuted}};">z. B. Raumwechsel, Besonderheiten …</div>
 
   </div>
 
   <!-- Sticky action bar -->
-  <div style="flex-shrink:0; border-top:1px solid #E5E3DF; background:#FFFFFF; padding:14px 20px 20px;">
-    <div style="display:inline-flex; align-items:center; justify-content:center; height:44px; width:100%; border-radius:8px; background:#1F5F5C; color:#FFFFFF; font-weight:600; font-size:15px; margin-bottom:10px;">Kurs speichern</div>
-    <div style="text-align:center; font-size:13.5px; font-weight:600; color:#7C7870;">Abbrechen</div>
+  <div style="flex-shrink:0; border-top:1px solid {{c.surfaceBorder}}; background:{{c.surface}}; padding:14px 20px 20px;">
+    <div style="display:inline-flex; align-items:center; justify-content:center; height:44px; width:100%; border-radius:8px; background:{{c.brand}}; color:#FFFFFF; font-weight:600; font-size:15px; margin-bottom:10px;">Kurs speichern</div>
+    <div style="text-align:center; font-size:13.5px; font-weight:600; color:{{c.textMuted}};">Abbrechen</div>
   </div>
 
 </div>
+<script data-dc-script data-props='{"dark":{"editor":"boolean","default":false,"section":"Darstellung"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.dark ?? false;
+    const c = dark ? {
+      page: '#131211', surface: '#201F1C', surfaceBorder: 'rgba(255,255,255,0.1)',
+      panel: 'rgba(255,255,255,0.08)', text: '#FAFAF9', textMuted: '#A9A59C',
+      navActiveBg: '#133B3A', navActiveText: '#8B8AE8', logoDot: '#4C928E',
+      brand: '#2E7672', inputBorder: '#45423D'
+    } : {
+      page: '#EEF5F5', surface: '#FFFFFF', surfaceBorder: '#E5E3DF',
+      panel: '#F2F1EF', text: '#201F1C', textMuted: '#7C7870',
+      navActiveBg: '#D3E6E5', navActiveText: '#184C4A', logoDot: '#1F5F5C',
+      brand: '#1F5F5C', inputBorder: '#D3D0C9'
+    };
+    return { dark, c };
+  }
+}
+</script>
 </x-dc>
 </body>
 </html>

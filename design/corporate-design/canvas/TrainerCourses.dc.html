@@ -16,75 +16,94 @@
     .tab span { font-size:10.5px; font-weight:600; }
   </style>
 </helmet>
-<div style="display:flex; flex-direction:column; height:100%; background:#FAFAF9; font-family:'Source Sans 3', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color:#201F1C;">
+<div style="display:flex; flex-direction:column; height:100%; background:{{c.page}}; font-family:'Source Sans 3', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color:{{c.text}};">
 
   <!-- Header -->
-  <div style="flex-shrink:0; padding:16px 20px; border-bottom:1px solid #E5E3DF; background:#FFFFFF; display:flex; align-items:center; justify-content:space-between;">
-    <div style="display:flex; align-items:baseline; gap:2px; font-family:'Newsreader',serif; font-weight:500; font-size:19px; color:#201F1C;">
+  <div style="flex-shrink:0; padding:16px 20px; border-bottom:1px solid {{c.surfaceBorder}}; background:{{c.surface}}; display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:baseline; gap:2px; font-family:'Newsreader',serif; font-weight:500; font-size:19px; color:{{c.text}};">
       <span>class</span>
       <span style="display:inline-block; position:relative; width:0.5em; height:0.5em; transform:translateY(-0.28em);">
-        <span style="position:absolute; left:0; bottom:0; width:0.11em; height:0.11em; background:#1F5F5C; border-radius:50%;"></span>
-        <span style="position:absolute; left:0.16em; bottom:0.14em; width:0.16em; height:0.16em; background:#1F5F5C; border-radius:50%;"></span>
-        <span style="position:absolute; left:0.34em; bottom:0.30em; width:0.21em; height:0.21em; background:#1F5F5C; border-radius:50%;"></span>
+        <span style="position:absolute; left:0; bottom:0; width:0.11em; height:0.11em; background:{{c.logoDot}}; border-radius:50%;"></span>
+        <span style="position:absolute; left:0.16em; bottom:0.14em; width:0.16em; height:0.16em; background:{{c.logoDot}}; border-radius:50%;"></span>
+        <span style="position:absolute; left:0.34em; bottom:0.30em; width:0.21em; height:0.21em; background:{{c.logoDot}}; border-radius:50%;"></span>
       </span>
       <span>y</span>
     </div>
-    <div style="width:30px; height:30px; border-radius:50%; background:#1F5F5C; color:#FAFAF9; display:flex; align-items:center; justify-content:center; font-family:'Manrope',sans-serif; font-weight:700; font-size:12px;">MT</div>
+    <div style="width:30px; height:30px; border-radius:50%; background:{{c.brand}}; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-family:'Manrope',sans-serif; font-weight:700; font-size:12px;">MT</div>
   </div>
 
   <!-- Content -->
   <div style="flex:1; min-height:0; overflow:auto; padding:20px;">
-    <div style="font-family:'Manrope',sans-serif; font-weight:800; font-size:22px; color:#201F1C; margin-bottom:4px;">Meine Kurse</div>
-    <div style="font-size:13.5px; color:#7C7870; margin-bottom:18px;">Diese Woche</div>
+    <div style="font-family:'Manrope',sans-serif; font-weight:800; font-size:22px; color:{{c.text}}; margin-bottom:4px;">Meine Kurse</div>
+    <div style="font-size:13.5px; color:{{c.textMuted}}; margin-bottom:18px;">Diese Woche</div>
 
-    <div style="display:inline-flex; background:#F2F1EF; border-radius:9px; padding:3px; margin-bottom:18px;">
-      <div style="padding:7px 16px; border-radius:7px; background:#FFFFFF; font-size:13px; font-weight:600; color:#201F1C; box-shadow:0 1px 2px rgba(20,20,18,0.06);">Kommend</div>
-      <div style="padding:7px 16px; border-radius:7px; font-size:13px; font-weight:600; color:#7C7870;">Vergangen</div>
+    <div style="display:inline-flex; background:{{c.panel}}; border-radius:9px; padding:3px; margin-bottom:18px;">
+      <div style="padding:7px 16px; border-radius:7px; background:{{c.surface}}; font-size:13px; font-weight:600; color:{{c.text}}; box-shadow:0 1px 2px rgba(20,20,18,0.06);">Kommend</div>
+      <div style="padding:7px 16px; border-radius:7px; font-size:13px; font-weight:600; color:{{c.textMuted}};">Vergangen</div>
     </div>
 
     <div style="display:flex; flex-direction:column; gap:10px;">
 
-      <div style="background:#FFFFFF; border:1px solid #E5E3DF; border-radius:12px; padding:16px;">
-        <div style="display:flex; align-items:center; justify-content:between; gap:8px; margin-bottom:4px;">
-          <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:15px; color:#201F1C;">HIIT Circuit</span>
+      <div style="background:{{c.surface}}; border:1px solid {{c.surfaceBorder}}; border-radius:12px; padding:16px;">
+        <div style="margin-bottom:4px;">
+          <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:15px; color:{{c.text}};">HIIT Circuit</span>
         </div>
-        <div style="font-size:13px; color:#7C7870; margin-bottom:12px;">Heute, 07:00–08:00 · Studio Mitte</div>
-        <div style="display:inline-flex; align-items:center; justify-content:center; height:40px; width:100%; border-radius:8px; background:#1F5F5C; color:#FFFFFF; font-weight:600; font-size:14px;">Als gegeben markieren</div>
+        <div style="font-size:13px; color:{{c.textMuted}}; margin-bottom:12px;">Heute, 07:00–08:00 · Studio Mitte</div>
+        <div style="display:inline-flex; align-items:center; justify-content:center; height:40px; width:100%; border-radius:8px; background:{{c.brand}}; color:#FFFFFF; font-weight:600; font-size:14px;">Als gegeben markieren</div>
       </div>
 
-      <div style="background:#FFFFFF; border:1px solid #E5E3DF; border-radius:12px; padding:16px;">
+      <div style="background:{{c.surface}}; border:1px solid {{c.surfaceBorder}}; border-radius:12px; padding:16px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
-          <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:15px; color:#201F1C;">Pilates</span>
-          <span style="font-size:11.5px; font-weight:600; color:#5450C4; background:#EEF5F5; border-radius:100px; padding:2px 9px;">Vertretung für Julia B.</span>
+          <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:15px; color:{{c.text}};">Pilates</span>
+          <span style="font-size:11.5px; font-weight:600; color:{{c.navActiveText}}; background:{{c.navActiveBg}}; border-radius:100px; padding:2px 9px;">Vertretung für Julia B.</span>
         </div>
-        <div style="font-size:13px; color:#7C7870;">Do, 09:00–10:00 · Studio Nord</div>
+        <div style="font-size:13px; color:{{c.textMuted}};">Do, 09:00–10:00 · Studio Nord</div>
       </div>
 
-      <div style="background:#FFFFFF; border:1px solid #E5E3DF; border-radius:12px; padding:16px;">
-        <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:15px; color:#201F1C; display:block; margin-bottom:4px;">Yoga Flow</span>
-        <div style="font-size:13px; color:#7C7870;">Fr, 17:30–18:30 · Studio Mitte</div>
+      <div style="background:{{c.surface}}; border:1px solid {{c.surfaceBorder}}; border-radius:12px; padding:16px;">
+        <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:15px; color:{{c.text}}; display:block; margin-bottom:4px;">Yoga Flow</span>
+        <div style="font-size:13px; color:{{c.textMuted}};">Fr, 17:30–18:30 · Studio Mitte</div>
       </div>
 
     </div>
   </div>
 
   <!-- Bottom tab bar -->
-  <div style="flex-shrink:0; display:flex; border-top:1px solid #E5E3DF; background:#FFFFFF; padding:8px 0 14px;">
-    <div class="tab" style="color:#184C4A;">
+  <div style="flex-shrink:0; display:flex; border-top:1px solid {{c.surfaceBorder}}; background:{{c.surface}}; padding:8px 0 14px;">
+    <div class="tab" style="color:{{c.navActiveText}};">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
       <span>Meine Kurse</span>
     </div>
-    <div class="tab" style="color:#7C7870;">
+    <div class="tab" style="color:{{c.textMuted}};">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       <span>Eintragen</span>
     </div>
-    <div class="tab" style="color:#7C7870;">
+    <div class="tab" style="color:{{c.textMuted}};">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
       <span>Profil</span>
     </div>
   </div>
 
 </div>
+<script data-dc-script data-props='{"dark":{"editor":"boolean","default":false,"section":"Darstellung"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.dark ?? false;
+    const c = dark ? {
+      page: '#131211', surface: '#201F1C', surfaceBorder: 'rgba(255,255,255,0.1)',
+      panel: 'rgba(255,255,255,0.08)', text: '#FAFAF9', textMuted: '#A9A59C',
+      navActiveBg: '#133B3A', navActiveText: '#8B8AE8', logoDot: '#4C928E',
+      brand: '#2E7672', inputBorder: '#45423D'
+    } : {
+      page: '#EEF5F5', surface: '#FFFFFF', surfaceBorder: '#E5E3DF',
+      panel: '#F2F1EF', text: '#201F1C', textMuted: '#7C7870',
+      navActiveBg: '#D3E6E5', navActiveText: '#184C4A', logoDot: '#1F5F5C',
+      brand: '#1F5F5C', inputBorder: '#D3D0C9'
+    };
+    return { dark, c };
+  }
+}
+</script>
 </x-dc>
 </body>
 </html>
