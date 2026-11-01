@@ -34,15 +34,27 @@ Zugriffsrechte werden in der Datenbank per Row Level Security durchgesetzt, nich
 
 ## Lokal starten
 
-Voraussetzungen: aktuelle Node.js-LTS, npm und ein Supabase-Projekt (gehostet oder lokal über die
-[Supabase CLI](https://supabase.com/docs/guides/local-development)).
+Alle Befehle werden im Terminal im Projektordner (`class-y/`) ausgeführt, nicht in der Supabase-Weboberfläche.
+
+Voraussetzungen:
+
+- aktuelle Node.js-LTS und npm
+- [Docker Desktop](https://docs.docker.com/desktop/) (muss laufen)
+- [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started), z. B. `brew install supabase/tap/supabase`
+- optional Deno für die Edge Functions: wird mit `npm install` mitinstalliert (`npx deno`) oder per `brew install deno`
+
+Schritte:
 
 1. Abhängigkeiten installieren: `npm install`
-2. Umgebungsvariablen anlegen: `cp .env.local.example .env.local` und
-   `NEXT_PUBLIC_SUPABASE_URL` sowie `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` eintragen.
-3. Datenbank einrichten: Migrationen aus `supabase/migrations/` einspielen
-   (`supabase link` und `supabase db push`, lokal `supabase start` und `supabase db reset`).
-4. Entwicklungsserver starten: `npm run dev` (http://localhost:3000)
+2. Lokalen Supabase-Stack starten: `supabase start` (beim ersten Mal lädt das mehrere Docker-Images)
+3. Datenbank aufbauen: `supabase db reset` (spielt alle Migrationen aus `supabase/migrations/` ein)
+4. Umgebungsvariablen anlegen: `cp .env.local.example .env.local`, dann `supabase status` ausführen und
+   `NEXT_PUBLIC_SUPABASE_URL` (API URL) sowie `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Publishable bzw. anon key) eintragen.
+5. Entwicklungsserver starten: `npm run dev` (http://localhost:3000)
+6. Benutzer anlegen: in der lokalen Studio-Oberfläche (URL steht in `supabase status`) unter
+   Authentication einen Benutzer erstellen und ihn in `platform_admins` eintragen (siehe unten).
+
+Stoppen mit `supabase stop`. Gegen ein gehostetes Projekt: `supabase link --project-ref <ref>` und `supabase db push`.
 
 ### Ersten Plattform-Admin anlegen
 
@@ -61,11 +73,25 @@ den Admin nachträglich per SQL in `platform_admins` ein.
 Der Service-Role-Key gehört ausschließlich in die Edge Functions und niemals ins Frontend oder
 in dieses Repository.
 
+## Vertragsannahme
+
+Verträge zwischen Company und Trainer:in sind erst wirksam, wenn die Trainer:in sie annimmt:
+
+1. `company_admin`/`platform_admin` bieten einen Vertrag an (`offer_contract`, Status `pending`).
+2. Die Trainer:in sieht das Angebot über `get_my_contracts` und nimmt es an (`accept_contract`) oder lehnt es ab (`decline_contract`).
+3. Erst ein angenommener Vertrag (`active`) berechtigt zum Erfassen von Kursen und macht das Profil für die Company sichtbar.
+   Die Datenbank verhindert, dass Admins die Annahme umgehen; nach der Annahme sind die Konditionen gesperrt.
+
+Clientseitige Wrapper stehen in `lib/contracts.ts`.
+
 ## Tests
 
 - Lint: `npm run lint`
+- Edge Functions: `npm run functions:lint` (Deno) und `npm run functions:check` (Typprüfung, braucht Internet für JSR-Pakete)
 - Datenbank/RLS: `supabase test db` (pgTAP, `supabase/tests/database/`) prüft, dass jede Tabelle in
   `public` RLS aktiviert hat und `anon` keine security-definer-Funktionen ausführen darf
+- Edge Functions lokal ausführen: `supabase functions serve --env-file supabase/.env.local`
+  (für `create-test-admin` dort `ALLOW_TEST_ADMIN=true` setzen)
 - E2E: `npm run test:e2e` (Playwright, startet den Entwicklungsserver). Die Tests brauchen
   `E2E_PLATFORM_ADMIN_EMAIL` und `E2E_PLATFORM_ADMIN_PASSWORD` eines bestehenden
   `platform_admin`-Kontos in `.env.local`.

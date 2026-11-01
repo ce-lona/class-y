@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "functions:lint": "deno lint --rules-exclude=no-import-prefix supabase/functions",
+    "functions:check": "deno check supabase/functions/*/index.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -36,6 +38,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "deno": "^2.9.6",
     "eslint": "^9",
     "eslint-config-next": "16.3.2",
     "tailwindcss": "^4",
