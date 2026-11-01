@@ -13,7 +13,7 @@ Nicht zu verwechseln mit dem separaten, bestehenden Projekt `classy` (ohne Binde
 `../classy` — beide Projekte existieren parallel.
 
 Projekt ist in Planung — dieses Dokument beschreibt den Ziel-Stack/Konventionen für den Code, der
-noch geschrieben wird. Details, Datenmodell und Roadmap: siehe [`PLANNING.md`](./PLANNING.md).
+noch geschrieben wird. Datenmodell und RLS: siehe `supabase/migrations/`.
 
 ## Stack (geplant)
 
@@ -36,7 +36,7 @@ gescaffoldet.
 
 ## Rollenmodell
 
-Drei Rollen in einer App (siehe `PLANNING.md` Abschnitt 2): `trainer`, `studio_admin`
+Drei Rollen in einer App: `trainer`, `studio_admin`
 (immer company-weit, nicht pro Location), `platform_admin`. Rollenprüfung/-freischaltung passiert
 clientseitig über die Session + serverseitig über RLS-Policies — niemals nur clientseitig
 vertrauen.
@@ -54,9 +54,9 @@ ausschließlich von Company-Admins gepflegt, Trainer sehen sie nur lesend.
   Query-Key.
 - Neue UI-Komponenten in `components/ui/` bekommen eine `.stories.tsx` daneben.
 - RLS ist scharf geschaltet — neue Tabellen/Spalten brauchen eine Migration, die RLS-Policies
-  mitliefert (siehe `PLANNING.md` Abschnitt 4).
+  mitliefert.
 - Kursplan-Änderungen laufen immer über Archivieren + Neuanlage, nie Update der Slots eines
-  aktiven Plans (siehe `PLANNING.md` Abschnitt 3, Versionierung).
+  aktiven Plans.
 - Contracts sind pro Company, nicht pro Studio — ein Trainer mit Contract kann an allen Studios
   der Company eingesetzt werden.
 - Ad-hoc-Kurse (ohne Plan-Slot) und spontane Vertretungen (Trainer loggt fremden Slot) sind ab
@@ -80,7 +80,3 @@ ausschließlich von Company-Admins gepflegt, Trainer sehen sie nur lesend.
 - `supabase/migrations/` — SQL-Migrationen inkl. RLS
 - `public/manifest.json` + Service Worker — PWA-Installierbarkeit
 - `e2e/` — Playwright-Tests
-
-## Offene Punkte
-
-Siehe `PLANNING.md` Abschnitt 7 (Offene Fragen) — vor dem eigentlichen Scaffolding klären.

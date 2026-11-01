@@ -12,3 +12,6 @@ build/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Private Planung, nicht veröffentlichen
+/PLANNING.md
