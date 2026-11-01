@@ -25,6 +25,12 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Nur in Entwicklungsumgebungen aktiv: Function-Secret ALLOW_TEST_ADMIN=true setzen.
+  // In produktiven Umgebungen wird die Function gar nicht erst deployt oder bleibt deaktiviert.
+  if (Deno.env.get("ALLOW_TEST_ADMIN") !== "true") {
+    return json({ error: "disabled" }, 404);
+  }
+
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return json({ error: "missing_authorization" }, 401);
@@ -33,6 +39,10 @@ Deno.serve(async (req) => {
   const { company_id, email, password } = await req.json();
   if (!company_id || !email || !password) {
     return json({ error: "company_id, email und password sind erforderlich" }, 400);
+  }
+
+  if (typeof password !== "string" || password.length < 12) {
+    return json({ error: "password_too_short" }, 400);
   }
 
   const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

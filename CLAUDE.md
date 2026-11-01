@@ -55,6 +55,8 @@ ausschließlich von Company-Admins gepflegt, Trainer sehen sie nur lesend.
 - Neue UI-Komponenten in `components/ui/` bekommen eine `.stories.tsx` daneben.
 - RLS ist scharf geschaltet — neue Tabellen/Spalten brauchen eine Migration, die RLS-Policies
   mitliefert.
+- Neue Funktionen in `public` sind nur für `postgres` ausführbar. Benötigte Rechte (`grant execute ... to authenticated`)
+  vergibt die Migration explizit; `anon` bekommt keine. `supabase test db` muss grün bleiben.
 - Kursplan-Änderungen laufen immer über Archivieren + Neuanlage, nie Update der Slots eines
   aktiven Plans.
 - Contracts sind pro Company, nicht pro Studio — ein Trainer mit Contract kann an allen Studios

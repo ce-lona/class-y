@@ -54,8 +54,9 @@ den Admin nachträglich per SQL in `platform_admins` ein.
 ### Edge Functions
 
 - `invite-company-admin`: lädt Company-Admins ein (nur für `platform_admin`)
-- `create-test-admin`: Hilfsfunktion **nur für die Entwicklung**, nicht in produktive Umgebungen
-  deployen
+- `create-test-admin`: Hilfsfunktion **nur für die Entwicklung**. Sie antwortet nur, wenn das
+  Function-Secret `ALLOW_TEST_ADMIN=true` gesetzt ist, und sollte nicht in produktive Umgebungen
+  deployt werden.
 
 Der Service-Role-Key gehört ausschließlich in die Edge Functions und niemals ins Frontend oder
 in dieses Repository.
@@ -63,6 +64,8 @@ in dieses Repository.
 ## Tests
 
 - Lint: `npm run lint`
+- Datenbank/RLS: `supabase test db` (pgTAP, `supabase/tests/database/`) prüft, dass jede Tabelle in
+  `public` RLS aktiviert hat und `anon` keine security-definer-Funktionen ausführen darf
 - E2E: `npm run test:e2e` (Playwright, startet den Entwicklungsserver). Die Tests brauchen
   `E2E_PLATFORM_ADMIN_EMAIL` und `E2E_PLATFORM_ADMIN_PASSWORD` eines bestehenden
   `platform_admin`-Kontos in `.env.local`.
