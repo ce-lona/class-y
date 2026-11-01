@@ -56,3 +56,42 @@ export type AddCompanyAdminInput = z.infer<typeof addCompanyAdminSchema>;
 
 export const createTestAdminSchema = z.object({ email, password });
 export type CreateTestAdminInput = z.infer<typeof createTestAdminSchema>;
+
+export const employmentTypeOptions = [
+  { value: "freelancer", label: t.contracts.employmentTypes.freelancer },
+  { value: "minijob", label: t.contracts.employmentTypes.minijob },
+  { value: "festangestellt", label: t.contracts.employmentTypes.festangestellt },
+] as const;
+
+export const rateModelOptions = [
+  { value: "per_course", label: t.contracts.rateModels.per_course },
+  { value: "hourly", label: t.contracts.rateModels.hourly },
+  { value: "fixed", label: t.contracts.rateModels.fixed },
+] as const;
+
+// rateAmount bleibt im Formular ein String (Dezimalkomma erlaubt) und wird beim
+// Absenden mit parseRateAmount in eine Zahl umgewandelt.
+export function parseRateAmount(value: string): number {
+  return Number(value.trim().replace(",", "."));
+}
+
+export const offerContractSchema = z
+  .object({
+    email,
+    employmentType: z.enum(["freelancer", "minijob", "festangestellt"]),
+    rateModel: z.enum(["per_course", "hourly", "fixed"]),
+    rateAmount: z
+      .string()
+      .min(1, t.contracts.rateAmountRequired)
+      .refine((v) => {
+        const n = parseRateAmount(v);
+        return Number.isFinite(n) && n >= 0;
+      }, t.contracts.rateAmountInvalid),
+    validFrom: z.string().min(1, t.contracts.validFromRequired),
+    validTo: z.string().optional(),
+  })
+  .refine((v) => !v.validTo || v.validTo >= v.validFrom, {
+    message: t.contracts.validRangeInvalid,
+    path: ["validTo"],
+  });
+export type OfferContractFormInput = z.infer<typeof offerContractSchema>;

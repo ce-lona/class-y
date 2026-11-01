@@ -43,6 +43,9 @@ export function Nav() {
             {t.studios.title}
           </Link>
         )}
+        <Link href="/settings" className="text-sm text-muted-foreground hover:underline">
+          {t.settings.title}
+        </Link>
         <Button variant="outline" size="sm" onClick={() => signOut()}>
           {t.auth.logout}
         </Button>

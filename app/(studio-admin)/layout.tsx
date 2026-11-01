@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutGrid, Calendar, Building2, Users } from "lucide-react";
+import { LayoutGrid, Calendar, Building2, Users, Settings } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,12 @@ const navItems = [
   { href: "/plans", label: t.studioAdmin.nav.plans, icon: Calendar },
   { href: "/studios", label: t.studioAdmin.nav.studios, icon: Building2 },
   { href: "/trainers", label: t.studioAdmin.nav.trainers, icon: Users },
+  { href: "/settings", label: t.settings.title, icon: Settings },
 ];
 
 // Nav-Ziele, die es noch nicht gibt (kommen in späteren Schritten) — sichtbar,
 // aber nicht anklickbar.
-const enabledHrefs = new Set(["/studios"]);
+const enabledHrefs = new Set(["/studios", "/settings"]);
 
 export default function StudioAdminLayout({
   children,

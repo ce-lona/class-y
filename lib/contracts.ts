@@ -65,3 +65,36 @@ export async function offerContract(input: OfferContractInput): Promise<string> 
   if (error) throw error;
   return data as string;
 }
+
+export interface CompanyContract {
+  id: string;
+  trainer_email: string;
+  trainer_name: string | null;
+  employment_type: string;
+  rate_model: string;
+  rate_amount: number;
+  valid_from: string;
+  valid_to: string | null;
+  status: ContractStatus;
+  accepted_at: string | null;
+}
+
+/** company_admin/platform_admin: alle Verträge und Angebote einer Company. */
+export async function getCompanyContracts(companyId: string): Promise<CompanyContract[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("get_company_contracts", {
+    target_company_id: companyId,
+  });
+  if (error) throw error;
+  return (data ?? []) as CompanyContract[];
+}
+
+/** Beendet einen angenommenen Vertrag bzw. zieht ein offenes Angebot zurück. */
+export async function endContract(contractId: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("contracts")
+    .update({ status: "ended" })
+    .eq("id", contractId);
+  if (error) throw error;
+}
