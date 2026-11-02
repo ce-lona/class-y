@@ -66,9 +66,6 @@ export default function Home() {
           <Link href="/login" className="text-sm font-semibold text-muted-foreground">
             {t.auth.login}
           </Link>
-          <Link href="/register" className={buttonVariants()}>
-            {t.landing.ctaRegister}
-          </Link>
         </div>
       </header>
 
@@ -83,13 +80,11 @@ export default function Home() {
           {t.landing.subheadline}
         </p>
         <div className="flex justify-center gap-3">
-          <Link href="/register" className={buttonVariants({ size: "lg" })}>
-            {t.landing.ctaRegister}
-          </Link>
-          <Link href="/login" className={buttonVariants({ variant: "outline", size: "lg" })}>
+          <Link href="/login" className={buttonVariants({ size: "lg" })}>
             {t.auth.login}
           </Link>
         </div>
+        <p className="mt-4 text-sm text-muted-foreground">{t.landing.inviteOnly}</p>
       </section>
 
       <section className="border-y border-border bg-card px-12 py-16">
@@ -127,13 +122,13 @@ export default function Home() {
           {t.landing.ctaFinalTitle}
         </h2>
         <Link
-          href="/register"
+          href="/login"
           className={cn(
             buttonVariants({ size: "lg" }),
             "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
           )}
         >
-          {t.landing.ctaRegister}
+          {t.auth.login}
         </Link>
       </section>
 

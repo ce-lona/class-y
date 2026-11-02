@@ -8,7 +8,6 @@ export const t = {
   },
   auth: {
     login: "Anmelden",
-    register: "Registrieren",
     logout: "Abmelden",
     email: "E-Mail-Adresse",
     password: "Passwort",
@@ -16,10 +15,7 @@ export const t = {
     passwordMinLength: "Mindestens 6 Zeichen",
     loginTitle: "Willkommen zurück",
     loginSubtitle: "Melde dich mit deiner E-Mail an",
-    registerTitle: "Konto erstellen",
-    registerSubtitle: "Starte mit class-y",
-    noAccount: "Noch kein Konto?",
-    hasAccount: "Bereits ein Konto?",
+    inviteOnly: "Zugang nur auf Einladung deiner Company.",
     checkEmailTitle: "E-Mail bestätigen",
     checkEmailText:
       "Wir haben dir eine Bestätigungs-E-Mail gesendet. Bitte klicke auf den Link in der E-Mail, um fortzufahren.",
@@ -34,7 +30,6 @@ export const t = {
     resetPasswordTitle: "Neues Passwort setzen",
     resetPasswordSuccess: "Passwort erfolgreich geändert.",
     loginError: "Anmeldung fehlgeschlagen. Bitte prüfe deine Zugangsdaten.",
-    registerError: "Registrierung fehlgeschlagen. Bitte versuche es erneut.",
   },
   companies: {
     title: "Companies",
@@ -88,13 +83,13 @@ export const t = {
     respondError: "Aktion fehlgeschlagen. Das Angebot ist evtl. abgelaufen oder bereits beantwortet.",
     companyTitle: "Verträge der Company",
     companyHint:
-      "Die Person muss bereits ein class-y-Konto haben. Sie erhält ein Angebot und muss es annehmen, bevor es gilt. Nach der Annahme sind die Konditionen gesperrt — für Änderungen den Vertrag beenden und neu anbieten.",
+      "Die Person bekommt eine Einladungs-E-Mail (falls sie noch kein Konto hat) und das Angebot. Es gilt erst, wenn sie es annimmt. Nach der Annahme sind die Konditionen gesperrt — für Änderungen den Vertrag beenden und neu anbieten.",
     companyEmpty: "Noch keine Verträge oder Angebote.",
     offerTitle: "Vertrag anbieten",
     offer: "Angebot senden",
     offered: "Angebot gesendet. Die Person muss es noch annehmen.",
+    invited: "Einladung und Angebot gesendet. Die Person legt per E-Mail-Link ihr Passwort fest und kann das Angebot dann annehmen.",
     offerError: "Angebot konnte nicht gesendet werden.",
-    userNotFound: "Es gibt kein Konto mit dieser E-Mail-Adresse.",
     email: "E-Mail-Adresse der Person",
     employmentType: "Beschäftigungsart",
     rateModel: "Vergütungsmodell",
@@ -132,7 +127,7 @@ export const t = {
     headline: "Kurse tracken. Studios im Blick. Fertig.",
     subheadline:
       "class-y verbindet, was Trainer:innen unterwegs erfassen, mit dem, was Studios wissen müssen — in einer ruhigen, gemeinsamen Oberfläche.",
-    ctaRegister: "Kostenlos registrieren",
+    inviteOnly: "Zugang nur auf Einladung deiner Company.",
     audienceTrainerTitle: "Trainer:innen — mobil",
     audienceTrainerText:
       "Kurs schnell eintragen, unterwegs, mit dem Daumen. Große Touch-Ziele, wenig Tipparbeit.",

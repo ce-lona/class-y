@@ -66,12 +66,27 @@ den Admin nachträglich per SQL in `platform_admins` ein.
 ### Edge Functions
 
 - `invite-company-admin`: lädt Company-Admins ein (nur für `platform_admin`)
+- `invite-trainer`: lädt Trainer:innen ein und bietet ihnen einen Vertrag an (nur für Company-Admins der jeweiligen Company bzw. `platform_admin`)
 - `create-test-admin`: Hilfsfunktion **nur für die Entwicklung**. Sie antwortet nur, wenn das
   Function-Secret `ALLOW_TEST_ADMIN=true` gesetzt ist, und sollte nicht in produktive Umgebungen
   deployt werden.
 
 Der Service-Role-Key gehört ausschließlich in die Edge Functions und niemals ins Frontend oder
 in dieses Repository.
+
+## Konten und Einladungen
+
+Es gibt **keine Selbstregistrierung** (`enable_signup = false` in `supabase/config.toml`; auf einem
+gehosteten Projekt zusätzlich im Dashboard unter Authentication → Sign In / Providers
+"Allow new users to sign up" ausschalten).
+
+- `platform_admin` legt Companies an und lädt Company-Admins ein (Edge Function `invite-company-admin`).
+- Company-Admins laden Trainer:innen ein und bieten ihnen dabei direkt einen Vertrag an
+  (Edge Function `invite-trainer`, Oberfläche unter Einstellungen). Die Person setzt über den
+  Einladungslink ihr Passwort und nimmt das Angebot dann an.
+
+Nach Änderungen an `supabase/config.toml` den lokalen Stack neu starten (`supabase stop && supabase start`)
+und die Edge Functions lokal mit `supabase functions serve` laufen lassen.
 
 ## Vertragsannahme
 

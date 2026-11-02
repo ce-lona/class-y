@@ -72,12 +72,7 @@ export default function LoginPage() {
           <Link href="/forgot-password" className="text-muted-foreground underline">
             {t.auth.forgotPassword}
           </Link>
-          <span>
-            {t.auth.noAccount}{" "}
-            <Link href="/register" className="font-medium underline">
-              {t.auth.register}
-            </Link>
-          </span>
+          <span className="text-muted-foreground">{t.auth.inviteOnly}</span>
         </div>
       </div>
     </div>

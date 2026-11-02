@@ -50,20 +50,34 @@ export async function declineContract(contractId: string): Promise<void> {
   if (error) throw error;
 }
 
-/** company_admin/platform_admin: Angebot an eine bestehende Person (per E-Mail). */
-export async function offerContract(input: OfferContractInput): Promise<string> {
+/**
+ * company_admin/platform_admin: lädt die Person per E-Mail ein (falls sie noch kein Konto hat)
+ * und bietet ihr im selben Schritt einen Vertrag an. Es gibt keine Selbstregistrierung.
+ */
+export async function offerContract(
+  input: OfferContractInput,
+): Promise<{ invited: boolean; contractId: string }> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc("offer_contract", {
-    target_company_id: input.companyId,
-    target_email: input.email,
-    p_employment_type: input.employmentType,
-    p_rate_model: input.rateModel,
-    p_rate_amount: input.rateAmount,
-    p_valid_from: input.validFrom,
-    p_valid_to: input.validTo ?? null,
+  const { data, error } = await supabase.functions.invoke("invite-trainer", {
+    body: {
+      company_id: input.companyId,
+      email: input.email,
+      employment_type: input.employmentType,
+      rate_model: input.rateModel,
+      rate_amount: input.rateAmount,
+      valid_from: input.validFrom,
+      valid_to: input.validTo ?? null,
+      redirectTo: `${window.location.origin}/auth/confirm?next=/reset-password`,
+    },
   });
-  if (error) throw error;
-  return data as string;
+  if (error) {
+    if ("context" in error && error.context instanceof Response) {
+      const body = await error.context.json().catch(() => null);
+      throw new Error(body?.error ?? error.message);
+    }
+    throw error;
+  }
+  return { invited: data.invited, contractId: data.contract_id };
 }
 
 export interface CompanyContract {

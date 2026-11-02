@@ -122,7 +122,7 @@ function CompanyContractsSection({ companyId }: { companyId: string }) {
   const { data: contracts, isLoading, isError } = useCompanyContracts(companyId);
   const offer = useOfferContract(companyId);
   const end = useEndContract(companyId);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const {
     register,
@@ -136,9 +136,9 @@ function CompanyContractsSection({ companyId }: { companyId: string }) {
   });
 
   async function onSubmit(values: OfferContractFormInput) {
-    setSuccess(false);
+    setSuccess(null);
     try {
-      await offer.mutateAsync({
+      const result = await offer.mutateAsync({
         companyId,
         email: values.email,
         employmentType: values.employmentType,
@@ -147,16 +147,11 @@ function CompanyContractsSection({ companyId }: { companyId: string }) {
         validFrom: values.validFrom,
         validTo: values.validTo || null,
       });
-      setSuccess(true);
+      setSuccess(result.invited ? t.contracts.invited : t.contracts.offered);
       reset();
     } catch (error) {
       console.error(error);
-      const message = error instanceof Error ? error.message : "";
-      setError("email", {
-        message: message.includes("user_not_found")
-          ? t.contracts.userNotFound
-          : t.contracts.offerError,
-      });
+      setError("email", { message: t.contracts.offerError });
     }
   }
 
@@ -230,7 +225,7 @@ function CompanyContractsSection({ companyId }: { companyId: string }) {
           <Button type="submit" disabled={isSubmitting}>
             {t.contracts.offer}
           </Button>
-          {success && <p className="mt-2 text-sm text-success">{t.contracts.offered}</p>}
+          {success && <p className="mt-2 text-sm text-success">{success}</p>}
         </div>
       </form>
 

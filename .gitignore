@@ -15,3 +15,6 @@ build/
 
 # Private Planung, nicht veröffentlichen
 /PLANNING.md
+
+# Von Supabase Studio lokal angelegte SQL-Snippets (können private Daten enthalten)
+/supabase/snippets/
