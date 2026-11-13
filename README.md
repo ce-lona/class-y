@@ -123,7 +123,10 @@ stehen in `lib/contracts.ts`.
   (für `create-test-admin` dort `ALLOW_TEST_ADMIN=true` setzen)
 - E2E: `npm run test:e2e` (Playwright, startet den Entwicklungsserver). Die Tests brauchen
   `E2E_PLATFORM_ADMIN_EMAIL` und `E2E_PLATFORM_ADMIN_PASSWORD` eines bestehenden
-  `platform_admin`-Kontos in `.env.local`.
+  `platform_admin`-Kontos in `.env.local`. `e2e/contracts.spec.ts` (Einladen, Annehmen, Ablehnen,
+  Beenden) läuft nur gegen den lokalen Stack: `supabase start` und `supabase functions serve` müssen
+  laufen, der Einladungslink wird aus Mailpit gelesen (`E2E_MAILPIT_URL`, Standard
+  `http://127.0.0.1:54324`). Die Trainer:innen-Seite wird als eigenes Video angehängt.
 
 ## Hinweis zur KI-Nutzung
 

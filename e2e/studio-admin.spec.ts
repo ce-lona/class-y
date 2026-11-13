@@ -5,7 +5,11 @@ test("Studio-Admin-Shell: Studio anlegen und Detailseite prüfen", async ({ page
   await loginAsPlatformAdmin(page);
 
   await page.goto("/studios");
-  await expect(page.getByRole("link", { name: "Monitoring" })).toBeVisible();
+  // "Monitoring" ist sichtbar, aber noch nicht anklickbar (Seite folgt später).
+  const nav = page.getByRole("navigation");
+  await expect(nav.getByText("Monitoring")).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Monitoring" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Studios" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Studios" })).toBeVisible();
 
   const studioName = uniqueName("E2E Shell Studio");
