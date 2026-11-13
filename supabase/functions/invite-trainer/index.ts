@@ -51,6 +51,12 @@ Deno.serve(async (req) => {
     global: { headers: { Authorization: authHeader } },
   });
 
+  // Der anon-Key ist ebenfalls ein gültiges JWT; ohne angemeldete Person sofort abbrechen.
+  const { data: userData, error: userError } = await userClient.auth.getUser();
+  if (userError || !userData.user) {
+    return json({ error: "not_authenticated" }, 401);
+  }
+
   const offer = () =>
     userClient.rpc("offer_contract", {
       target_company_id: company_id,

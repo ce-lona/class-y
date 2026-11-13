@@ -6,6 +6,11 @@ export const t = {
     cancel: "Abbrechen",
     error: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
   },
+  theme: {
+    system: "System",
+    light: "Hell",
+    dark: "Dunkel",
+  },
   auth: {
     login: "Anmelden",
     logout: "Abmelden",

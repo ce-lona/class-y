@@ -76,9 +76,19 @@ in dieses Repository.
 
 ## Konten und Einladungen
 
-Es gibt **keine Selbstregistrierung** (`enable_signup = false` in `supabase/config.toml`; auf einem
-gehosteten Projekt zusätzlich im Dashboard unter Authentication → Sign In / Providers
-"Allow new users to sign up" ausschalten).
+Es gibt **keine Selbstregistrierung** (`[auth] enable_signup = false` in `supabase/config.toml`).
+Der E-Mail-Provider selbst bleibt aktiv (`[auth.email] enable_signup = true`), sonst ist auch
+der Login abgeschaltet.
+
+Einladungen werden serverseitig verschickt und können keinen PKCE-Code liefern. Der Link in der
+Einladungsmail (`supabase/templates/invite.html`) führt deshalb mit `token_hash` auf
+`/auth/confirm`, das die Einladung per `verifyOtp` einlöst und auf `/reset-password` weiterleitet.
+
+Auf einem gehosteten Projekt zusätzlich im Dashboard:
+
+- Authentication → Sign In / Providers: "Allow new users to sign up" ausschalten, Provider "Email" aktiv lassen
+- Authentication → URL Configuration: Site URL = Adresse der App, Redirect URLs passend ergänzen
+- Authentication → Emails → "Invite user": Inhalt aus `supabase/templates/invite.html` übernehmen
 
 - `platform_admin` legt Companies an und lädt Company-Admins ein (Edge Function `invite-company-admin`).
 - Company-Admins laden Trainer:innen ein und bieten ihnen dabei direkt einen Vertrag an
@@ -105,7 +115,8 @@ stehen in `lib/contracts.ts`.
 ## Tests
 
 - Lint: `npm run lint`
-- Edge Functions: `npm run functions:lint` (Deno) und `npm run functions:check` (Typprüfung, braucht Internet für JSR-Pakete)
+- Typprüfung: `npm run typecheck` (erzeugt die Next.js-Routentypen und startet `tsc --noEmit`)
+- Edge Functions: `npm run functions:lint` (Deno) und `npm run functions:check` (Typprüfung pro Funktion, braucht Internet für JSR-Pakete)
 - Datenbank/RLS: `supabase test db` (pgTAP, `supabase/tests/database/`) prüft, dass jede Tabelle in
   `public` RLS aktiviert hat und `anon` keine security-definer-Funktionen ausführen darf
 - Edge Functions lokal ausführen: `supabase functions serve --env-file supabase/.env.local`
