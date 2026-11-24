@@ -1,5 +1,7 @@
 # class-y
 
+> 📄 **DevOps-Projektkonzept (BHT WiSe 2026 – Milestone 1):** [**`docs/concept.md`**](./docs/concept.md)
+
 Web-App für Studios und ihre Trainer:innen: gehaltene Kurse erfassen, Studios einen Überblick
 geben und später Gutschriften/Belege automatisiert abwickeln. Installierbar als PWA, Oberfläche
 auf Deutsch, Code auf Englisch.
