@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Building2,
   Calendar,
+  CalendarCheck,
   LayoutGrid,
   LogOut,
   Settings,
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
+import { useMyContracts } from "@/hooks/useContracts";
 import { useMyProfile } from "@/hooks/useProfile";
 import { signOut } from "@/lib/auth";
 import { getInitials } from "@/lib/format";
@@ -37,6 +39,7 @@ export function Nav() {
   const session = useAuthStore((state) => state.session);
   const { data: isPlatformAdmin } = useIsPlatformAdmin();
   const { data: myCompany } = useMyCompany();
+  const { data: myContracts } = useMyContracts();
   const { data: profile } = useMyProfile();
 
   if (!session) return null;
@@ -44,6 +47,7 @@ export function Nav() {
     return null;
   }
 
+  const hasActiveContract = (myContracts ?? []).some((c) => c.status === "active");
   const initials = getInitials(profile?.full_name, session.user.email);
 
   const linkClass = (active: boolean, enabled = true) =>
@@ -70,6 +74,16 @@ export function Nav() {
           aria-label="Hauptnavigation"
           className="col-span-2 order-3 -mx-4 flex items-center gap-0.5 overflow-x-auto border-t border-border/70 px-4 py-2 sm:-mx-8 sm:px-8 md:order-2 md:mx-0 md:flex-1 md:border-t-0 md:px-2 md:py-0"
         >
+          {hasActiveContract && (
+            <Link
+              href="/courses"
+              className={linkClass(!!pathname?.startsWith("/courses"), true)}
+            >
+              <CalendarCheck className="size-4 shrink-0" />
+              <span>{t.trainer.navMyCourses}</span>
+            </Link>
+          )}
+
           {myCompany &&
             studioNavItems.map((item) => {
               const active = !!pathname?.startsWith(item.href);

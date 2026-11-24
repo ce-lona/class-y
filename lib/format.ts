@@ -52,6 +52,46 @@ export function todayISO(): string {
   return `${y}-${m}-${d}`;
 }
 
+export function toLocalISO(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/** ISO-Wochentag 1 (Montag) bis 7 (Sonntag) ohne Zeitzonen-Shift. */
+export function getIsoWeekday(isoDate: string): number {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
+  if (!match) return 1;
+  const dt = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  const jsDay = dt.getDay(); // 0 = Sun ... 6 = Sat
+  return jsDay === 0 ? 7 : jsDay;
+}
+
+export function getCurrentWeekDays(): { weekday: number; isoDate: string; isToday: boolean }[] {
+  const today = new Date();
+  const todayStr = toLocalISO(today);
+  const jsDay = today.getDay();
+  const diffToMonday = jsDay === 0 ? -6 : 1 - jsDay;
+  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + diffToMonday);
+
+  return Array.from({ length: 7 }, (_, idx) => {
+    const dt = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + idx);
+    const isoDate = toLocalISO(dt);
+    return {
+      weekday: idx + 1,
+      isoDate,
+      isToday: isoDate === todayStr,
+    };
+  });
+}
+
+export function formatShortDayMonth(isoDate: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
+  if (!match) return isoDate;
+  return `${match[3]}.${match[2]}.`;
+}
+
 const COURSE_ACCENTS = [
   {
     border: "border-l-primary-600 dark:border-l-primary-400",

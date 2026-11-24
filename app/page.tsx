@@ -19,6 +19,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
+import { useMyContracts } from "@/hooks/useContracts";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
@@ -33,8 +34,12 @@ export default function Home() {
   const { session, isLoading: sessionLoading } = useAuthStore();
   const { data: isPlatformAdmin, isLoading: platformAdminLoading } = useIsPlatformAdmin();
   const { data: company, isLoading: companyLoading } = useMyCompany();
+  const { data: myContracts, isLoading: contractsLoading } = useMyContracts();
 
-  const roleLoading = sessionLoading || (!!session && (platformAdminLoading || companyLoading));
+  const hasActiveTrainerContract = (myContracts ?? []).some((c) => c.status === "active");
+  const roleLoading =
+    sessionLoading ||
+    (!!session && (platformAdminLoading || companyLoading || contractsLoading));
 
   useEffect(() => {
     if (roleLoading) return;
@@ -42,8 +47,10 @@ export default function Home() {
       router.replace("/companies");
     } else if (company) {
       router.replace("/studios");
+    } else if (hasActiveTrainerContract) {
+      router.replace("/courses");
     }
-  }, [roleLoading, isPlatformAdmin, company, router]);
+  }, [roleLoading, isPlatformAdmin, company, hasActiveTrainerContract, router]);
 
   if (sessionLoading || (session && roleLoading)) {
     return (

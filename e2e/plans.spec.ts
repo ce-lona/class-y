@@ -14,13 +14,13 @@ test("Kurstypen anlegen, Wochen-Stundenplan veröffentlichen und als neue Versio
   // 1. Sicherstellen, dass es mindestens eine:n Trainer:in mit aktivem Vertrag gibt
   //    (Admin bietet sich selbst einen Vertrag an und nimmt ihn an — kein Mailpit nötig).
   await page.goto("/trainers");
+  await expect(page.getByText("Lädt…")).toHaveCount(0);
   const activeTab = page.getByRole("button", { name: /^Aktiv\s+\d+/ });
   const hasActiveContract = await page
     .getByRole("row")
     .filter({ hasText: "Aktiv" })
     .first()
-    .isVisible()
-    .catch(() => false);
+    .isVisible();
 
   if (!hasActiveContract) {
     await page.getByRole("button", { name: "Vertrag anbieten" }).click();
