@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Building2, ChevronRight, MapPin, Plus, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,10 @@ function PlanStatusBadge({ studioId }: { studioId: string }) {
 
   if (!plan) {
     return (
-      <Badge className="bg-warning-bg text-warning">{t.studioAdmin.noActivePlan}</Badge>
+      <Badge className="gap-1.5 bg-warning-bg text-warning">
+        <span className="size-1.5 rounded-full bg-warning" aria-hidden="true" />
+        <span>{t.studioAdmin.noActivePlan}</span>
+      </Badge>
     );
   }
 
@@ -43,25 +46,50 @@ function PlanStatusBadge({ studioId }: { studioId: string }) {
   });
 
   return (
-    <Badge className="bg-success-bg text-success">
-      {t.studioAdmin.activePlanSince} {since}
+    <Badge className="gap-1.5 bg-success-bg text-success">
+      <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
+      <span>
+        {t.studioAdmin.activePlanSince} {since}
+      </span>
     </Badge>
   );
 }
 
 function StudioRow({ studio }: { studio: Studio }) {
+  const addr = formatAddress(studio);
   return (
-    <TableRow>
+    <TableRow className="group">
       <TableCell>
-        <Link href={`/studios/${studio.id}`} className="font-semibold hover:underline">
-          {studio.name}
+        <Link
+          href={`/studios/${studio.id}`}
+          className="inline-flex items-center gap-2.5 font-semibold hover:text-primary"
+        >
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
+            <Building2 className="size-4" />
+          </span>
+          <span>{studio.name}</span>
         </Link>
       </TableCell>
-      <TableCell className="text-muted-foreground">{formatAddress(studio)}</TableCell>
+      <TableCell className="text-muted-foreground">
+        {addr ? (
+          <span className="inline-flex items-center gap-1.5">
+            <MapPin className="size-3.5 shrink-0 text-muted-foreground/70" />
+            <span>{addr}</span>
+          </span>
+        ) : (
+          "—"
+        )}
+      </TableCell>
       <TableCell>
         <PlanStatusBadge studioId={studio.id} />
       </TableCell>
       <TableCell className="text-muted-foreground">—</TableCell>
+      <TableCell className="w-8 text-right">
+        <ChevronRight
+          aria-hidden="true"
+          className="inline-block size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+        />
+      </TableCell>
     </TableRow>
   );
 }
@@ -91,12 +119,25 @@ export default function StudiosPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="mb-7 flex items-center justify-between">
-        <h1 className="font-heading text-[28px] font-extrabold">{t.studios.title}</h1>
-        <Button onClick={() => setFormOpen((open) => !open)}>
-          <Plus className="size-4" />
-          {t.studios.new}
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
+              {t.studios.title}
+            </h1>
+            {studios && (
+              <Badge variant="secondary" className="font-semibold">
+                {studios.length}
+              </Badge>
+            )}
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{t.studios.subtitle}</p>
+        </div>
+
+        <Button onClick={() => setFormOpen((open) => !open)} className="gap-1.5">
+          {formOpen ? <X className="size-4" /> : <Plus className="size-4" />}
+          <span>{t.studios.new}</span>
         </Button>
       </div>
 
@@ -120,15 +161,27 @@ export default function StudiosPage() {
             <p className="text-sm text-destructive">{t.studios.createError}</p>
           )}
 
-          <Button type="submit" disabled={isSubmitting}>
-            {t.studios.create}
-          </Button>
+          <div className="flex items-center gap-2 pt-1">
+            <Button type="submit" disabled={isSubmitting}>
+              {t.studios.create}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                reset();
+                setFormOpen(false);
+              }}
+            >
+              {t.common.cancel}
+            </Button>
+          </div>
         </form>
       )}
 
-      <div className="rounded-xl border border-border bg-card">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {isLoading ? (
-          <p className="p-5 text-muted-foreground">{t.common.loading}</p>
+          <p className="p-6 text-sm text-muted-foreground">{t.common.loading}</p>
         ) : studios && studios.length > 0 ? (
           <Table>
             <TableHeader>
@@ -137,6 +190,7 @@ export default function StudiosPage() {
                 <TableHead>{t.studioAdmin.address}</TableHead>
                 <TableHead>{t.studioAdmin.currentPlan}</TableHead>
                 <TableHead>{t.studioAdmin.trainerCount}</TableHead>
+                <TableHead className="w-8" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -146,7 +200,13 @@ export default function StudiosPage() {
             </TableBody>
           </Table>
         ) : (
-          <p className="p-5 text-muted-foreground">{t.studios.empty}</p>
+          <div className="flex flex-col items-center gap-2.5 p-10 text-center">
+            <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
+              <Building2 className="size-5" />
+            </div>
+            <p className="font-medium">{t.studios.empty}</p>
+            <p className="max-w-sm text-sm text-muted-foreground">{t.studios.emptyHint}</p>
+          </div>
         )}
       </div>
     </div>

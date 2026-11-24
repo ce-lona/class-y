@@ -3,8 +3,18 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Users, LayoutGrid, Smartphone, Monitor } from "lucide-react";
+import {
+  ArrowRight,
+  Calendar,
+  LayoutGrid,
+  Lock,
+  Monitor,
+  Settings,
+  Smartphone,
+  Users,
+} from "lucide-react";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
@@ -44,95 +54,134 @@ export default function Home() {
   }
 
   if (session) {
-    // Eingeloggt, aber keine bekannte Rolle mit eigenem Bereich (z. B. Trainer,
-    // noch nicht gebaut) — Weiterleitung oben greift nicht, minimaler Status.
+    // Eingeloggt als Trainer:in ohne eigenen Kurs-Bereich (folgt in Schritt 2c) —
+    // direkter Einstieg zu Stammdaten & Vertragsangeboten.
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4">
-        <div className="text-4xl">
-          <Logo aria-hidden="true" />
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md space-y-5 rounded-2xl border border-border bg-card p-8 text-center shadow-xs">
+          <div className="text-3xl">
+            <Logo aria-hidden="true" />
+          </div>
+          <div className="space-y-1.5">
+            <h1 className="font-heading text-xl font-extrabold">
+              {t.landing.trainerWelcomeTitle}
+            </h1>
+            <p className="text-sm text-muted-foreground">{session.user.email}</p>
+          </div>
+          <p className="text-sm text-muted-foreground">{t.landing.trainerWelcomeText}</p>
+          <Link href="/settings" className={cn(buttonVariants({ size: "lg" }), "w-full gap-2")}>
+            <Settings className="size-4" />
+            <span>{t.landing.openSettings}</span>
+          </Link>
         </div>
-        <p className="text-muted-foreground">{session.user.email}</p>
       </div>
     );
   }
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex h-16 items-center justify-between border-b border-border bg-card px-12">
+      <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-card/95 px-5 backdrop-blur-sm sm:px-12">
         <div className="text-xl">
           <Logo aria-hidden="true" />
         </div>
-        <div className="flex items-center gap-5">
-          <Link href="/login" className="text-sm font-semibold text-muted-foreground">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <ThemeToggle />
+          <Link
+            href="/login"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "font-semibold")}
+          >
             {t.auth.login}
           </Link>
         </div>
       </header>
 
-      <section className="px-12 py-24 text-center">
-        <p className="mb-5 text-xs font-bold tracking-wide text-accent-foreground uppercase">
-          {t.landing.eyebrow}
-        </p>
-        <h1 className="mx-auto mb-5 max-w-3xl font-heading text-5xl font-extrabold text-balance">
+      <section className="px-5 py-16 text-center sm:px-12 sm:py-24">
+        <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary-100/80 px-3.5 py-1 text-xs font-bold tracking-wide text-primary-700 uppercase dark:bg-primary-900/50 dark:text-primary-200">
+          <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
+          <span>{t.landing.eyebrow}</span>
+        </div>
+        <h1 className="mx-auto mb-5 max-w-3xl font-heading text-3xl font-extrabold tracking-tight text-balance sm:text-5xl">
           {t.landing.headline}
         </h1>
-        <p className="mx-auto mb-9 max-w-xl text-lg text-muted-foreground">
+        <p className="mx-auto mb-8 max-w-xl text-base text-muted-foreground sm:mb-9 sm:text-lg">
           {t.landing.subheadline}
         </p>
         <div className="flex justify-center gap-3">
-          <Link href="/login" className={buttonVariants({ size: "lg" })}>
-            {t.auth.login}
+          <Link href="/login" className={cn(buttonVariants({ size: "lg" }), "gap-2 px-6")}>
+            <span>{t.auth.login}</span>
+            <ArrowRight className="size-4" />
           </Link>
         </div>
-        <p className="mt-4 text-sm text-muted-foreground">{t.landing.inviteOnly}</p>
+        <p className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Lock className="size-3.5" />
+          <span>{t.landing.inviteOnly}</span>
+        </p>
       </section>
 
-      <section className="border-y border-border bg-card px-12 py-16">
-        <div className="mx-auto grid max-w-3xl grid-cols-1 gap-8 sm:grid-cols-2">
-          <div>
-            <Smartphone className="mb-3.5 size-[30px] text-primary" strokeWidth={1.75} />
-            <h2 className="mb-2 font-heading text-lg font-bold">{t.landing.audienceTrainerTitle}</h2>
-            <p className="text-[15px] text-muted-foreground">{t.landing.audienceTrainerText}</p>
+      <section className="border-y border-border bg-card px-5 py-12 sm:px-12 sm:py-16">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
+          <div className="rounded-xl border border-border bg-background/60 p-6">
+            <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary-50 text-primary dark:bg-primary-900/40">
+              <Smartphone className="size-5" strokeWidth={1.75} />
+            </div>
+            <h2 className="mb-2 font-heading text-lg font-bold">
+              {t.landing.audienceTrainerTitle}
+            </h2>
+            <p className="text-[15px] leading-relaxed text-muted-foreground">
+              {t.landing.audienceTrainerText}
+            </p>
           </div>
-          <div>
-            <Monitor className="mb-3.5 size-[30px] text-primary" strokeWidth={1.75} />
-            <h2 className="mb-2 font-heading text-lg font-bold">{t.landing.audienceStudioTitle}</h2>
-            <p className="text-[15px] text-muted-foreground">{t.landing.audienceStudioText}</p>
+          <div className="rounded-xl border border-border bg-background/60 p-6">
+            <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary-50 text-primary dark:bg-primary-900/40">
+              <Monitor className="size-5" strokeWidth={1.75} />
+            </div>
+            <h2 className="mb-2 font-heading text-lg font-bold">
+              {t.landing.audienceStudioTitle}
+            </h2>
+            <p className="text-[15px] leading-relaxed text-muted-foreground">
+              {t.landing.audienceStudioText}
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="px-12 py-18">
-        <h2 className="mb-11 text-center font-heading text-2xl font-bold">
+      <section className="px-5 py-14 sm:px-12 sm:py-20">
+        <h2 className="mb-8 text-center font-heading text-2xl font-extrabold tracking-tight sm:mb-11">
           {t.landing.featuresTitle}
         </h2>
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-3">
           {features.map(({ icon: Icon, title, text }) => (
-            <div key={title} className="rounded-xl border border-border bg-card p-6.5">
-              <Icon className="mb-3.5 size-6.5 text-primary" strokeWidth={1.75} />
+            <div
+              key={title}
+              className="rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary-300 dark:hover:border-primary-700"
+            >
+              <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-primary-50 text-primary dark:bg-primary-900/40">
+                <Icon className="size-5" strokeWidth={1.75} />
+              </div>
               <h3 className="mb-2 font-heading text-base font-bold">{title}</h3>
-              <p className="text-sm text-muted-foreground">{text}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">{text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="bg-primary px-12 py-16 text-center">
-        <h2 className="mb-6 font-heading text-3xl font-extrabold text-primary-foreground">
+      <section className="bg-primary px-5 py-14 text-center sm:px-12 sm:py-16">
+        <h2 className="mx-auto mb-6 max-w-xl font-heading text-2xl font-extrabold text-primary-foreground sm:text-3xl">
           {t.landing.ctaFinalTitle}
         </h2>
         <Link
           href="/login"
           className={cn(
             buttonVariants({ size: "lg" }),
-            "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+            "gap-2 bg-primary-foreground px-6 text-primary hover:bg-primary-foreground/90"
           )}
         >
-          {t.auth.login}
+          <span>{t.auth.login}</span>
+          <ArrowRight className="size-4" />
         </Link>
       </section>
 
-      <footer className="flex items-center justify-between border-t border-border bg-card px-12 py-6">
+      <footer className="flex items-center justify-between border-t border-border bg-card px-5 py-6 sm:px-12">
         <div className="text-base text-muted-foreground">
           <Logo aria-hidden="true" />
         </div>

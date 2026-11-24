@@ -3,8 +3,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Building2, ChevronRight, MapPin, Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,53 +76,99 @@ export default function CompaniesPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 p-8">
-      <h1 className="text-2xl font-semibold">{t.companies.title}</h1>
-
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="name">{t.companies.name}</Label>
-          <Input id="name" {...register("name")} />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-10">
+      <div>
+        <div className="flex items-center gap-2.5">
+          <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
+            {t.companies.title}
+          </h1>
+          {companies && (
+            <Badge variant="secondary" className="font-semibold">
+              {companies.length}
+            </Badge>
           )}
         </div>
+        <p className="mt-1 text-sm text-muted-foreground">{t.companies.subtitle}</p>
+      </div>
 
-        <AddressFields register={register} control={control} />
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_380px]">
+        <section className="rounded-xl border border-border bg-card">
+          <div className="flex items-center gap-2.5 border-b border-border px-5 py-4">
+            <Building2 className="size-4 text-primary" />
+            <h2 className="font-heading text-base font-bold">{t.companies.listTitle}</h2>
+          </div>
 
-        {createCompany.isError && (
-          <p className="text-sm text-destructive">{t.companies.createError}</p>
-        )}
+          {companiesLoading ? (
+            <p className="p-5 text-sm text-muted-foreground">{t.common.loading}</p>
+          ) : companies && companies.length > 0 ? (
+            <ul className="divide-y divide-border">
+              {companies.map((company) => {
+                const formatted = formatAddress(company);
+                return (
+                  <li key={company.id}>
+                    <Link
+                      href={`/companies/${company.id}`}
+                      className="group flex items-center justify-between gap-4 px-5 py-3.5 transition-colors hover:bg-muted/50"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
+                          <Building2 className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold group-hover:text-primary">
+                            {company.name}
+                          </p>
+                          {formatted && (
+                            <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
+                              <MapPin className="size-3 shrink-0" />
+                              <span className="truncate">{formatted}</span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="flex flex-col items-center gap-2 p-8 text-center">
+              <Building2 className="size-8 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">{t.companies.empty}</p>
+            </div>
+          )}
+        </section>
 
-        <Button type="submit" disabled={isSubmitting}>
-          {t.companies.create}
-        </Button>
-      </form>
+        <section className="rounded-xl border border-border bg-card p-5 lg:sticky lg:top-24">
+          <div className="mb-4 flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
+              <Plus className="size-4" />
+            </div>
+            <h2 className="font-heading text-base font-bold">{t.companies.newTitle}</h2>
+          </div>
 
-      <div className="space-y-2">
-        {companiesLoading ? (
-          <p className="text-muted-foreground">{t.common.loading}</p>
-        ) : companies && companies.length > 0 ? (
-          <ul className="divide-y divide-border rounded-lg border">
-            {companies.map((company) => (
-              <li key={company.id}>
-                <Link
-                  href={`/companies/${company.id}`}
-                  className="block p-3 hover:bg-muted"
-                >
-                  <p className="font-medium">{company.name}</p>
-                  {formatAddress(company) && (
-                    <p className="text-sm text-muted-foreground">
-                      {formatAddress(company)}
-                    </p>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-muted-foreground">{t.companies.empty}</p>
-        )}
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="name">{t.companies.name}</Label>
+              <Input id="name" {...register("name")} />
+              {errors.name && (
+                <p className="text-sm text-destructive">{errors.name.message}</p>
+              )}
+            </div>
+
+            <AddressFields register={register} control={control} />
+
+            {createCompany.isError && (
+              <p className="text-sm text-destructive">{t.companies.createError}</p>
+            )}
+
+            <Button type="submit" disabled={isSubmitting} className="w-full gap-1.5">
+              <Plus className="size-4" />
+              <span>{t.companies.create}</span>
+            </Button>
+          </form>
+        </section>
       </div>
     </div>
   );

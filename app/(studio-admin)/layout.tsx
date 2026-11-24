@@ -1,29 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import Link from "next/link";
-import { LayoutGrid, Calendar, Building2, Users, Settings } from "lucide-react";
-import { Logo } from "@/components/logo";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { Building2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
-import { signOut } from "@/lib/auth";
-import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
-
-const navItems = [
-  { href: "/monitoring", label: t.studioAdmin.nav.monitoring, icon: LayoutGrid },
-  { href: "/plans", label: t.studioAdmin.nav.plans, icon: Calendar },
-  { href: "/studios", label: t.studioAdmin.nav.studios, icon: Building2 },
-  { href: "/trainers", label: t.studioAdmin.nav.trainers, icon: Users },
-  { href: "/settings", label: t.settings.title, icon: Settings },
-];
-
-// Nav-Ziele, die es noch nicht gibt (kommen in späteren Schritten) — sichtbar,
-// aber nicht anklickbar.
-const enabledHrefs = new Set(["/studios", "/settings"]);
 
 export default function StudioAdminLayout({
   children,
@@ -31,7 +13,6 @@ export default function StudioAdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { session, isLoading: sessionLoading } = useAuthStore();
   const { data: company, isLoading: companyLoading } = useMyCompany();
 
@@ -51,64 +32,16 @@ export default function StudioAdminLayout({
 
   if (!company) {
     return (
-      <div className="flex flex-1 items-center justify-center p-8 text-center">
-        <p className="text-muted-foreground">{t.studioAdmin.noCompany}</p>
+      <div className="flex flex-1 items-center justify-center p-6">
+        <div className="flex max-w-sm flex-col items-center gap-3 rounded-xl border border-border bg-card p-8 text-center">
+          <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
+            <Building2 className="size-5" />
+          </div>
+          <p className="text-sm text-muted-foreground">{t.studioAdmin.noCompany}</p>
+        </div>
       </div>
     );
   }
 
-  const initials = (session?.user.email ?? "??").slice(0, 2).toUpperCase();
-
-  return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-sidebar px-8">
-        <div className="flex items-center gap-9">
-          <div className="text-xl">
-            <Logo aria-hidden="true" />
-          </div>
-
-          <nav className="flex items-center gap-0.5">
-            {navItems.map((item) => {
-              const enabled = enabledHrefs.has(item.href);
-              const active = pathname?.startsWith(item.href);
-              const Icon = item.icon;
-              const className = cn(
-                "flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold",
-                active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : enabled
-                    ? "text-muted-foreground hover:bg-muted"
-                    : "cursor-not-allowed text-muted-foreground/50"
-              );
-
-              return enabled ? (
-                <Link key={item.href} href={item.href} className={className}>
-                  <Icon className="size-[17px]" />
-                  <span>{item.label}</span>
-                </Link>
-              ) : (
-                <span key={item.href} className={className}>
-                  <Icon className="size-[17px]" />
-                  <span>{item.label}</span>
-                </span>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <span className="text-sm text-muted-foreground">{company.name}</span>
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-            {initials}
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => signOut()}>
-            {t.auth.logout}
-          </Button>
-        </div>
-      </header>
-
-      <div className="min-w-0 flex-1 bg-background p-10">{children}</div>
-    </div>
-  );
+  return <div className="min-w-0 flex-1 bg-background px-4 py-6 sm:px-8 sm:py-10">{children}</div>;
 }

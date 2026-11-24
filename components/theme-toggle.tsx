@@ -43,7 +43,7 @@ function ThemeToggle({ className }: { className?: string }) {
           aria-pressed={mounted && theme === value}
           onClick={() => setTheme(value)}
           className={cn(
-            "flex size-7 items-center justify-center rounded-md text-muted-foreground",
+            "flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground",
             mounted && theme === value && "bg-card text-foreground shadow-sm"
           )}
         >

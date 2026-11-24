@@ -169,7 +169,12 @@
   --muted-foreground: var(--neutral-400);
   --accent: var(--primary-800);
   --accent-foreground: var(--neutral-50);
-  --destructive: #DC2626;
+  --success: #34D399;
+  --success-bg: color-mix(in srgb, #1D8A5F 22%, transparent);
+  --warning: #FBBF24;
+  --warning-bg: color-mix(in srgb, #B87503 24%, transparent);
+  --destructive: #F87171;
+  --destructive-bg: color-mix(in srgb, #DC2626 22%, transparent);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: var(--primary-400);
