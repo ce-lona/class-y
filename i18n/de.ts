@@ -78,6 +78,18 @@ export const t = {
     title: "Einstellungen",
     unauthorized: "Bitte melde dich an.",
   },
+  profile: {
+    title: "Meine Stammdaten",
+    hint: "Deine persönlichen Angaben für Verträge und spätere Gutschriften. Studios mit aktivem Vertrag sehen dein Profil lesend.",
+    fullName: "Vollständiger Name",
+    fullNameRequired: "Name ist erforderlich",
+    phone: "Telefonnummer",
+    kleinunternehmer: "Kleinunternehmer nach § 19 UStG",
+    kleinunternehmerHint:
+      "Aktivieren, wenn du keine Umsatzsteuer ausweist (relevant für spätere Gutschriften).",
+    saved: "Stammdaten gespeichert.",
+    saveError: "Stammdaten konnten nicht gespeichert werden.",
+  },
   contracts: {
     myTitle: "Meine Verträge",
     myHint:

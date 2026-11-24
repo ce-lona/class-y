@@ -8,8 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AddressFields } from "@/components/address-fields";
 import { useAuthStore } from "@/store/authStore";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
+import { useMyProfile, useUpdateMyProfile } from "@/hooks/useProfile";
 import {
   useCompanyContracts,
   useEndContract,
@@ -18,12 +20,15 @@ import {
   useRespondToContract,
 } from "@/hooks/useContracts";
 import type { ContractStatus } from "@/lib/contracts";
+import type { ProfileCountry } from "@/lib/profiles";
 import {
   employmentTypeOptions,
   offerContractSchema,
   parseRateAmount,
+  profileSchema,
   rateModelOptions,
   type OfferContractFormInput,
+  type ProfileFormInput,
 } from "@/lib/validators";
 import { t } from "@/i18n/de";
 
@@ -60,6 +65,140 @@ function describeContract(c: {
     ? `${t.contracts.validity} ${c.valid_from} ${t.contracts.until} ${c.valid_to}`
     : `${t.contracts.validity} ${c.valid_from}`;
   return `${employment} · ${amount} ${model} · ${range}`;
+}
+
+function normalizeCountry(country: string | null | undefined): ProfileCountry {
+  return country === "AT" || country === "CH" ? country : "DE";
+}
+
+function MyProfileSection() {
+  const { data: profile, isLoading, isError } = useMyProfile();
+  const updateProfile = useUpdateMyProfile();
+  const [saved, setSaved] = useState(false);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProfileFormInput>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      full_name: "",
+      phone: "",
+      street: "",
+      house_number: "",
+      postal_code: "",
+      city: "",
+      country: "DE",
+      kleinunternehmer: false,
+    },
+  });
+
+  useEffect(() => {
+    if (!profile) return;
+    reset({
+      full_name: profile.full_name ?? "",
+      phone: profile.phone ?? "",
+      street: profile.street ?? "",
+      house_number: profile.house_number ?? "",
+      postal_code: profile.postal_code ?? "",
+      city: profile.city ?? "",
+      country: normalizeCountry(profile.country),
+      kleinunternehmer: profile.kleinunternehmer,
+    });
+  }, [profile, reset]);
+
+  async function onSubmit(values: ProfileFormInput) {
+    setSaved(false);
+    try {
+      await updateProfile.mutateAsync({
+        full_name: values.full_name,
+        phone: values.phone ?? null,
+        street: values.street ?? null,
+        house_number: values.house_number ?? null,
+        postal_code: values.postal_code ?? null,
+        city: values.city ?? null,
+        country: values.country,
+        kleinunternehmer: values.kleinunternehmer,
+      });
+      setSaved(true);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  return (
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-lg font-medium">{t.profile.title}</h2>
+        <p className="text-sm text-muted-foreground">{t.profile.hint}</p>
+      </div>
+
+      {isLoading ? (
+        <p className="text-muted-foreground">{t.common.loading}</p>
+      ) : isError ? (
+        <p className="text-destructive">{t.common.error}</p>
+      ) : (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          onChange={() => saved && setSaved(false)}
+          noValidate
+          className="space-y-4 rounded-lg border border-border p-4"
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="profile-full-name">{t.profile.fullName}</Label>
+              <Input
+                id="profile-full-name"
+                autoComplete="name"
+                {...register("full_name")}
+              />
+              {errors.full_name && (
+                <p className="text-sm text-destructive">{errors.full_name.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="profile-phone">{t.profile.phone}</Label>
+              <Input
+                id="profile-phone"
+                type="tel"
+                autoComplete="tel"
+                {...register("phone")}
+              />
+            </div>
+          </div>
+
+          <AddressFields register={register} control={control} />
+
+          <div className="flex items-start gap-2.5 pt-1">
+            <input
+              id="profile-kleinunternehmer"
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+              {...register("kleinunternehmer")}
+            />
+            <div className="space-y-0.5">
+              <Label htmlFor="profile-kleinunternehmer">{t.profile.kleinunternehmer}</Label>
+              <p className="text-xs text-muted-foreground">{t.profile.kleinunternehmerHint}</p>
+            </div>
+          </div>
+
+          <div>
+            <Button type="submit" disabled={isSubmitting || updateProfile.isPending}>
+              {t.common.save}
+            </Button>
+            {saved && <p className="mt-2 text-sm text-success">{t.profile.saved}</p>}
+            {updateProfile.isError && (
+              <p className="mt-2 text-sm text-destructive">{t.profile.saveError}</p>
+            )}
+          </div>
+        </form>
+      )}
+    </section>
+  );
 }
 
 function MyContractsSection() {
@@ -290,6 +429,7 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 p-8">
       <h1 className="text-2xl font-semibold">{t.settings.title}</h1>
+      <MyProfileSection />
       <MyContractsSection />
       {myCompany && <CompanyContractsSection companyId={myCompany.id} />}
     </div>

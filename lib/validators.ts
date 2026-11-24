@@ -45,6 +45,14 @@ export const createStudioSchema = z.object({
 });
 export type CreateStudioInput = z.infer<typeof createStudioSchema>;
 
+export const profileSchema = z.object({
+  full_name: z.string().trim().min(1, t.profile.fullNameRequired),
+  phone: z.string().optional(),
+  ...addressFields,
+  kleinunternehmer: z.boolean(),
+});
+export type ProfileFormInput = z.infer<typeof profileSchema>;
+
 export const addCompanyAdminSchema = z.object({ email });
 export type AddCompanyAdminInput = z.infer<typeof addCompanyAdminSchema>;
 
