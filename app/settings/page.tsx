@@ -103,8 +103,8 @@ function MyProfileSection({ userEmail }: { userEmail: string | undefined }) {
 
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4 sm:px-6">
-        <div className="flex items-start gap-3.5">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4 sm:flex-nowrap sm:px-6">
+        <div className="flex min-w-0 flex-1 items-start gap-3.5">
           <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
             <User className="size-4" />
           </div>

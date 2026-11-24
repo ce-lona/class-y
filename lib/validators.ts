@@ -77,6 +77,18 @@ export function parseRateAmount(value: string): number {
   return Number(value.trim().replace(",", "."));
 }
 
+export const courseTypeSchema = z.object({
+  name: z.string().trim().min(1, t.courseTypes.nameRequired),
+  default_duration_min: z
+    .string()
+    .min(1, t.courseTypes.durationRequired)
+    .refine((v) => {
+      const n = Number(v);
+      return Number.isInteger(n) && n >= 5 && n <= 480;
+    }, t.courseTypes.durationInvalid),
+});
+export type CourseTypeFormInput = z.infer<typeof courseTypeSchema>;
+
 export const offerContractSchema = z
   .object({
     email,

@@ -19,10 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AddressFields } from "@/components/address-fields";
+import { StudioScheduleSection } from "@/components/studio-schedule-section";
 import { useStudio, useUpdateStudio } from "@/hooks/useStudios";
-import { useActiveCoursePlan } from "@/hooks/useCoursePlans";
+import { useActiveCoursePlan, usePlanSlots } from "@/hooks/useCoursePlans";
 import { createStudioSchema, type CreateStudioInput } from "@/lib/validators";
 import { formatAddress } from "@/lib/address";
+import { formatDateDE, getInitials } from "@/lib/format";
 import { t } from "@/i18n/de";
 
 function normalizeCountry(country: string | null | undefined): "DE" | "AT" | "CH" {
@@ -37,6 +39,7 @@ export default function StudioDetailPage({
   const { id } = use(params);
   const { data: studio, isLoading } = useStudio(id);
   const { data: plan } = useActiveCoursePlan(id);
+  const { data: activeSlots } = usePlanSlots(plan?.id);
   const updateStudio = useUpdateStudio(id, studio?.company_id);
   const [editing, setEditing] = useState(false);
   const [savedNotice, setSavedNotice] = useState(false);
@@ -76,6 +79,23 @@ export default function StudioDetailPage({
     year: "numeric",
   });
 
+  const assignedTrainers = Array.from(
+    (activeSlots ?? []).reduce((map, slot) => {
+      const existing = map.get(slot.trainer_id);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        map.set(slot.trainer_id, {
+          id: slot.trainer_id,
+          name: slot.trainer_name,
+          email: slot.trainer_email,
+          count: 1,
+        });
+      }
+      return map;
+    }, new Map<string, { id: string; name: string | null; email: string; count: number }>())
+  ).map(([, entry]) => entry);
+
   async function onSubmit(values: CreateStudioInput) {
     setSavedNotice(false);
     try {
@@ -88,52 +108,53 @@ export default function StudioDetailPage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <Link
-        href="/studios"
-        className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        <span>{t.studioAdmin.backToStudios}</span>
-      </Link>
-
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
-            {studio.name}
-          </h1>
-          {plan ? (
-            <Badge className="gap-1.5 bg-success-bg text-success">
-              <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
-              <span>
-                {t.studioAdmin.activePlanSince}{" "}
-                {new Date(plan.valid_from).toLocaleDateString("de-DE")}
-              </span>
-            </Badge>
-          ) : (
-            <Badge className="gap-1.5 bg-warning-bg text-warning">
-              <span className="size-1.5 rounded-full bg-warning" aria-hidden="true" />
-              <span>{t.studioAdmin.noActivePlan}</span>
-            </Badge>
-          )}
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          onClick={() => {
-            setSavedNotice(false);
-            setEditing((open) => !open);
-          }}
+    <div className="mx-auto max-w-6xl space-y-7">
+      <div>
+        <Link
+          href="/studios"
+          className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground"
         >
-          {editing ? <X className="size-3.5" /> : <Pencil className="size-3.5" />}
-          <span>{editing ? t.common.cancel : t.studioAdmin.edit}</span>
-        </Button>
+          <ChevronLeft className="size-4" />
+          <span>{t.studioAdmin.backToStudios}</span>
+        </Link>
+
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
+              {studio.name}
+            </h1>
+            {plan ? (
+              <Badge className="gap-1.5 bg-success-bg text-success">
+                <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
+                <span>
+                  {t.studioAdmin.activePlanSince} {formatDateDE(plan.valid_from)}
+                </span>
+              </Badge>
+            ) : (
+              <Badge className="gap-1.5 bg-warning-bg text-warning">
+                <span className="size-1.5 rounded-full bg-warning" aria-hidden="true" />
+                <span>{t.studioAdmin.noActivePlan}</span>
+              </Badge>
+            )}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => {
+              setSavedNotice(false);
+              setEditing((open) => !open);
+            }}
+          >
+            {editing ? <X className="size-3.5" /> : <Pencil className="size-3.5" />}
+            <span>{editing ? t.common.cancel : t.studioAdmin.edit}</span>
+          </Button>
+        </div>
       </div>
 
       {savedNotice && (
-        <div className="mb-5 flex items-center gap-2 rounded-lg bg-success-bg px-3.5 py-2.5 text-sm text-success">
+        <div className="flex items-center gap-2 rounded-lg bg-success-bg px-3.5 py-2.5 text-sm text-success">
           <CheckCircle2 className="size-4 shrink-0" />
           <span>{t.studios.updated}</span>
         </div>
@@ -143,7 +164,7 @@ export default function StudioDetailPage({
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          className="mb-6 space-y-4 rounded-xl border border-border bg-card p-5"
+          className="space-y-4 rounded-xl border border-border bg-card p-5"
         >
           <div className="space-y-1.5">
             <Label htmlFor="studio-edit-name">{t.studios.name}</Label>
@@ -169,7 +190,7 @@ export default function StudioDetailPage({
           </div>
         </form>
       ) : (
-        <div className="mb-7 grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex items-start gap-3.5 rounded-xl border border-border bg-card p-5">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
               <MapPin className="size-4" />
@@ -196,37 +217,58 @@ export default function StudioDetailPage({
         </div>
       )}
 
-      <section className="mb-7 space-y-3">
+      <section className="space-y-3">
         <div className="flex items-center gap-2">
           <Calendar className="size-4 text-primary" />
           <h2 className="font-heading text-lg font-bold">{t.studioAdmin.currentPlan}</h2>
         </div>
-        <div className="rounded-xl border border-border bg-card p-5">
-          {plan ? (
-            <p className="text-sm text-muted-foreground">
-              {t.studioAdmin.activePlanSince}{" "}
-              {new Date(plan.valid_from).toLocaleDateString("de-DE")}
-            </p>
-          ) : (
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Calendar className="size-4 shrink-0 opacity-50" />
-              <p>{t.studioAdmin.noCurrentPlan}</p>
-            </div>
-          )}
-        </div>
+
+        <StudioScheduleSection studioId={studio.id} companyId={studio.company_id} />
       </section>
 
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <Users className="size-4 text-primary" />
           <h2 className="font-heading text-lg font-bold">{t.studioAdmin.trainersAtStudio}</h2>
+          {assignedTrainers.length > 0 && (
+            <Badge variant="secondary" className="font-semibold">
+              {assignedTrainers.length}
+            </Badge>
+          )}
         </div>
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Users className="size-4 shrink-0 opacity-50" />
-            <p>{t.studioAdmin.noTrainers}</p>
+
+        {assignedTrainers.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {assignedTrainers.map((tr) => (
+              <div
+                key={tr.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-900/60 dark:text-primary-200">
+                    {getInitials(tr.name, tr.email)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{tr.name || tr.email}</p>
+                    {tr.name && (
+                      <p className="truncate text-xs text-muted-foreground">{tr.email}</p>
+                    )}
+                  </div>
+                </div>
+                <Badge variant="secondary" className="shrink-0 font-medium">
+                  {tr.count} {tr.count === 1 ? t.plans.courseSingular : t.plans.coursesPerWeek}
+                </Badge>
+              </div>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-card p-5">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Users className="size-4 shrink-0 opacity-50" />
+              <p>{t.studioAdmin.noTrainers}</p>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

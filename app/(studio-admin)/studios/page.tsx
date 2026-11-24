@@ -20,7 +20,7 @@ import {
 import { AddressFields } from "@/components/address-fields";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useStudios, useCreateStudio } from "@/hooks/useStudios";
-import { useActiveCoursePlan } from "@/hooks/useCoursePlans";
+import { useActiveCoursePlan, usePlanSlots } from "@/hooks/useCoursePlans";
 import { createStudioSchema, type CreateStudioInput } from "@/lib/validators";
 import { formatAddress } from "@/lib/address";
 import type { Studio } from "@/lib/studios";
@@ -55,6 +55,18 @@ function PlanStatusBadge({ studioId }: { studioId: string }) {
   );
 }
 
+function StudioTrainerCount({ studioId }: { studioId: string }) {
+  const { data: plan } = useActiveCoursePlan(studioId);
+  const { data: slots } = usePlanSlots(plan?.id);
+
+  if (!plan || !slots || slots.length === 0) {
+    return <span className="text-muted-foreground">—</span>;
+  }
+
+  const uniqueCount = new Set(slots.map((s) => s.trainer_id)).size;
+  return <span className="font-medium text-foreground">{uniqueCount}</span>;
+}
+
 function StudioRow({ studio }: { studio: Studio }) {
   const addr = formatAddress(studio);
   return (
@@ -83,7 +95,9 @@ function StudioRow({ studio }: { studio: Studio }) {
       <TableCell>
         <PlanStatusBadge studioId={studio.id} />
       </TableCell>
-      <TableCell className="text-muted-foreground">—</TableCell>
+      <TableCell>
+        <StudioTrainerCount studioId={studio.id} />
+      </TableCell>
       <TableCell className="w-8 text-right">
         <ChevronRight
           aria-hidden="true"
