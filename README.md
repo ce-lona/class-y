@@ -91,6 +91,8 @@ Auf einem gehosteten Projekt zusätzlich im Dashboard:
 - Authentication → Sign In / Providers: "Allow new users to sign up" ausschalten, Provider "Email" aktiv lassen
 - Authentication → URL Configuration: Site URL = Adresse der App, Redirect URLs passend ergänzen
 - Authentication → Emails → "Invite user": Inhalt aus `supabase/templates/invite.html` übernehmen
+- Authentication → Emails → "Reset password": Inhalt aus `supabase/templates/recovery.html` übernehmen
+- Authentication → SMTP Settings (Produktion): Custom SMTP (Resend, `noreply@class-y.de`) aktivieren
 
 - `platform_admin` legt Companies an und lädt Company-Admins ein (Edge Function `invite-company-admin`).
 - Company-Admins laden Trainer:innen ein und bieten ihnen dabei direkt einen Vertrag an

@@ -226,10 +226,15 @@ otp_expiry = 3600
 
 # Einladungen (invite-company-admin, invite-trainer) werden serverseitig ausgelöst und können
 # keinen PKCE-Code liefern. Der Link führt deshalb mit token_hash auf /auth/confirm (verifyOtp).
-# Auf gehosteten Projekten muss dasselbe Template im Dashboard (Authentication → Emails) stehen.
+# Auch der Passwort-Reset nutzt token_hash, damit der Link geräte-/browserübergreifend klappt.
+# Auf gehosteten Projekten müssen dieselben Templates im Dashboard (Authentication → Emails) stehen.
 [auth.email.template.invite]
 subject = "Einladung zu class-y"
 content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.recovery]
+subject = "Passwort zurücksetzen – class-y"
+content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
