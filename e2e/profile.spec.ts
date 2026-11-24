@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { loginAsPlatformAdmin, uniqueName } from "./helpers";
 
-test("Stammdaten unter /settings bearbeiten und nach Reload erhalten", async ({ page }) => {
+test("Stammdaten unter /settings im Read-Only-Modus ansehen, bearbeiten und nach Reload erhalten", async ({
+  page,
+}) => {
   await loginAsPlatformAdmin(page);
 
   const fullName = uniqueName("E2E Trainer");
@@ -13,6 +15,9 @@ test("Stammdaten unter /settings bearbeiten und nach Reload erhalten", async ({ 
 
   await page.goto("/settings");
   await expect(page.getByRole("heading", { name: "Meine Stammdaten" })).toBeVisible();
+
+  // Read-Only-Modus → Bearbeiten-Modus öffnen
+  await page.getByRole("button", { name: "Bearbeiten" }).click();
 
   await page.getByLabel("Vollständiger Name").fill(fullName);
   await page.getByLabel("Telefonnummer").fill(phone);
@@ -32,14 +37,20 @@ test("Stammdaten unter /settings bearbeiten und nach Reload erhalten", async ({ 
   await page.getByRole("button", { name: "Speichern" }).click();
   await expect(page.getByText("Stammdaten gespeichert.")).toBeVisible();
 
+  // Nach dem Speichern zurück im Read-Only-Modus
+  await expect(page.getByText(fullName)).toBeVisible();
+  await expect(page.getByText(phone)).toBeVisible();
+  await expect(page.getByText(`${street} ${houseNumber}, ${postalCode} ${city}`)).toBeVisible();
+  await expect(
+    page.getByText(nextChecked ? "Kleinunternehmer (§ 19 UStG)" : "Regelbesteuert")
+  ).toBeVisible();
+
+  // Nach Reload bleiben Werte im Read-Only-Modus erhalten
   await page.reload();
-  await expect(page.getByLabel("Vollständiger Name")).toHaveValue(fullName);
-  await expect(page.getByLabel("Telefonnummer")).toHaveValue(phone);
-  await expect(page.getByLabel("Straße")).toHaveValue(street);
-  await expect(page.getByLabel("Hausnummer")).toHaveValue(houseNumber);
-  await expect(page.getByLabel("PLZ")).toHaveValue(postalCode);
-  await expect(page.getByLabel("Ort")).toHaveValue(city);
-  await expect(page.getByLabel("Kleinunternehmer nach § 19 UStG")).toBeChecked({
-    checked: nextChecked,
-  });
+  await expect(page.getByText(fullName)).toBeVisible();
+  await expect(page.getByText(phone)).toBeVisible();
+  await expect(page.getByText(`${street} ${houseNumber}, ${postalCode} ${city}`)).toBeVisible();
+  await expect(
+    page.getByText(nextChecked ? "Kleinunternehmer (§ 19 UStG)" : "Regelbesteuert")
+  ).toBeVisible();
 });

@@ -29,7 +29,7 @@ const studioNavItems = [
   { href: "/monitoring", label: t.studioAdmin.nav.monitoring, icon: LayoutGrid, enabled: false },
   { href: "/plans", label: t.studioAdmin.nav.plans, icon: Calendar, enabled: false },
   { href: "/studios", label: t.studioAdmin.nav.studios, icon: Building2, enabled: true },
-  { href: "/trainers", label: t.studioAdmin.nav.trainers, icon: Users, enabled: false },
+  { href: "/trainers", label: t.studioAdmin.nav.trainers, icon: Users, enabled: true },
 ] as const;
 
 export function Nav() {

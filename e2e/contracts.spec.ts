@@ -7,11 +7,12 @@ import {
 } from "./helpers";
 
 // Vertragsfluss gegen den lokalen Stack: braucht `supabase start`, `supabase functions serve`
-// (invite-trainer) und Mailpit. Admin und Trainer:in laufen in getrennten Browser-Kontexten.
+// (invite-trainer) und Mailpit. Admin (/trainers) und Trainer:in (/settings?tab=contracts)
+// laufen in getrennten Browser-Kontexten.
 
 function adminRow(page: Page, trainerEmail: string, amount: string): Locator {
   return page
-    .getByRole("listitem")
+    .getByRole("row")
     .filter({ hasText: trainerEmail })
     .filter({ hasText: amount });
 }
@@ -21,6 +22,7 @@ function trainerRow(page: Page, amount: string): Locator {
 }
 
 async function offerContract(page: Page, email: string, amount: string) {
+  await page.getByRole("button", { name: "Vertrag anbieten" }).click();
   await page.getByLabel("E-Mail-Adresse der Person").fill(email);
   await page.getByLabel("Betrag (€)").fill(amount);
   await page.getByLabel("Gültig ab").fill("2027-01-01");
@@ -34,14 +36,14 @@ test("Vertrag: einladen, annehmen, zweites Angebot ablehnen, beenden", async ({
   const trainerEmail = uniqueEmail("e2e-trainer");
   const trainerPassword = `E2e-${Date.now()}`;
 
-  // Admin bietet einer noch unbekannten Person einen Vertrag an
+  // Admin bietet unter /trainers einer noch unbekannten Person einen Vertrag an
   await loginAsPlatformAdmin(page);
   await ensureAdminHasCompany(page);
   await offerContract(page, trainerEmail, "42,50");
   await expect(page.getByText("Einladung und Angebot gesendet.")).toBeVisible();
   await expect(adminRow(page, trainerEmail, "42,50")).toContainText("Wartet auf Annahme");
 
-  // Trainer:in: Einladungslink → Passwort setzen → Angebot annehmen
+  // Trainer:in: Einladungslink → Passwort setzen → Angebot unter Einstellungen annehmen
   const trainerContext = await browser.newContext({
     baseURL: testInfo.project.use.baseURL,
     recordVideo: { dir: testInfo.outputPath("trainer-video") },
@@ -55,6 +57,7 @@ test("Vertrag: einladen, annehmen, zweites Angebot ablehnen, beenden", async ({
     await trainer.waitForURL("/");
 
     await trainer.goto("/settings");
+    await trainer.getByRole("tab", { name: /Meine Verträge/ }).click();
     const offer = trainerRow(trainer, "42,50");
     await expect(offer).toContainText("Wartet auf Annahme");
     await offer.getByRole("button", { name: "Annehmen" }).click();
@@ -73,8 +76,9 @@ test("Vertrag: einladen, annehmen, zweites Angebot ablehnen, beenden", async ({
     await second.getByRole("button", { name: "Ablehnen" }).click();
     await expect(second).toContainText("Abgelehnt");
 
-    // Admin beendet den aktiven Vertrag
+    // Admin sieht das abgelehnte Angebot im Filter "Alle" und beendet den aktiven Vertrag
     await page.reload();
+    await page.getByRole("button", { name: /^Alle/ }).click();
     await expect(adminRow(page, trainerEmail, "30,00")).toContainText("Abgelehnt");
     const active = adminRow(page, trainerEmail, "42,50");
     await active.getByRole("button", { name: "Beenden" }).click();

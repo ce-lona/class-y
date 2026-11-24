@@ -111,10 +111,7 @@ Verträge zwischen Company und Trainer:in sind erst wirksam, wenn die Trainer:in
 3. Erst ein angenommener Vertrag (`active`) berechtigt zum Erfassen von Kursen und macht das Profil für die Company sichtbar.
    Die Datenbank verhindert, dass Admins die Annahme umgehen; nach der Annahme sind die Konditionen gesperrt.
 
-Die Oberfläche dafür liegt unter **Einstellungen** (`/settings`): Trainer:innen sehen dort ihre Angebote
-und Verträge und nehmen sie an oder lehnen sie ab; Company-Admins bieten Verträge an, sehen den Status
-aller Verträge ihrer Company und können Angebote zurückziehen bzw. Verträge beenden. Die Datenzugriffe
-stehen in `lib/contracts.ts`.
+Die Oberflächen dafür liegen unter **Einstellungen** (`/settings`, Stammdaten & eigene Vertragsangebote für Trainer:innen) und **Trainer** (`/trainers`, Angebote senden, Status filtern und Verträge beenden für Company-Admins). Die Datenzugriffe stehen in `lib/contracts.ts`.
 
 ## Tests
 

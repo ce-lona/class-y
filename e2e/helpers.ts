@@ -24,10 +24,10 @@ export function uniqueName(prefix: string) {
 
 /** Stellt sicher, dass der eingeloggte Platform-Admin Company-Admin mindestens einer Company ist. */
 export async function ensureAdminHasCompany(page: Page) {
-  await page.goto("/settings");
-  const companySection = page.getByRole("heading", { name: "Verträge der Company" });
+  await page.goto("/trainers");
+  const offerButton = page.getByRole("button", { name: "Vertrag anbieten" });
   try {
-    await expect(companySection).toBeVisible({ timeout: 5_000 });
+    await expect(offerButton).toBeVisible({ timeout: 5_000 });
     return;
   } catch {
     // keine Company → per UI anlegen und sich selbst als Admin eintragen
@@ -40,8 +40,8 @@ export async function ensureAdminHasCompany(page: Page) {
   await page.locator("#admin-email").fill(process.env.E2E_PLATFORM_ADMIN_EMAIL!);
   await page.getByRole("button", { name: "Admin hinzufügen" }).click();
   await expect(page.getByText(process.env.E2E_PLATFORM_ADMIN_EMAIL!)).toBeVisible();
-  await page.goto("/settings");
-  await expect(companySection).toBeVisible();
+  await page.goto("/trainers");
+  await expect(offerButton).toBeVisible();
 }
 
 export function uniqueEmail(prefix: string) {

@@ -1,115 +1,48 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Briefcase,
   Check,
   CheckCircle2,
   FileText,
   MapPin,
+  Pencil,
+  Phone,
   Receipt,
-  Send,
   User,
   X,
 } from "lucide-react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { AddressFields } from "@/components/address-fields";
+import {
+  ContractStatusBadge,
+  formatContractTerms,
+  formatContractValidity,
+} from "@/components/contract-status-badge";
 import { useAuthStore } from "@/store/authStore";
-import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useMyProfile, useUpdateMyProfile } from "@/hooks/useProfile";
-import {
-  useCompanyContracts,
-  useEndContract,
-  useMyContracts,
-  useOfferContract,
-  useRespondToContract,
-} from "@/hooks/useContracts";
-import type { ContractStatus } from "@/lib/contracts";
+import { useMyContracts, useRespondToContract } from "@/hooks/useContracts";
 import type { ProfileCountry } from "@/lib/profiles";
-import { formatDateDE, getInitials } from "@/lib/format";
+import { formatAddress } from "@/lib/address";
+import { getInitials } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import {
-  employmentTypeOptions,
-  offerContractSchema,
-  parseRateAmount,
-  profileSchema,
-  rateModelOptions,
-  type OfferContractFormInput,
-  type ProfileFormInput,
-} from "@/lib/validators";
+import { profileSchema, type ProfileFormInput } from "@/lib/validators";
 import { t } from "@/i18n/de";
-
-const statusStyles: Record<ContractStatus, { badge: string; dot: string }> = {
-  pending: {
-    badge: "bg-warning-bg text-warning",
-    dot: "bg-warning",
-  },
-  active: {
-    badge: "bg-success-bg text-success",
-    dot: "bg-success",
-  },
-  ended: {
-    badge: "border border-border bg-muted/60 text-muted-foreground",
-    dot: "bg-muted-foreground/60",
-  },
-  declined: {
-    badge: "bg-destructive-bg text-destructive",
-    dot: "bg-destructive",
-  },
-};
-
-function StatusBadge({ status }: { status: ContractStatus }) {
-  const style = statusStyles[status];
-  return (
-    <Badge className={cn("gap-1.5", style.badge)}>
-      <span className={cn("size-1.5 rounded-full", style.dot)} aria-hidden="true" />
-      <span>{t.contracts.status[status]}</span>
-    </Badge>
-  );
-}
-
-function describeContract(c: {
-  employment_type: string;
-  rate_model: string;
-  rate_amount: number;
-  valid_from: string;
-  valid_to: string | null;
-}) {
-  const employment =
-    t.contracts.employmentTypes[c.employment_type as keyof typeof t.contracts.employmentTypes] ??
-    c.employment_type;
-  const model =
-    t.contracts.rateModels[c.rate_model as keyof typeof t.contracts.rateModels] ?? c.rate_model;
-  const amount = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(
-    Number(c.rate_amount)
-  );
-  const from = formatDateDE(c.valid_from);
-  const range = c.valid_to
-    ? `${t.contracts.validity} ${from} ${t.contracts.until} ${formatDateDE(c.valid_to)}`
-    : `${t.contracts.validity} ${from}`;
-  return `${employment} · ${amount} ${model} · ${range}`;
-}
 
 function normalizeCountry(country: string | null | undefined): ProfileCountry {
   return country === "AT" || country === "CH" ? country : "DE";
 }
 
-function MyProfileSection() {
+function MyProfileSection({ userEmail }: { userEmail: string | undefined }) {
   const { data: profile, isLoading, isError } = useMyProfile();
   const updateProfile = useUpdateMyProfile();
+  const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const {
@@ -159,39 +92,58 @@ function MyProfileSection() {
         country: values.country,
         kleinunternehmer: values.kleinunternehmer,
       });
+      setEditing(false);
       setSaved(true);
     } catch (error) {
       console.error(error);
     }
   }
 
+  const formattedAddress = profile ? formatAddress(profile) : null;
+
   return (
-    <section
-      id="profile"
-      className="scroll-mt-24 overflow-hidden rounded-xl border border-border bg-card"
-    >
-      <div className="flex items-start gap-3.5 border-b border-border px-5 py-4 sm:px-6">
-        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
-          <User className="size-4" />
+    <section className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4 sm:px-6">
+        <div className="flex items-start gap-3.5">
+          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
+            <User className="size-4" />
+          </div>
+          <div>
+            <h2 className="font-heading text-lg font-bold">{t.profile.title}</h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">{t.profile.hint}</p>
+          </div>
         </div>
-        <div>
-          <h2 className="font-heading text-lg font-bold">{t.profile.title}</h2>
-          <p className="mt-0.5 text-sm text-muted-foreground">{t.profile.hint}</p>
-        </div>
+
+        {!isLoading && !isError && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => {
+              setSaved(false);
+              setEditing((open) => !open);
+            }}
+          >
+            {editing ? <X className="size-3.5" /> : <Pencil className="size-3.5" />}
+            <span>{editing ? t.common.cancel : t.studioAdmin.edit}</span>
+          </Button>
+        )}
       </div>
 
       <div className="p-5 sm:p-6">
+        {saved && !editing && (
+          <div className="mb-5 flex items-center gap-2 rounded-lg bg-success-bg px-3.5 py-2.5 text-sm font-medium text-success">
+            <CheckCircle2 className="size-4 shrink-0" />
+            <span>{t.profile.saved}</span>
+          </div>
+        )}
+
         {isLoading ? (
           <p className="text-sm text-muted-foreground">{t.common.loading}</p>
         ) : isError ? (
           <p className="text-sm text-destructive">{t.common.error}</p>
-        ) : (
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            onChange={() => saved && setSaved(false)}
-            noValidate
-            className="space-y-6"
-          >
+        ) : editing ? (
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
             <div className="space-y-3">
               <div className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-muted-foreground uppercase">
                 <User className="size-3.5" />
@@ -254,7 +206,7 @@ function MyProfileSection() {
               </label>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
+            <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
               <Button
                 type="submit"
                 disabled={isSubmitting || updateProfile.isPending}
@@ -263,17 +215,72 @@ function MyProfileSection() {
                 <Check className="size-4" />
                 <span>{t.common.save}</span>
               </Button>
-              {saved && (
-                <div className="inline-flex items-center gap-1.5 rounded-lg bg-success-bg px-3 py-1.5 text-sm font-medium text-success">
-                  <CheckCircle2 className="size-4" />
-                  <span>{t.profile.saved}</span>
-                </div>
-              )}
+              <Button type="button" variant="ghost" onClick={() => setEditing(false)}>
+                {t.common.cancel}
+              </Button>
               {updateProfile.isError && (
                 <p className="text-sm text-destructive">{t.profile.saveError}</p>
               )}
             </div>
           </form>
+        ) : (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3.5">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                {getInitials(profile?.full_name, userEmail)}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate font-heading text-base font-bold">
+                  {profile?.full_name || t.profile.emptyName}
+                </p>
+                {userEmail && (
+                  <p className="truncate text-sm text-muted-foreground">{userEmail}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-3 border-t border-border pt-5 sm:grid-cols-3">
+              <div className="flex items-start gap-2.5 rounded-lg bg-background/60 p-3">
+                <Phone className="mt-0.5 size-4 shrink-0 text-primary" />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
+                    {t.profile.phone}
+                  </div>
+                  <div className="mt-0.5 truncate text-sm font-medium">
+                    {profile?.phone || "—"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 rounded-lg bg-background/60 p-3">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
+                    {t.profile.addressGroup}
+                  </div>
+                  <div className="mt-0.5 text-sm font-medium">{formattedAddress ?? "—"}</div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 rounded-lg bg-background/60 p-3">
+                <Receipt className="mt-0.5 size-4 shrink-0 text-primary" />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
+                    {t.profile.taxGroup}
+                  </div>
+                  <div className="mt-1">
+                    {profile?.kleinunternehmer ? (
+                      <Badge className="bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200">
+                        {t.profile.kleinunternehmerShort}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline">{t.profile.regularTax}</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </section>
@@ -285,26 +292,21 @@ function MyContractsSection() {
   const respond = useRespondToContract();
 
   return (
-    <section
-      id="my-contracts"
-      className="scroll-mt-24 overflow-hidden rounded-xl border border-border bg-card"
-    >
-      <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4 sm:px-6">
-        <div className="flex items-start gap-3.5">
-          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
-            <FileText className="size-4" />
+    <section className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-start gap-3.5 border-b border-border px-5 py-4 sm:px-6">
+        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
+          <FileText className="size-4" />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="font-heading text-lg font-bold">{t.contracts.myTitle}</h2>
+            {contracts && contracts.length > 0 && (
+              <Badge variant="secondary" className="font-semibold">
+                {contracts.length}
+              </Badge>
+            )}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-heading text-lg font-bold">{t.contracts.myTitle}</h2>
-              {contracts && contracts.length > 0 && (
-                <Badge variant="secondary" className="font-semibold">
-                  {contracts.length}
-                </Badge>
-              )}
-            </div>
-            <p className="mt-0.5 text-sm text-muted-foreground">{t.contracts.myHint}</p>
-          </div>
+          <p className="mt-0.5 text-sm text-muted-foreground">{t.contracts.myHint}</p>
         </div>
       </div>
 
@@ -323,9 +325,11 @@ function MyContractsSection() {
                 <div className="min-w-0 space-y-1">
                   <p className="flex flex-wrap items-center gap-2 font-semibold">
                     <span>{c.company_name}</span>
-                    <StatusBadge status={c.status} />
+                    <ContractStatusBadge status={c.status} />
                   </p>
-                  <p className="text-sm text-muted-foreground">{describeContract(c)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatContractTerms(c)} · {formatContractValidity(c)}
+                  </p>
                 </div>
                 {c.status === "pending" && (
                   <div className="flex gap-2">
@@ -368,293 +372,16 @@ function MyContractsSection() {
   );
 }
 
-type ContractFilter = "all" | "active" | "pending" | "archived";
+type SettingsTab = "profile" | "contracts";
 
-function CompanyContractsSection({ companyId }: { companyId: string }) {
-  const { data: contracts, isLoading, isError } = useCompanyContracts(companyId);
-  const offer = useOfferContract(companyId);
-  const end = useEndContract(companyId);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [filter, setFilter] = useState<ContractFilter>("all");
-
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<OfferContractFormInput>({
-    resolver: zodResolver(offerContractSchema),
-    defaultValues: { employmentType: "freelancer", rateModel: "per_course" },
-  });
-
-  async function onSubmit(values: OfferContractFormInput) {
-    setSuccess(null);
-    try {
-      const result = await offer.mutateAsync({
-        companyId,
-        email: values.email,
-        employmentType: values.employmentType,
-        rateModel: values.rateModel,
-        rateAmount: parseRateAmount(values.rateAmount),
-        validFrom: values.validFrom,
-        validTo: values.validTo || null,
-      });
-      setSuccess(result.invited ? t.contracts.invited : t.contracts.offered);
-      reset();
-    } catch (error) {
-      console.error(error);
-      setError("email", { message: t.contracts.offerError });
-    }
-  }
-
-  const counts = {
-    all: contracts?.length ?? 0,
-    active: contracts?.filter((c) => c.status === "active").length ?? 0,
-    pending: contracts?.filter((c) => c.status === "pending").length ?? 0,
-    archived:
-      contracts?.filter((c) => c.status === "ended" || c.status === "declined").length ?? 0,
-  };
-
-  const filteredContracts =
-    contracts?.filter((c) => {
-      if (filter === "active") return c.status === "active";
-      if (filter === "pending") return c.status === "pending";
-      if (filter === "archived") return c.status === "ended" || c.status === "declined";
-      return true;
-    }) ?? [];
-
-  const filterTabs: { id: ContractFilter; label: string; count: number }[] = [
-    { id: "all", label: t.contracts.filters.all, count: counts.all },
-    { id: "active", label: t.contracts.filters.active, count: counts.active },
-    { id: "pending", label: t.contracts.filters.pending, count: counts.pending },
-    { id: "archived", label: t.contracts.filters.archived, count: counts.archived },
-  ];
-
-  return (
-    <section
-      id="company-contracts"
-      className="scroll-mt-24 overflow-hidden rounded-xl border border-border bg-card"
-    >
-      <div className="flex items-start gap-3.5 border-b border-border px-5 py-4 sm:px-6">
-        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
-          <Briefcase className="size-4" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="font-heading text-lg font-bold">{t.contracts.companyTitle}</h2>
-            {contracts && (
-              <Badge variant="secondary" className="font-semibold">
-                {contracts.length}
-              </Badge>
-            )}
-          </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">{t.contracts.companyHint}</p>
-        </div>
-      </div>
-
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        noValidate
-        className="grid gap-4 border-b border-border bg-background/50 p-5 sm:grid-cols-2 sm:p-6"
-      >
-        <div className="flex items-center gap-2 sm:col-span-2">
-          <Send className="size-4 text-primary" />
-          <h3 className="font-heading text-sm font-bold">{t.contracts.offerTitle}</h3>
-        </div>
-
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="contract-email">{t.contracts.email}</Label>
-          <Input id="contract-email" type="email" {...register("email")} />
-          {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="contract-employment">{t.contracts.employmentType}</Label>
-          <Controller
-            control={control}
-            name="employmentType"
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="contract-employment" className="w-full">
-                  <SelectValue>
-                    {(value: string) =>
-                      employmentTypeOptions.find((option) => option.value === value)?.label
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {employmentTypeOptions.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="contract-model">{t.contracts.rateModel}</Label>
-          <Controller
-            control={control}
-            name="rateModel"
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="contract-model" className="w-full">
-                  <SelectValue>
-                    {(value: string) =>
-                      rateModelOptions.find((option) => option.value === value)?.label
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {rateModelOptions.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="contract-amount">{t.contracts.rateAmount}</Label>
-          <Input id="contract-amount" inputMode="decimal" {...register("rateAmount")} />
-          {errors.rateAmount && (
-            <p className="text-sm text-destructive">{errors.rateAmount.message}</p>
-          )}
-        </div>
-
-        <div className="hidden sm:block" />
-
-        <div className="space-y-1.5">
-          <Label htmlFor="contract-from">{t.contracts.validFrom}</Label>
-          <Input id="contract-from" type="date" {...register("validFrom")} />
-          {errors.validFrom && (
-            <p className="text-sm text-destructive">{errors.validFrom.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="contract-to">{t.contracts.validTo}</Label>
-          <Input id="contract-to" type="date" {...register("validTo")} />
-          {errors.validTo && <p className="text-sm text-destructive">{errors.validTo.message}</p>}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 pt-1 sm:col-span-2">
-          <Button type="submit" disabled={isSubmitting} className="gap-1.5">
-            <Send className="size-4" />
-            <span>{t.contracts.offer}</span>
-          </Button>
-          {success && (
-            <div className="inline-flex items-center gap-1.5 rounded-lg bg-success-bg px-3 py-1.5 text-sm font-medium text-success">
-              <CheckCircle2 className="size-4 shrink-0" />
-              <span>{success}</span>
-            </div>
-          )}
-        </div>
-      </form>
-
-      <div className="space-y-4 p-5 sm:p-6">
-        {contracts && contracts.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {filterTabs.map((tab) => {
-              const selected = filter === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setFilter(tab.id)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
-                    selected
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <span>{tab.label}</span>
-                  <span
-                    className={cn(
-                      "rounded-full px-1.5 py-0.5 text-[11px] leading-none",
-                      selected ? "bg-primary-foreground/20" : "bg-background text-foreground"
-                    )}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">{t.common.loading}</p>
-        ) : isError ? (
-          <p className="text-sm text-destructive">{t.common.error}</p>
-        ) : contracts && contracts.length === 0 ? (
-          <div className="flex items-center gap-3 rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">
-            <Briefcase className="size-4 shrink-0 opacity-50" />
-            <p>{t.contracts.companyEmpty}</p>
-          </div>
-        ) : filteredContracts.length > 0 ? (
-          <ul className="divide-y divide-border rounded-lg border border-border">
-            {filteredContracts.map((c) => (
-              <li
-                key={c.id}
-                className="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4"
-              >
-                <div className="flex min-w-0 items-start gap-3">
-                  <div className="mt-0.5 hidden size-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 sm:flex dark:bg-primary-900/60 dark:text-primary-200">
-                    {getInitials(c.trainer_name, c.trainer_email)}
-                  </div>
-                  <div className="min-w-0 space-y-0.5">
-                    <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
-                      <span className="break-all">{c.trainer_name || c.trainer_email}</span>
-                      <StatusBadge status={c.status} />
-                    </p>
-                    {c.trainer_name && (
-                      <p className="truncate text-xs text-muted-foreground">{c.trainer_email}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground sm:text-sm">
-                      {describeContract(c)}
-                    </p>
-                  </div>
-                </div>
-                {(c.status === "active" || c.status === "pending") && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={end.isPending}
-                    onClick={() => end.mutate(c.id)}
-                  >
-                    {c.status === "pending" ? t.contracts.withdraw : t.contracts.end}
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
-            {t.contracts.companyFilterEmpty}
-          </p>
-        )}
-
-        {end.isError && <p className="text-sm text-destructive">{t.contracts.endError}</p>}
-      </div>
-    </section>
-  );
-}
-
-export default function SettingsPage() {
+function SettingsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { session, isLoading: sessionLoading } = useAuthStore();
-  const { data: myCompany } = useMyCompany();
   const { data: myContracts } = useMyContracts();
+
+  const tabParam = searchParams.get("tab");
+  const activeTab: SettingsTab = tabParam === "contracts" ? "contracts" : "profile";
 
   useEffect(() => {
     if (!sessionLoading && !session) {
@@ -673,9 +400,15 @@ export default function SettingsPage() {
   const pendingMyContracts =
     myContracts?.filter((c) => c.status === "pending").length ?? 0;
 
+  function setTab(next: SettingsTab) {
+    router.replace(next === "contracts" ? "/settings?tab=contracts" : "/settings", {
+      scroll: false,
+    });
+  }
+
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-7 px-4 py-6 sm:px-8 sm:py-10">
-      <div className="space-y-4">
+    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-10">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
             {t.settings.title}
@@ -683,41 +416,75 @@ export default function SettingsPage() {
           <p className="mt-1 text-sm text-muted-foreground">{t.settings.subtitle}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <a
-            href="#profile"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary-300 hover:text-primary"
+        <div
+          role="tablist"
+          className="inline-flex rounded-xl border border-border bg-card p-1"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "profile"}
+            onClick={() => setTab("profile")}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
+              activeTab === "profile"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
-            <User className="size-3.5 text-primary" />
-            <span>{t.settings.jumpProfile}</span>
-          </a>
-          <a
-            href="#my-contracts"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary-300 hover:text-primary"
+            <User className="size-4" />
+            <span>{t.settings.tabProfile}</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "contracts"}
+            onClick={() => setTab("contracts")}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
+              activeTab === "contracts"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
-            <FileText className="size-3.5 text-primary" />
-            <span>{t.settings.jumpMyContracts}</span>
+            <FileText className="size-4" />
+            <span>{t.settings.tabMyContracts}</span>
             {pendingMyContracts > 0 && (
-              <span className="rounded-full bg-warning-bg px-1.5 py-0.5 text-[11px] leading-none text-warning">
+              <span
+                className={cn(
+                  "rounded-full px-1.5 py-0.5 text-[11px] leading-none font-bold",
+                  activeTab === "contracts"
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-warning-bg text-warning"
+                )}
+              >
                 {pendingMyContracts}
               </span>
             )}
-          </a>
-          {myCompany && (
-            <a
-              href="#company-contracts"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary-300 hover:text-primary"
-            >
-              <Briefcase className="size-3.5 text-primary" />
-              <span>{t.settings.jumpCompanyContracts}</span>
-            </a>
-          )}
+          </button>
         </div>
       </div>
 
-      <MyProfileSection />
-      <MyContractsSection />
-      {myCompany && <CompanyContractsSection companyId={myCompany.id} />}
+      {activeTab === "profile" ? (
+        <MyProfileSection userEmail={session.user.email} />
+      ) : (
+        <MyContractsSection />
+      )}
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-1 items-center justify-center p-8">
+          <p className="text-muted-foreground">{t.common.loading}</p>
+        </div>
+      }
+    >
+      <SettingsContent />
+    </Suspense>
   );
 }

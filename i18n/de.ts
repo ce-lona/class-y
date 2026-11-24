@@ -89,11 +89,10 @@ export const t = {
   },
   settings: {
     title: "Einstellungen",
-    subtitle: "Verwalte deine Stammdaten, persönlichen Verträge und Angebote.",
+    subtitle: "Deine persönlichen Stammdaten und Vertragsangebote.",
     unauthorized: "Bitte melde dich an.",
-    jumpProfile: "Stammdaten",
-    jumpMyContracts: "Meine Verträge",
-    jumpCompanyContracts: "Company-Verträge",
+    tabProfile: "Stammdaten",
+    tabMyContracts: "Meine Verträge",
   },
   profile: {
     title: "Meine Stammdaten",
@@ -105,10 +104,24 @@ export const t = {
     fullNameRequired: "Name ist erforderlich",
     phone: "Telefonnummer",
     kleinunternehmer: "Kleinunternehmer nach § 19 UStG",
+    kleinunternehmerShort: "Kleinunternehmer (§ 19 UStG)",
+    regularTax: "Regelbesteuert",
     kleinunternehmerHint:
       "Aktivieren, wenn du keine Umsatzsteuer ausweist (relevant für spätere Gutschriften).",
+    emptyName: "Noch kein Name hinterlegt",
     saved: "Stammdaten gespeichert.",
     saveError: "Stammdaten konnten nicht gespeichert werden.",
+  },
+  trainers: {
+    title: "Trainer",
+    subtitle: "Verträge anbieten, offene Angebote verfolgen und aktive Trainer:innen verwalten.",
+    tableTrainer: "Trainer:in",
+    tableContract: "Konditionen",
+    tableValidity: "Laufzeit",
+    tableStatus: "Status",
+    tableAction: "Aktion",
+    emptyActiveOpen: "Keine aktiven oder offenen Verträge.",
+    showArchive: "Archiv anzeigen",
   },
   contracts: {
     myTitle: "Meine Verträge",
@@ -124,6 +137,7 @@ export const t = {
     companyEmpty: "Noch keine Verträge oder Angebote.",
     companyFilterEmpty: "Keine Verträge für diesen Filter.",
     filters: {
+      activeOpen: "Aktiv & Offen",
       all: "Alle",
       active: "Aktiv",
       pending: "Offen",
