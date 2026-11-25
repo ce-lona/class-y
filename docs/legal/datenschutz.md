@@ -1,17 +1,18 @@
 # Datenschutzerklärung
 
-> **Entwurf, nicht anwaltlich geprüft.** Alle Angaben in eckigen Klammern sind Platzhalter. Stand: [Datum]
+> **Entwurf, nicht anwaltlich geprüft.** Alle Angaben in eckigen Klammern sind Platzhalter. Stand: November 2026
 
 ## 1. Wer ist verantwortlich?
 
 Verantwortlich für die Verarbeitung personenbezogener Daten auf dieser Website und in der Web-App class-y im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
 
-[Firmenname inkl. Rechtsform]
-[Straße Hausnummer]
-[PLZ Ort]
-E-Mail: [datenschutz@class-y.de]
+Jennifer Donath – class-y
+Inhaberin: Jennifer Donath
+Heckerdamm 267c
+13627 Berlin
+E-Mail: j.kuemmele@gmail.com
+Telefon: +49 152 59167271
 
-[Falls ein:e Datenschutzbeauftragte:r benannt ist (Pflicht i. d. R. erst ab 20 Personen, die ständig mit personenbezogenen Daten arbeiten): Name und Kontakt hier ergänzen. Sonst diesen Hinweis streichen.]
 
 ## 2. Wichtig: Wer ist wofür verantwortlich?
 
@@ -99,9 +100,9 @@ Wir setzen folgende Dienstleister ein, die Daten in unserem Auftrag und nach uns
 
 ## 9. Deine Rechte
 
-Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21). Schreib uns dafür an [datenschutz@class-y.de]. Betrifft deine Anfrage Daten, die wir im Auftrag eines Unternehmens verarbeiten, leiten wir sie an das Unternehmen weiter und unterstützen es bei der Beantwortung.
+Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21). Schreib uns dafür an j.kuemmele@gmail.com. Betrifft deine Anfrage Daten, die wir im Auftrag eines Unternehmens verarbeiten, leiten wir sie an das Unternehmen weiter und unterstützen es bei der Beantwortung.
 
-Du hast außerdem das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren. Zuständig für uns ist [Aufsichtsbehörde des Bundeslands des Firmensitzes, z. B. „Der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Baden-Württemberg, Lautenschlagerstraße 20, 70173 Stuttgart“].
+Du hast außerdem das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren. Zuständig für uns ist die Berliner Beauftragte für Datenschutz und Informationsfreiheit, Alt-Moabit 59–61, 10555 Berlin.
 
 ## 10. Pflicht zur Bereitstellung, keine automatisierten Entscheidungen
 

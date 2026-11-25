@@ -9,7 +9,7 @@ zwischen
 
 und
 
-**[Firmenname class-y inkl. Rechtsform, Anschrift]**
+**Jennifer Donath – class-y, Inhaberin Jennifer Donath, Heckerdamm 267c, 13627 Berlin**
 – Auftragsverarbeiter, nachfolgend „Auftragnehmer“ –
 
 ## § 1 Gegenstand und Dauer
@@ -115,7 +115,7 @@ Besondere Kategorien personenbezogener Daten (Art. 9 DSGVO) werden nicht verarbe
 
 - Automatisierte Prüfung bei jeder Änderung (Lint, Typprüfung, Datenbank-Zugriffstests, End-to-End-Tests) in der CI.
 - Code-Änderungen über Versionskontrolle nachvollziehbar.
-- Überprüfung dieser Maßnahmen mindestens jährlich [Verantwortliche Person].
+- Überprüfung dieser Maßnahmen mindestens jährlich durch Jennifer Donath.
 
 ## Anlage 3: Genehmigte Unterauftragsverarbeiter
 

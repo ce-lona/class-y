@@ -1,10 +1,10 @@
 # Allgemeine Geschäftsbedingungen
 
-> **Entwurf, nicht anwaltlich geprüft.** Alle Angaben in eckigen Klammern sind Platzhalter. Stand: [Datum]
+> **Entwurf, nicht anwaltlich geprüft.** Alle Angaben in eckigen Klammern sind Platzhalter. Stand: November 2026
 
 ## § 1 Geltungsbereich
 
-1. Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Verträge zwischen [Firmenname inkl. Rechtsform], [Anschrift] („Anbieter“) und ihren Kund:innen („Kunde“) über die Nutzung der Software class-y.
+1. Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Verträge zwischen Jennifer Donath – class-y, Inhaberin Jennifer Donath, Heckerdamm 267c, 13627 Berlin („Anbieter“) und ihren Kund:innen („Kunde“) über die Nutzung der Software class-y.
 2. Das Angebot richtet sich ausschließlich an Unternehmer im Sinne von § 14 BGB, juristische Personen des öffentlichen Rechts und öffentlich-rechtliche Sondervermögen. Verträge mit Verbraucher:innen werden nicht geschlossen.
 3. Abweichende oder ergänzende Bedingungen des Kunden gelten nur, wenn der Anbieter ihnen ausdrücklich in Textform zustimmt.
 
@@ -24,7 +24,7 @@
 ## § 4 Verfügbarkeit und Support
 
 1. Der Anbieter stellt class-y mit einer Verfügbarkeit von [98,0] % im Monatsmittel bereit. Ausgenommen sind angekündigte Wartungsfenster von bis zu [4] Stunden pro Monat sowie Störungen, die außerhalb des Einflussbereichs des Anbieters liegen (z. B. Störungen des Internets, höhere Gewalt, Ausfälle der vom Kunden genutzten Endgeräte oder Netze).
-2. Support erfolgt per E-Mail an [support@class-y.de] werktags von [9 bis 17 Uhr]. Der Anbieter reagiert auf Störungsmeldungen innerhalb von [einem Werktag].
+2. Support erfolgt per E-Mail an j.kuemmele@gmail.com werktags von [9 bis 17 Uhr]. Der Anbieter reagiert auf Störungsmeldungen innerhalb von [einem Werktag].
 
 ## § 5 Pflichten des Kunden
 
@@ -34,9 +34,9 @@
 
 ## § 6 Vergütung und Zahlung
 
-1. Die Vergütung richtet sich nach der bei Vertragsschluss vereinbarten Preisliste [z. B. „[Betrag] € netto pro Studio und Monat“]. Alle Preise verstehen sich zuzüglich der gesetzlichen Umsatzsteuer.
-2. Die Vergütung wird [monatlich / jährlich] im Voraus in Rechnung gestellt und ist innerhalb von [14] Tagen nach Rechnungsstellung ohne Abzug fällig. Rechnungen werden elektronisch übermittelt.
-3. Der Anbieter kann die Preise mit einer Frist von [drei] Monaten zum Ende eines Abrechnungszeitraums anpassen. Bei einer Erhöhung um mehr als [5] % kann der Kunde den Vertrag zum Zeitpunkt des Inkrafttretens kündigen.
+1. Die Vergütung wird für jedes Studio individuell vereinbart und im Angebot bzw. im Vertrag festgehalten. Alle Preise verstehen sich zuzüglich der gesetzlichen Umsatzsteuer. [Falls du Kleinunternehmerin nach § 19 UStG bist: „Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.“]
+2. Die Vergütung wird im vereinbarten Abrechnungszeitraum (monatlich oder jährlich) im Voraus in Rechnung gestellt und ist innerhalb von [14] Tagen nach Rechnungsstellung ohne Abzug fällig. Rechnungen werden elektronisch übermittelt.
+3. Änderungen der vereinbarten Vergütung bedürfen einer Vereinbarung in Textform.
 4. Gerät der Kunde mit einer Zahlung mehr als [30] Tage in Verzug, darf der Anbieter den Zugang nach vorheriger Ankündigung sperren, bis die offenen Beträge bezahlt sind.
 
 ## § 7 Laufzeit und Kündigung
@@ -53,7 +53,7 @@
 ## § 9 Datenschutz
 
 1. Soweit der Anbieter personenbezogene Daten im Auftrag des Kunden verarbeitet, schließen die Parteien einen Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO, der Bestandteil dieses Vertrags ist.
-2. Im Übrigen gilt die Datenschutzerklärung des Anbieters unter [https://www.class-y.de/datenschutz].
+2. Im Übrigen gilt die Datenschutzerklärung des Anbieters unter https://www.class-y.de/datenschutz.
 
 ## § 10 Gewährleistung
 
@@ -75,5 +75,5 @@ Der Anbieter kann diese AGB mit Wirkung für die Zukunft ändern, wenn dafür ei
 ## § 13 Schlussbestimmungen
 
 1. Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts.
-2. Ausschließlicher Gerichtsstand für alle Streitigkeiten aus diesem Vertrag ist [Sitz des Anbieters], sofern der Kunde Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen ist.
+2. Ausschließlicher Gerichtsstand für alle Streitigkeiten aus diesem Vertrag ist Berlin, sofern der Kunde Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen ist.
 3. Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.
