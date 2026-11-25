@@ -45,3 +45,13 @@ Nicht nötig (keine personenbezogenen Daten der App): IONOS-DNS allein. Hetzner 
 3. **AGPL-3.0-Lizenz** des Repos im Verhältnis zum kommerziellen SaaS-Angebot (AGPL verpflichtet zur Herausgabe des Quellcodes an Nutzer:innen eines Netzwerkdienstes).
 4. **Haftungshöchstgrenze und SLA-Werte** in den AGB.
 5. **Rechtsform und Impressum:** Einzelunternehmen oder GmbH/UG, ab wann Handelsregister.
+
+## 5. Plan für den Produktivbetrieb (beschlossen 26.11.2026)
+
+Solange class-y eine Testversion ohne Einnahmen ist, bleibt alles auf den kostenlosen Tarifen (Vercel Hobby, Supabase Free, Sentry Developer, Resend Free). Mit dem ersten zahlenden Studio:
+
+- [ ] **Hosting:** Vercel ablösen durch eine **eigene, zweite Hetzner-Cloud-VM** (getrennt von der Uni-/DevOps-VM), aufgesetzt mit dem vorhandenen OpenTofu-/Ansible-/Docker-Setup aus `class-y-devops`. Kosten ca. 4–6 € pro Monat.
+- [ ] **Hetzner-AVV** in der Hetzner Cloud Console abschließen.
+- [ ] **Datenbank:** Supabase Free beibehalten (kommerziell erlaubt; Backups laufen über die eigene HiDrive-Sicherung). Auf Supabase Pro (25 $/Monat) erst wechseln, wenn die Datenbank Richtung 500 MB wächst oder Point-in-Time-Recovery gebraucht wird.
+- [ ] **Texte anpassen:** In Datenschutzerklärung und AVV Anlage 3 Vercel entfernen und Hetzner Online GmbH (Gunzenhausen, Rechenzentrum in Deutschland) ergänzen; Server-Log-Speicherdauer des eigenen Servers festlegen und eintragen; TOM (AVV Anlage 2) um Server-Updates, Firewall und SSH-Zugang ergänzen.
+- [ ] Sobald Vercel nicht mehr genutzt wird: Vercel-Projekt löschen.
