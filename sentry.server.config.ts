@@ -1,0 +1,8 @@
+import * as Sentry from "@sentry/nextjs";
+import { sentryBaseOptions } from "@/lib/sentry/options";
+
+Sentry.init({
+  ...sentryBaseOptions,
+  // Lokale Variablen in Stack-Frames können personenbezogene Daten enthalten.
+  includeLocalVariables: false,
+});
