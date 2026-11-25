@@ -34,6 +34,7 @@ import {
 import { isCourseTypeAvailableInStudio, type CourseType } from "@/lib/courseTypes";
 import type { Studio } from "@/lib/studios";
 import { getCourseTypeAccent } from "@/lib/format";
+import { CourseTypeIcon } from "@/components/course-type-icon";
 import { courseTypeSchema, type CourseTypeFormInput } from "@/lib/validators";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
@@ -250,7 +251,10 @@ function CourseTypeCard({
       )}
     >
       <div className="min-w-0 space-y-2">
-        <p className="truncate font-heading text-base font-bold">{courseType.name}</p>
+        <p className="flex min-w-0 items-center gap-2 font-heading text-base font-bold">
+          <CourseTypeIcon courseTypeId={courseType.id} name={courseType.name} />
+          <span className="truncate">{courseType.name}</span>
+        </p>
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant="secondary" className="gap-1 font-medium">
             <Clock className="size-3" />
@@ -581,7 +585,6 @@ function AllStudiosTimetable({
             {t.plans.allCourseTypes}
           </button>
           {uniqueCourseTypes.map(([id, name]) => {
-            const accent = getCourseTypeAccent(id);
             const selected = courseTypeFilter === id;
             return (
               <button
@@ -595,10 +598,7 @@ function AllStudiosTimetable({
                     : "border border-border bg-card text-muted-foreground hover:text-foreground"
                 )}
               >
-                <span
-                  className={cn("size-2 rounded-full", selected ? "bg-primary-foreground" : accent.dot)}
-                  aria-hidden="true"
-                />
+                <CourseTypeIcon courseTypeId={id} name={name} variant="plain" inverted={selected} />
                 <span>{name}</span>
               </button>
             );

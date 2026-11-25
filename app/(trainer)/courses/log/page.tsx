@@ -39,6 +39,7 @@ import {
   todayISO,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { CourseTypeIcon } from "@/components/course-type-icon";
 import { t } from "@/i18n/de";
 
 type LogMode = "planned" | "adhoc";
@@ -279,7 +280,12 @@ export default function LogCoursePage() {
                           )}
                         >
                           <div className="flex flex-wrap items-center justify-between gap-2">
-                            <span className="font-heading text-sm font-bold text-foreground">
+                            <span className="inline-flex items-center gap-1.5 font-heading text-sm font-bold text-foreground">
+                              <CourseTypeIcon
+                                courseTypeId={sl.course_type_id}
+                                name={sl.course_type_name}
+                                variant="plain"
+                              />
                               {sl.course_type_name}
                             </span>
                             {isSub ? (

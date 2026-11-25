@@ -48,6 +48,12 @@
   --color-link-400: var(--link-400);
   --color-link-500: var(--link-500);
   --color-link-600: var(--link-600);
+  --color-course-1: var(--course-1);
+  --color-course-2: var(--course-2);
+  --color-course-3: var(--course-3);
+  --color-course-4: var(--course-4);
+  --color-course-5: var(--course-5);
+  --color-course-6: var(--course-6);
   --color-primary-50: var(--primary-50);
   --color-primary-100: var(--primary-100);
   --color-primary-200: var(--primary-200);
@@ -120,6 +126,15 @@
   --warning-bg: #FCF1DC;
   --destructive-bg: #FDECEC;
 
+  /* Kursarten-Akzente — gedämpft, gleiche Helligkeit, nie Status-Farben.
+     Petrol · Salbei · Taubenblau · Ton · Ocker · Pflaume */
+  --course-1: #2E7672;
+  --course-2: #5E8467;
+  --course-3: #557A92;
+  --course-4: #A0664F;
+  --course-5: #957A3E;
+  --course-6: #84667F;
+
   --background: var(--primary-50);
   --foreground: var(--neutral-900);
   --card: #FFFFFF;
@@ -175,6 +190,12 @@
   --warning-bg: color-mix(in srgb, #B87503 24%, transparent);
   --destructive: #F87171;
   --destructive-bg: color-mix(in srgb, #DC2626 22%, transparent);
+  --course-1: #79B0AD;
+  --course-2: #9CBFA3;
+  --course-3: #94B3C8;
+  --course-4: #D29F8A;
+  --course-5: #CDB27A;
+  --course-6: #BB9DB6;
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: var(--primary-400);

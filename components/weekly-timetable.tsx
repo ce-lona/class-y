@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Building2, Clock, MapPin, Trash2 } from "lucide-react";
 import { formatTimeShort, getCourseTypeAccent, getInitials } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { CourseTypeIcon } from "@/components/course-type-icon";
 import { t } from "@/i18n/de";
 
 export interface TimetableSlot {
@@ -69,8 +70,14 @@ function SlotCard({
         )}
       </div>
 
-      <p className="mt-1 font-heading text-sm font-bold leading-snug text-foreground">
-        {slot.course_type_name}
+      <p className="mt-1 flex items-start gap-1.5 font-heading text-sm font-bold leading-snug text-foreground">
+        <CourseTypeIcon
+          courseTypeId={slot.course_type_id}
+          name={slot.course_type_name}
+          variant="plain"
+          className="mt-0.5"
+        />
+        <span className="min-w-0">{slot.course_type_name}</span>
       </p>
 
       {!hideTrainer && (

@@ -92,36 +92,50 @@ export function formatShortDayMonth(isoDate: string): string {
   return `${match[3]}.${match[2]}.`;
 }
 
+// Gedämpfte Kursarten-Palette (Tokens `--course-1…6` in app/globals.css).
+// Klassen ausgeschrieben, damit Tailwind sie findet.
 const COURSE_ACCENTS = [
   {
-    border: "border-l-primary-600 dark:border-l-primary-400",
-    dot: "bg-primary-600 dark:bg-primary-400",
-    pill: "bg-primary-50 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200",
+    border: "border-l-course-1",
+    dot: "bg-course-1",
+    text: "text-course-1",
+    tile: "bg-course-1/12 text-course-1 dark:bg-course-1/18",
+    pill: "bg-course-1/12 text-course-1 dark:bg-course-1/18",
   },
   {
-    border: "border-l-link-500 dark:border-l-link-400",
-    dot: "bg-link-500 dark:bg-link-400",
-    pill: "bg-link-500/10 text-link-600 dark:bg-link-400/15 dark:text-link-400",
+    border: "border-l-course-2",
+    dot: "bg-course-2",
+    text: "text-course-2",
+    tile: "bg-course-2/12 text-course-2 dark:bg-course-2/18",
+    pill: "bg-course-2/12 text-course-2 dark:bg-course-2/18",
   },
   {
-    border: "border-l-success",
-    dot: "bg-success",
-    pill: "bg-success-bg text-success",
+    border: "border-l-course-3",
+    dot: "bg-course-3",
+    text: "text-course-3",
+    tile: "bg-course-3/12 text-course-3 dark:bg-course-3/18",
+    pill: "bg-course-3/12 text-course-3 dark:bg-course-3/18",
   },
   {
-    border: "border-l-warning",
-    dot: "bg-warning",
-    pill: "bg-warning-bg text-warning",
+    border: "border-l-course-4",
+    dot: "bg-course-4",
+    text: "text-course-4",
+    tile: "bg-course-4/12 text-course-4 dark:bg-course-4/18",
+    pill: "bg-course-4/12 text-course-4 dark:bg-course-4/18",
   },
   {
-    border: "border-l-primary-400 dark:border-l-primary-300",
-    dot: "bg-primary-400 dark:bg-primary-300",
-    pill: "bg-primary-100/70 text-primary-800 dark:bg-primary-800/50 dark:text-primary-200",
+    border: "border-l-course-5",
+    dot: "bg-course-5",
+    text: "text-course-5",
+    tile: "bg-course-5/12 text-course-5 dark:bg-course-5/18",
+    pill: "bg-course-5/12 text-course-5 dark:bg-course-5/18",
   },
   {
-    border: "border-l-neutral-500 dark:border-l-neutral-400",
-    dot: "bg-neutral-500 dark:bg-neutral-400",
-    pill: "bg-muted text-foreground",
+    border: "border-l-course-6",
+    dot: "bg-course-6",
+    text: "text-course-6",
+    tile: "bg-course-6/12 text-course-6 dark:bg-course-6/18",
+    pill: "bg-course-6/12 text-course-6 dark:bg-course-6/18",
   },
 ] as const;
 

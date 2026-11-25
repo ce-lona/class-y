@@ -53,6 +53,7 @@ import {
   getCurrentWeekDays,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { CourseTypeIcon } from "@/components/course-type-icon";
 import { t } from "@/i18n/de";
 
 type CoursesTab = "upcoming" | "logged";
@@ -294,6 +295,11 @@ function PlannedCourseCard({
             </p>
           )}
           <div className="flex flex-wrap items-center gap-2">
+            <CourseTypeIcon
+              courseTypeId={item.slot.course_type_id}
+              name={item.slot.course_type_name}
+              inverted={highlighted}
+            />
             <h2
               className={cn(
                 "font-heading text-base font-bold",
@@ -1026,6 +1032,10 @@ export default function TrainerCoursesPage() {
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
+                      <CourseTypeIcon
+                        courseTypeId={s.course_type_id ?? s.id}
+                        name={s.course_type_name}
+                      />
                       <span className="font-heading text-base font-bold">
                         {s.course_type_name || t.trainer.adHocBadge}
                       </span>
