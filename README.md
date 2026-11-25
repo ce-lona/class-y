@@ -71,9 +71,10 @@ den Admin nachträglich per SQL in `platform_admins` ein.
 
 - `invite-company-admin`: lädt Company-Admins ein (nur für `platform_admin`)
 - `invite-trainer`: lädt Trainer:innen ein und bietet ihnen einen Vertrag an (nur für Company-Admins der jeweiligen Company bzw. `platform_admin`)
-- `create-test-admin`: Hilfsfunktion **nur für die Entwicklung**. Sie antwortet nur, wenn das
-  Function-Secret `ALLOW_TEST_ADMIN=true` gesetzt ist, und sollte nicht in produktive Umgebungen
-  deployt werden.
+- `create-test-admin`: Hilfsfunktion **nur für die lokale Entwicklung**. Sie antwortet nur gegen
+  den lokalen Supabase-Stack (`SUPABASE_URL` zeigt auf `kong`/`localhost`) und nur mit dem
+  Function-Secret `ALLOW_TEST_ADMIN=true`; auf gehosteten Projekten bleibt sie immer aus. Die
+  Oberfläche dafür erscheint nur unter `next dev`.
 
 Der Service-Role-Key gehört ausschließlich in die Edge Functions und niemals ins Frontend oder
 in dieses Repository.
@@ -88,8 +89,14 @@ Einladungen werden serverseitig verschickt und können keinen PKCE-Code liefern.
 Einladungsmail (`supabase/templates/invite.html`) führt deshalb mit `token_hash` auf
 `/auth/confirm`, das die Einladung per `verifyOtp` einlöst und auf `/reset-password` weiterleitet.
 
+Passwörter brauchen mindestens 8 Zeichen (`minimum_password_length` in `supabase/config.toml`).
+Beim Setzen prüft die App sie zusätzlich gegen die HaveIBeenPwned-Datenbank geleakter Passwörter
+(`lib/passwordBreach.ts`, k-Anonymität: nur die ersten 5 Zeichen des SHA-1-Hashs verlassen den
+Browser). Ist die API nicht erreichbar, wird das Passwort durchgelassen.
+
 Auf einem gehosteten Projekt zusätzlich im Dashboard:
 
+- Authentication → Sign In / Providers → Email: "Minimum password length" auf 8 setzen
 - Authentication → Sign In / Providers: "Allow new users to sign up" ausschalten, Provider "Email" aktiv lassen
 - Authentication → URL Configuration: Site URL = Adresse der App, Redirect URLs passend ergänzen
 - Authentication → Emails → "Invite user": Inhalt aus `supabase/templates/invite.html` übernehmen

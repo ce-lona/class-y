@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updatePassword } from "@/lib/auth";
+import { isPasswordPwned } from "@/lib/passwordBreach";
 import { resetPasswordSchema, type ResetPasswordInput } from "@/lib/validators";
 import { t } from "@/i18n/de";
 
@@ -21,11 +22,16 @@ export default function ResetPasswordPage() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordInput>({ resolver: zodResolver(resetPasswordSchema) });
 
   async function onSubmit(values: ResetPasswordInput) {
     setFormError(null);
+    if (await isPasswordPwned(values.password)) {
+      setError("password", { message: t.auth.passwordPwned });
+      return;
+    }
     try {
       await updatePassword(values.password);
       router.replace("/");

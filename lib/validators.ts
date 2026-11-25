@@ -2,7 +2,9 @@ import { z } from "zod";
 import { t } from "@/i18n/de";
 
 const email = z.string().min(1, t.auth.emailRequired).email(t.auth.emailInvalid);
-const password = z.string().min(6, t.auth.passwordTooShort);
+// Muss zu minimum_password_length in supabase/config.toml (bzw. dem Dashboard) passen.
+export const PASSWORD_MIN_LENGTH = 8;
+const password = z.string().min(PASSWORD_MIN_LENGTH, t.auth.passwordTooShort);
 
 export const loginSchema = z.object({
   email,

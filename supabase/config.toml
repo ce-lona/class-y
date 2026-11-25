@@ -169,7 +169,10 @@ enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
 enable_manual_linking = false
 # Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
-minimum_password_length = 6
+# Gehostet: Authentication → Sign In / Providers → Email → "Minimum password length" ebenfalls auf 8.
+# Die Prüfung gegen geleakte Passwörter (HaveIBeenPwned) macht die App selbst
+# (lib/passwordBreach.ts), weil Supabases eingebaute Prüfung den Pro-Plan braucht.
+minimum_password_length = 8
 # Passwords that do not meet the following requirements will be rejected as weak. Supported values
 # are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
 password_requirements = ""
@@ -415,6 +418,8 @@ verify_jwt = true
 import_map = "./functions/invite-studio-coordinator/deno.json"
 entrypoint = "./functions/invite-studio-coordinator/index.ts"
 
+# Nur für die lokale Entwicklung: die Function verweigert sich auf gehosteten Projekten
+# (SUPABASE_URL nicht lokal) und ohne Secret ALLOW_TEST_ADMIN=true; die UI zeigt sie nur in `next dev`.
 [functions.create-test-admin]
 enabled = true
 verify_jwt = true

@@ -13,6 +13,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Lokal (supabase start / functions serve) zeigt SUPABASE_URL auf das Docker-Netz,
+// gehostet immer auf https://<ref>.supabase.co.
+const LOCAL_HOSTS = new Set(["kong", "localhost", "127.0.0.1", "host.docker.internal"]);
+function isLocalStack() {
+  try {
+    return LOCAL_HOSTS.has(new URL(SUPABASE_URL).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -25,9 +36,9 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Nur in Entwicklungsumgebungen aktiv: Function-Secret ALLOW_TEST_ADMIN=true setzen.
-  // In produktiven Umgebungen wird die Function gar nicht erst deployt oder bleibt deaktiviert.
-  if (Deno.env.get("ALLOW_TEST_ADMIN") !== "true") {
+  // Nur gegen den lokalen Supabase-Stack und nur mit Function-Secret ALLOW_TEST_ADMIN=true.
+  // Auf gehosteten Projekten (auch wenn das Secret versehentlich gesetzt ist) bleibt sie aus.
+  if (!isLocalStack() || Deno.env.get("ALLOW_TEST_ADMIN") !== "true") {
     return json({ error: "disabled" }, 404);
   }
 
