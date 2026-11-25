@@ -28,7 +28,7 @@ import { t } from "@/i18n/de";
 const authPrefixes = ["/login", "/forgot-password", "/reset-password", "/auth"];
 
 const studioNavItems = [
-  { href: "/monitoring", label: t.studioAdmin.nav.monitoring, icon: LayoutGrid, enabled: false },
+  { href: "/monitoring", label: t.studioAdmin.nav.monitoring, icon: LayoutGrid, enabled: true },
   { href: "/plans", label: t.studioAdmin.nav.plans, icon: Calendar, enabled: true },
   { href: "/studios", label: t.studioAdmin.nav.studios, icon: Building2, enabled: true },
   { href: "/trainers", label: t.studioAdmin.nav.trainers, icon: Users, enabled: true },

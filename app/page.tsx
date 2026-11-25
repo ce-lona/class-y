@@ -46,7 +46,7 @@ export default function Home() {
     if (isPlatformAdmin) {
       router.replace("/companies");
     } else if (company) {
-      router.replace("/studios");
+      router.replace("/monitoring");
     } else if (hasActiveTrainerContract) {
       router.replace("/courses");
     }
