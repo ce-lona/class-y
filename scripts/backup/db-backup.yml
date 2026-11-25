@@ -1,0 +1,73 @@
+name: Nightly DB backup
+
+# Jede Nacht: Supabase-Produktionsdatenbank dumpen, Restore in eine frische
+# Wegwerf-Instanz testen, mit age verschlüsseln und auf IONOS HiDrive ablegen.
+# Anleitung und benötigte Secrets: docs/backup-restore.md
+
+on:
+  schedule:
+    - cron: "15 2 * * *" # 02:15 UTC = 03:15 (Winter) / 04:15 (Sommer) deutscher Zeit
+  workflow_dispatch:
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Dump, restore test, encrypt, upload
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_PUBLIC_KEY }}
+      HIDRIVE_USER: ${{ secrets.HIDRIVE_USER }}
+      HIDRIVE_PASSWORD: ${{ secrets.HIDRIVE_PASSWORD }}
+      HIDRIVE_PATH: ${{ secrets.HIDRIVE_PATH }}
+      KEEP_DAILY: "30"
+      KEEP_MONTHLY: "12"
+    steps:
+      - name: Check secrets
+        run: |
+          missing=0
+          for v in SUPABASE_DB_URL AGE_RECIPIENT HIDRIVE_USER HIDRIVE_PASSWORD HIDRIVE_PATH; do
+            if [ -z "${!v}" ]; then echo "::error::Secret für $v fehlt"; missing=1; fi
+          done
+          exit $missing
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install age and rclone
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq age rclone postgresql-client
+
+      - name: Dump production database
+        run: |
+          stamp="$(date -u +%Y-%m-%dT%H%MZ)"
+          echo "BACKUP_NAME=class-y-${stamp}" >> "$GITHUB_ENV"
+          scripts/backup/dump.sh "$RUNNER_TEMP/class-y-${stamp}"
+
+      - name: Restore test (fresh throwaway Supabase)
+        run: scripts/backup/verify-restore.sh "$RUNNER_TEMP/$BACKUP_NAME"
+
+      - name: Encrypt with age
+        run: |
+          tar -C "$RUNNER_TEMP" -czf - "$BACKUP_NAME" \
+            | age -r "$AGE_RECIPIENT" -o "$RUNNER_TEMP/$BACKUP_NAME.tar.gz.age"
+          rm -rf "${RUNNER_TEMP:?}/${BACKUP_NAME:?}"
+          ls -l "$RUNNER_TEMP/$BACKUP_NAME.tar.gz.age"
+
+      - name: Upload to HiDrive and prune old backups
+        run: scripts/backup/upload-hidrive.sh "$RUNNER_TEMP/$BACKUP_NAME.tar.gz.age"
+
+      - name: Remove local files
+        if: always()
+        run: rm -rf "${RUNNER_TEMP:?}"/class-y-*
