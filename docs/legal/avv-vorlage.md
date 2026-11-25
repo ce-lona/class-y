@@ -109,7 +109,7 @@ Besondere Kategorien personenbezogener Daten (Art. 9 DSGVO) werden nicht verarbe
 **Verfügbarkeit und Belastbarkeit**
 
 - Tägliche Datensicherungen durch Supabase [Tarif prüfen; empfohlen: Pro-Tarif mit Point-in-Time-Recovery], Aufbewahrung [Anzahl] Tage.
-- Hosting auf skalierender Infrastruktur (Vercel, Supabase); Health-Check-Endpunkt; [Fehler- und Verfügbarkeitsüberwachung ergänzen, sobald eingerichtet].
+- Hosting auf skalierender Infrastruktur (Vercel, Supabase); Health-Check-Endpunkt; Fehlerüberwachung mit Sentry (EU-Region), datensparsam konfiguriert: keine Nutzerkennungen, Cookies, Request-Inhalte oder Session Replay, E-Mail-Adressen und Tokens werden vor dem Versand entfernt; [Verfügbarkeitsüberwachung ergänzen, sobald eingerichtet].
 
 **Verfahren zur regelmäßigen Überprüfung**
 
@@ -123,4 +123,5 @@ Besondere Kategorien personenbezogener Daten (Art. 9 DSGVO) werden nicht verarbe
 |---|---|---|---|
 | Supabase Inc., USA | Datenbank, Authentifizierung, Edge Functions | AWS eu-west-1 (Irland, EU) | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |
 | Vercel Inc., USA | Hosting der Web-App | [Funktionsregion, empfohlen fra1 Frankfurt]; Edge-Netzwerk weltweit | EU-US Data Privacy Framework / Standardvertragsklauseln |
+| Functional Software, Inc. (Sentry), USA | Fehlerüberwachung (technische Fehlerberichte, IP-Adresse bei Übermittlung) | EU-Region (Frankfurt, de.sentry.io) | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |
 | Plus Five Five, Inc. (Resend), USA | Versand von System-E-Mails | [Region prüfen, empfohlen eu-west-1] | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |

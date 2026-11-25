@@ -31,6 +31,21 @@ Wenn du class-y aufrufst, verarbeitet unser Hosting-Anbieter automatisch technis
 
 Wir setzen **keine** Analyse-, Tracking- oder Marketing-Tools ein und binden keine Social-Media-Plugins ein. Schriftarten werden von unserem eigenen Server ausgeliefert, es werden dabei keine Daten an Google übermittelt.
 
+## 3a. Fehlerüberwachung (Sentry)
+
+Damit wir technische Fehler schnell erkennen und beheben können, nutzen wir den Dienst Sentry. Tritt in der App ein Fehler auf, wird ein Fehlerbericht an Sentry übermittelt. Er enthält die Fehlermeldung mit technischem Ablauf (Stacktrace), die aufgerufene Seite ohne Parameter, Browser und Betriebssystem, Zeitpunkt sowie bei einem kleinen Teil der Seitenaufrufe Ladezeiten. Bei der Übermittlung ist deine IP-Adresse technisch sichtbar.
+
+Wir haben Sentry so eingestellt, dass möglichst keine personenbezogenen Daten übertragen werden: Es werden keine Nutzer-IDs, Cookies, Formulareingaben oder Anmelde-Tokens gesendet, E-Mail-Adressen werden aus Fehlermeldungen entfernt, und es gibt keine Bildschirmaufzeichnung (Session Replay). Die Daten werden in der EU-Region von Sentry (Frankfurt) gespeichert.
+
+- **Rechtsgrundlage:** Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer stabilen, fehlerfreien App). Da nichts auf deinem Gerät gespeichert oder ausgelesen wird, was nicht für den Dienst nötig ist, ist keine Einwilligung nach § 25 TDDDG erforderlich. [Bei der anwaltlichen Prüfung bestätigen lassen.]
+- **Speicherdauer:** Fehlerberichte werden nach [90] Tagen gelöscht. [Aufbewahrung im Sentry-Tarif prüfen.]
+
+## 3b. Prüfung auf geleakte Passwörter
+
+Wenn du ein Passwort festlegst, prüft dein Browser, ob es in bekannten Datenlecks vorkommt. Dazu wird nur der Anfang (5 Zeichen) eines Hashwerts deines Passworts an den Dienst „Pwned Passwords“ (api.pwnedpasswords.com, betrieben von Troy Hunt über Cloudflare) gesendet. Dein Passwort selbst oder der vollständige Hash verlassen dein Gerät nicht. Der Dienst sieht dabei deine IP-Adresse.
+
+- **Rechtsgrundlage:** Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Sicherheit der Benutzerkonten). [Bei der anwaltlichen Prüfung klären, ob dafür ein AVV nötig oder möglich ist; die IP-Adresse kann alternativ über einen eigenen Server-Endpunkt verborgen werden.]
+
 ## 4. Benutzerkonto und Nutzung der App
 
 Ein Konto bei class-y gibt es nur auf Einladung. Eine öffentliche Registrierung ist nicht möglich.
@@ -75,10 +90,11 @@ Wir setzen folgende Dienstleister ein, die Daten in unserem Auftrag und nach uns
 
 - **Vercel Inc.**, 440 N Barranca Ave #4133, Covina, CA 91723, USA [Anschrift laut DPA prüfen]: Hosting der Website und der App. [Region der Server-Funktionen eintragen, empfohlen: Frankfurt (fra1).]
 - **Supabase Inc.**, [Anschrift laut aktuellem DPA], USA: Datenbank, Benutzerkonten und Anmeldung. Die Daten werden in einem Rechenzentrum in Irland (EU) gespeichert.
+- **Functional Software, Inc. (Sentry)**, [Anschrift laut aktuellem DPA], USA: Fehlerüberwachung. Die Daten werden in der EU-Region (Frankfurt) gespeichert.
 - **Resend** (Plus Five Five, Inc.), [Anschrift laut aktuellem DPA], USA: Versand von E-Mails (Einladungen, Passwort zurücksetzen).
 - [Ggf. E-Mail-Hosting für die Kontaktadresse, z. B. IONOS SE, Elgendorfer Str. 57, 56410 Montabaur.]
 
-**Übermittlung in Drittländer.** Vercel, Supabase und Resend sind Unternehmen mit Sitz außerhalb der EU bzw. mit Konzerngesellschaften in den USA. Ein Zugriff aus den USA ist deshalb nicht ausgeschlossen. Die Übermittlung stützen wir auf den Angemessenheitsbeschluss der EU-Kommission zum EU-US Data Privacy Framework (Art. 45 DSGVO), soweit der Anbieter danach zertifiziert ist, und im Übrigen auf die Standardvertragsklauseln der EU-Kommission (Art. 46 Abs. 2 lit. c DSGVO). [Zertifizierung jedes Anbieters unter dataprivacyframework.gov prüfen und hier konkret benennen.]
+**Übermittlung in Drittländer.** Vercel, Supabase, Sentry und Resend sind Unternehmen mit Sitz außerhalb der EU bzw. mit Konzerngesellschaften in den USA. Ein Zugriff aus den USA ist deshalb nicht ausgeschlossen. Die Übermittlung stützen wir auf den Angemessenheitsbeschluss der EU-Kommission zum EU-US Data Privacy Framework (Art. 45 DSGVO), soweit der Anbieter danach zertifiziert ist, und im Übrigen auf die Standardvertragsklauseln der EU-Kommission (Art. 46 Abs. 2 lit. c DSGVO). [Zertifizierung jedes Anbieters unter dataprivacyframework.gov prüfen und hier konkret benennen.]
 
 ## 9. Deine Rechte
 
