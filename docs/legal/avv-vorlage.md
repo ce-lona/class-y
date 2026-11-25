@@ -121,9 +121,9 @@ Besondere Kategorien personenbezogener Daten (Art. 9 DSGVO) werden nicht verarbe
 
 | Unternehmen | Leistung | Ort der Verarbeitung | Garantie bei Drittlandbezug |
 |---|---|---|---|
-| Supabase Inc., USA | Datenbank, Authentifizierung, Edge Functions | AWS eu-west-1 (Irland, EU) | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |
+| Supabase Pte. Ltd., Singapur (Konzerngesellschaft Supabase, Inc., USA) | Datenbank, Authentifizierung, Edge Functions | AWS eu-west-1 (Irland, EU) | Standardvertragsklauseln |
 | Vercel Inc., USA | Hosting der Web-App | Funktionsregion fra1 (Frankfurt, EU); Edge-Netzwerk weltweit | EU-US Data Privacy Framework / Standardvertragsklauseln |
-| Functional Software, Inc. (Sentry), USA | Fehlerüberwachung (technische Fehlerberichte, IP-Adresse bei Übermittlung) | EU-Region (Frankfurt, de.sentry.io) | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |
+| Functional Software, Inc. (Sentry), USA | Fehlerüberwachung (technische Fehlerberichte, IP-Adresse bei Übermittlung) | EU-Region (Frankfurt, de.sentry.io) | EU-US Data Privacy Framework |
 | IONOS SE, Montabaur, Deutschland | Speicherung verschlüsselter Datenbank-Sicherungen (HiDrive) | Deutschland | – (EU) |
 | GitHub, Inc., USA (Microsoft) | Ausführung der nächtlichen Datensicherung (GitHub Actions); Daten liegen nur während des Laufs unverschlüsselt im Arbeitsspeicher/temporären Speicher des Runners | [Runner-Region; Standard-Runner laufen u. a. in den USA] | EU-US Data Privacy Framework / Standardvertragsklauseln |
-| Plus Five Five, Inc. (Resend), USA | Versand von System-E-Mails | [Region prüfen, empfohlen eu-west-1] | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |
+| Plus Five Five, Inc. (Resend), USA | Versand von System-E-Mails | eu-west-1 (Irland, EU) | EU-US Data Privacy Framework |

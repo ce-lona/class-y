@@ -22,13 +22,13 @@ Nicht nötig (keine personenbezogenen Daten der App): IONOS-DNS allein. Hetzner 
 ## 2. Einstellungen, die zu den Texten passen müssen
 
 - [x] Vercel: Function Region auf **fra1 (Frankfurt)** setzen (erledigt 25.11.2026, wirksam ab nächstem Deployment) (Project Settings → Functions), dann in Datenschutzerklärung und AVV Anlage 3 eintragen.
-- [ ] Resend: Sende-Region **eu-west-1** prüfen bzw. Domain dort anlegen.
+- [x] Resend: Domain class-y.de sendet aus **eu-west-1 (Irland)** (geprüft 25.11.2026).
 - [ ] Supabase: Region eu-west-1 ist laut Projekt-Setup gesetzt, im Dashboard bestätigen.
 - [ ] Backups: Die nächtliche GitHub Action muss einmal erfolgreich gelaufen sein, bevor die AVV-Anlage 2 so unterschrieben wird (Supabase läuft im Free-Tarif ohne eigene Backups).
-- [ ] Supabase: Passwort-Mindestlänge im gehosteten Dashboard erhöhen (lokal steht 6), Wert in AVV Anlage 2 eintragen.
+- [ ] Supabase: Passwort-Mindestlänge im gehosteten Dashboard steht noch auf **6** (App prüft 8) – auf 8 erhöhen, Wert in AVV Anlage 2 eintragen.
 - [ ] 2FA für alle Admin-Zugänge (Supabase, Vercel, Resend, GitHub, Domain).
-- [ ] DPF-Zertifizierung von Supabase, Vercel, Sentry und Resend unter dataprivacyframework.gov nachsehen und in Datenschutzerklärung Abschnitt 8 konkret benennen.
-- [ ] Log-Aufbewahrung von Vercel (je nach Tarif) und Supabase-Auth-Logs nachsehen und in Datenschutzerklärung eintragen.
+- [x] DPF: Vercel, Sentry, Resend (und GitHub) zertifiziert; Supabase nicht, dort gelten Standardvertragsklauseln. Vertragspartner ist Supabase Pte. Ltd. (Singapur). Eingetragen am 25.11.2026.
+- [x] Log-Aufbewahrung: Vercel Hobby 1 Stunde (Pro 1 Tag), Supabase Free 1 Tag (Pro 7 Tage), Sentry 90 Tage. Bei Tarifwechsel Datenschutzerklärung prüfen.
 
 ## 3. Dokumente, die du selbst führen musst
 

@@ -28,7 +28,7 @@ class-y ist eine Software für Fitness-Unternehmen (z. B. Gyms und Studios), mit
 Wenn du class-y aufrufst, verarbeitet unser Hosting-Anbieter automatisch technische Daten, die dein Browser übermittelt: IP-Adresse, Datum und Uhrzeit des Abrufs, aufgerufene Adresse, übertragene Datenmenge, Referrer-URL, Browser und Betriebssystem. Diese Daten sind nötig, um die Website auszuliefern und Angriffe zu erkennen und abzuwehren.
 
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einem sicheren und stabilen Betrieb).
-- **Speicherdauer:** Server-Logs werden von unserem Hosting-Anbieter nach [Anzahl, abhängig vom Vercel-Tarif prüfen] Tagen gelöscht.
+- **Speicherdauer:** Server-Logs werden von unserem Hosting-Anbieter nach spätestens einem Tag gelöscht (derzeit nach einer Stunde).
 
 Wir setzen **keine** Analyse-, Tracking- oder Marketing-Tools ein und binden keine Social-Media-Plugins ein. Schriftarten werden von unserem eigenen Server ausgeliefert, es werden dabei keine Daten an Google übermittelt.
 
@@ -39,7 +39,7 @@ Damit wir technische Fehler schnell erkennen und beheben können, nutzen wir den
 Wir haben Sentry so eingestellt, dass möglichst keine personenbezogenen Daten übertragen werden: Es werden keine Nutzer-IDs, Cookies, Formulareingaben oder Anmelde-Tokens gesendet, E-Mail-Adressen werden aus Fehlermeldungen entfernt, und es gibt keine Bildschirmaufzeichnung (Session Replay). Die Daten werden in der EU-Region von Sentry (Frankfurt) gespeichert.
 
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer stabilen, fehlerfreien App). Da nichts auf deinem Gerät gespeichert oder ausgelesen wird, was nicht für den Dienst nötig ist, ist keine Einwilligung nach § 25 TDDDG erforderlich. [Bei der anwaltlichen Prüfung bestätigen lassen.]
-- **Speicherdauer:** Fehlerberichte werden nach [90] Tagen gelöscht. [Aufbewahrung im Sentry-Tarif prüfen.]
+- **Speicherdauer:** Fehlerberichte werden nach 90 Tagen gelöscht.
 
 ## 3b. Prüfung auf geleakte Passwörter
 
@@ -62,7 +62,7 @@ Ein Konto bei class-y gibt es nur auf Einladung. Eine öffentliche Registrierung
 **Kurse und Vertretungen.** Erfasst werden Kurspläne, gegebene Kurse (Datum, Uhrzeit, Studio, Kursart, Status, Notizen, wer den Kurs wann eingetragen hat) sowie Vertretungsanfragen und deren Annahme oder Ablehnung.
 
 - **Rechtsgrundlage:** Für die Bereitstellung des Kontos und der Funktionen Art. 6 Abs. 1 lit. b DSGVO (Nutzungsverhältnis) bzw., soweit wir im Auftrag eines Unternehmens handeln, die Rechtsgrundlage dieses Unternehmens. Für Sicherheitsprotokolle Art. 6 Abs. 1 lit. f DSGVO.
-- **Speicherdauer:** Solange dein Konto besteht bzw. solange das Unternehmen die Daten benötigt. Wird dein Konto gelöscht, werden dein Profil und die daran hängenden Daten gelöscht, soweit das Unternehmen sie nicht aufgrund gesetzlicher Aufbewahrungspflichten (z. B. für Abrechnungen) weiter benötigt. Sicherheitsprotokolle löschen wir nach [Anzahl] Tagen.
+- **Speicherdauer:** Solange dein Konto besteht bzw. solange das Unternehmen die Daten benötigt. Wird dein Konto gelöscht, werden dein Profil und die daran hängenden Daten gelöscht, soweit das Unternehmen sie nicht aufgrund gesetzlicher Aufbewahrungspflichten (z. B. für Abrechnungen) weiter benötigt. Technische Protokolle unseres Datenbank-Anbieters werden nach einem Tag gelöscht. [Prüfen: Supabase speichert zusätzlich ein Anmelde-Protokoll (auth.audit_log_entries) in der Datenbank; ggf. regelmäßig bereinigen und hier eine Frist nennen.]
 
 ## 5. Kund:innen (Unternehmen)
 
@@ -89,14 +89,14 @@ Rechtsgrundlage ist § 25 Abs. 2 Nr. 2 TDDDG (unbedingt erforderlich für den vo
 
 Wir setzen folgende Dienstleister ein, die Daten in unserem Auftrag und nach unseren Weisungen verarbeiten. Mit allen haben wir Verträge zur Auftragsverarbeitung nach Art. 28 DSGVO geschlossen.
 
-- **Vercel Inc.**, 440 N Barranca Ave #4133, Covina, CA 91723, USA [Anschrift laut DPA prüfen]: Hosting der Website und der App. Die Server-Funktionen laufen in Frankfurt (EU); statische Inhalte werden über Vercels weltweites Netzwerk ausgeliefert.
-- **Supabase Inc.**, [Anschrift laut aktuellem DPA], USA: Datenbank, Benutzerkonten und Anmeldung. Die Daten werden in einem Rechenzentrum in Irland (EU) gespeichert.
-- **Functional Software, Inc. (Sentry)**, [Anschrift laut aktuellem DPA], USA: Fehlerüberwachung. Die Daten werden in der EU-Region (Frankfurt) gespeichert.
-- **Resend** (Plus Five Five, Inc.), [Anschrift laut aktuellem DPA], USA: Versand von E-Mails (Einladungen, Passwort zurücksetzen).
+- **Vercel Inc.**, 440 N Barranca Ave #4133, Covina, CA 91723, USA: Hosting der Website und der App. Die Server-Funktionen laufen in Frankfurt (EU); statische Inhalte werden über Vercels weltweites Netzwerk ausgeliefert.
+- **Supabase Pte. Ltd.**, 65 Chulia Street #38-02/03, OCBC Centre, Singapur 049513 (mit Konzerngesellschaft Supabase, Inc., USA): Datenbank, Benutzerkonten und Anmeldung. Die Daten werden in einem Rechenzentrum in Irland (EU) gespeichert.
+- **Functional Software, Inc. (Sentry)**, 45 Fremont Street, 8th Floor, San Francisco, CA 94105, USA: Fehlerüberwachung. Die Daten werden in der EU-Region (Frankfurt) gespeichert.
+- **Resend** (Plus Five Five, Inc.), 2261 Market Street #5039, San Francisco, CA 94114, USA: Versand von E-Mails (Einladungen, Passwort zurücksetzen) über Server in Irland (EU).
 - **IONOS SE**, Elgendorfer Str. 57, 56410 Montabaur, Deutschland: Speicherung verschlüsselter Datensicherungen (HiDrive) [ggf. auch E-Mail-Postfach für die Kontaktadresse].
-- **GitHub, Inc.**, 88 Colin P. Kelly Jr. St, San Francisco, CA 94107, USA [Anschrift laut DPA prüfen]: Ausführung der nächtlichen Datensicherung. Die Sicherung wird dort erstellt, verschlüsselt und anschließend gelöscht.
+- **GitHub, Inc.**, 88 Colin P. Kelly Jr. St, San Francisco, CA 94107, USA: Ausführung der nächtlichen Datensicherung. Die Sicherung wird dort erstellt, verschlüsselt und anschließend gelöscht.
 
-**Übermittlung in Drittländer.** Vercel, Supabase, Sentry, GitHub und Resend sind Unternehmen mit Sitz außerhalb der EU bzw. mit Konzerngesellschaften in den USA. Ein Zugriff aus den USA ist deshalb nicht ausgeschlossen. Die Übermittlung stützen wir auf den Angemessenheitsbeschluss der EU-Kommission zum EU-US Data Privacy Framework (Art. 45 DSGVO), soweit der Anbieter danach zertifiziert ist, und im Übrigen auf die Standardvertragsklauseln der EU-Kommission (Art. 46 Abs. 2 lit. c DSGVO). [Zertifizierung jedes Anbieters unter dataprivacyframework.gov prüfen und hier konkret benennen.]
+**Übermittlung in Drittländer.** Vercel, Sentry, Resend und GitHub haben ihren Sitz in den USA, Supabase in Singapur mit einer Konzerngesellschaft in den USA. Die Daten liegen zwar in der EU, ein Zugriff von außerhalb der EU ist aber nicht ausgeschlossen. Vercel, Sentry, Resend und GitHub sind nach dem EU-US Data Privacy Framework zertifiziert; die Übermittlung stützt sich insoweit auf den Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO). Mit Supabase sind Standardvertragsklauseln der EU-Kommission vereinbart (Art. 46 Abs. 2 lit. c DSGVO).
 
 ## 9. Deine Rechte
 
