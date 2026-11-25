@@ -30,6 +30,7 @@ import {
   useTrainerStudioSlots,
 } from "@/hooks/useCourseSessions";
 import { useCourseTypes } from "@/hooks/useCourseTypes";
+import { isCourseTypeAvailableInStudio } from "@/lib/courseTypes";
 import {
   addMinutesToTime,
   formatTimeShort,
@@ -70,7 +71,10 @@ export default function LogCoursePage() {
     studios?.find((st) => st.studio_id === studioId) ?? studios?.[0] ?? null;
   const effectiveStudioId = effectiveStudio?.studio_id ?? "";
 
-  const { data: courseTypes } = useCourseTypes(effectiveStudio?.company_id ?? "");
+  const { data: allCourseTypes } = useCourseTypes(effectiveStudio?.company_id ?? "");
+  const courseTypes = allCourseTypes?.filter((ct) =>
+    isCourseTypeAvailableInStudio(ct, effectiveStudioId)
+  );
   const effectiveCourseType =
     courseTypes?.find((ct) => ct.id === courseTypeId) ?? courseTypes?.[0] ?? null;
   const effectiveCourseTypeId = effectiveCourseType?.id ?? "";

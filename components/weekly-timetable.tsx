@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, Trash2 } from "lucide-react";
+import { Building2, Clock, MapPin, Trash2 } from "lucide-react";
 import { formatTimeShort, getCourseTypeAccent, getInitials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
@@ -16,6 +16,8 @@ export interface TimetableSlot {
   trainer_id: string;
   trainer_name: string | null;
   trainer_email: string;
+  studio_name?: string | null;
+  company_name?: string | null;
 }
 
 const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
@@ -31,9 +33,11 @@ function sortSlots(slots: TimetableSlot[]): TimetableSlot[] {
 function SlotCard({
   slot,
   onRemove,
+  hideTrainer,
 }: {
   slot: TimetableSlot;
   onRemove?: (id: string) => void;
+  hideTrainer?: boolean;
 }) {
   const accent = getCourseTypeAccent(slot.course_type_id);
   const displayName = slot.trainer_name || slot.trainer_email;
@@ -69,12 +73,31 @@ function SlotCard({
         {slot.course_type_name}
       </p>
 
-      <div className="mt-2 flex items-center gap-1.5">
-        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary-100 text-[10px] font-bold text-primary-700 dark:bg-primary-900/60 dark:text-primary-200">
-          {getInitials(slot.trainer_name, slot.trainer_email)}
-        </span>
-        <span className="truncate text-xs text-muted-foreground">{displayName}</span>
-      </div>
+      {!hideTrainer && (
+        <div className="mt-2 flex items-center gap-1.5">
+          <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary-100 text-[10px] font-bold text-primary-700 dark:bg-primary-900/60 dark:text-primary-200">
+            {getInitials(slot.trainer_name, slot.trainer_email)}
+          </span>
+          <span className="truncate text-xs text-muted-foreground">{displayName}</span>
+        </div>
+      )}
+
+      {(slot.company_name || slot.studio_name) && (
+        <div className="mt-2 space-y-0.5 border-t border-border/70 pt-1.5 text-[11px] text-muted-foreground">
+          {slot.company_name && (
+            <p className="flex items-center gap-1 truncate font-semibold text-foreground/85">
+              <Building2 className="size-3 shrink-0 text-primary" />
+              <span className="truncate">{slot.company_name}</span>
+            </p>
+          )}
+          {slot.studio_name && (
+            <p className="flex items-center gap-1 truncate">
+              <MapPin className="size-3 shrink-0" />
+              <span className="truncate">{slot.studio_name}</span>
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -82,9 +105,11 @@ function SlotCard({
 export function WeeklyTimetable({
   slots,
   onRemoveSlot,
+  hideTrainer = false,
 }: {
   slots: TimetableSlot[];
   onRemoveSlot?: (id: string) => void;
+  hideTrainer?: boolean;
 }) {
   const firstDayWithSlots = WEEKDAYS.find((day) => slots.some((s) => s.weekday === day)) ?? 1;
   const [selectedDay, setSelectedDay] = useState<number>(firstDayWithSlots);
@@ -118,7 +143,12 @@ export function WeeklyTimetable({
               <div className="flex min-h-[210px] flex-1 flex-col gap-2 p-2.5">
                 {daySlots.length > 0 ? (
                   daySlots.map((slot) => (
-                    <SlotCard key={slot.id} slot={slot} onRemove={onRemoveSlot} />
+                    <SlotCard
+                      key={slot.id}
+                      slot={slot}
+                      onRemove={onRemoveSlot}
+                      hideTrainer={hideTrainer}
+                    />
                   ))
                 ) : (
                   <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground/50">
@@ -179,7 +209,12 @@ export function WeeklyTimetable({
           {mobileDaySlots.length > 0 ? (
             <div className="space-y-2.5">
               {mobileDaySlots.map((slot) => (
-                <SlotCard key={slot.id} slot={slot} onRemove={onRemoveSlot} />
+                <SlotCard
+                  key={slot.id}
+                  slot={slot}
+                  onRemove={onRemoveSlot}
+                  hideTrainer={hideTrainer}
+                />
               ))}
             </div>
           ) : (

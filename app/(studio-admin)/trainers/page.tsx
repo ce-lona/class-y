@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Plus, Send, Users, X } from "lucide-react";
-import { Controller, useForm } from "react-hook-form";
+import { AlertTriangle, CheckCircle2, Plus, Send, Users } from "lucide-react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Drawer } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -37,6 +38,7 @@ import {
   offerContractSchema,
   parseRateAmount,
   rateModelOptions,
+  suggestEmailTypo,
   type OfferContractFormInput,
 } from "@/lib/validators";
 import { t } from "@/i18n/de";
@@ -60,11 +62,15 @@ export default function TrainersPage() {
     handleSubmit,
     reset,
     setError,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<OfferContractFormInput>({
     resolver: zodResolver(offerContractSchema),
     defaultValues: { employmentType: "freelancer", rateModel: "per_course" },
   });
+
+  const watchedEmail = useWatch({ control, name: "email" }) ?? "";
+  const emailSuggestion = suggestEmailTypo(watchedEmail);
 
   async function onSubmit(values: OfferContractFormInput) {
     if (!company) return;
@@ -138,11 +144,11 @@ export default function TrainersPage() {
         <Button
           onClick={() => {
             setSuccess(null);
-            setFormOpen((open) => !open);
+            setFormOpen(true);
           }}
           className="gap-1.5"
         >
-          {formOpen ? <X className="size-4" /> : <Plus className="size-4" />}
+          <Plus className="size-4" />
           <span>{t.contracts.offerTitle}</span>
         </Button>
       </div>
@@ -154,76 +160,92 @@ export default function TrainersPage() {
         </div>
       )}
 
-      {formOpen && (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-          className="grid gap-4 rounded-xl border border-border bg-card p-5 sm:grid-cols-2"
-        >
-          <div className="space-y-1 sm:col-span-2">
-            <div className="flex items-center gap-2">
-              <Send className="size-4 text-primary" />
-              <h2 className="font-heading text-base font-bold">{t.contracts.offerTitle}</h2>
-            </div>
-            <p className="text-xs text-muted-foreground">{t.contracts.companyHint}</p>
-          </div>
-
-          <div className="space-y-1.5 sm:col-span-2">
+      <Drawer
+        open={formOpen}
+        onClose={() => {
+          reset();
+          setFormOpen(false);
+        }}
+        title={t.contracts.offerTitle}
+        description={t.contracts.companyHint}
+      >
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+          <div className="space-y-1.5">
             <Label htmlFor="contract-email">{t.contracts.email}</Label>
             <Input id="contract-email" type="email" {...register("email")} />
+            {emailSuggestion && (
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning-bg px-3 py-2 text-xs text-warning">
+                <span className="flex items-center gap-1.5">
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  <span>
+                    {t.contracts.emailTypoHint}{" "}
+                    <strong className="font-semibold">{emailSuggestion}</strong>?
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setValue("email", emailSuggestion, { shouldValidate: true })}
+                  className="shrink-0 font-bold underline hover:opacity-80"
+                >
+                  {t.contracts.emailTypoFix}
+                </button>
+              </div>
+            )}
             {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="contract-employment">{t.contracts.employmentType}</Label>
-            <Controller
-              control={control}
-              name="employmentType"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id="contract-employment" className="w-full">
-                    <SelectValue>
-                      {(value: string) =>
-                        employmentTypeOptions.find((option) => option.value === value)?.label
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {employmentTypeOptions.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="contract-employment">{t.contracts.employmentType}</Label>
+              <Controller
+                control={control}
+                name="employmentType"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="contract-employment" className="w-full">
+                      <SelectValue>
+                        {(value: string) =>
+                          employmentTypeOptions.find((option) => option.value === value)?.label
+                        }
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {employmentTypeOptions.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="contract-model">{t.contracts.rateModel}</Label>
-            <Controller
-              control={control}
-              name="rateModel"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id="contract-model" className="w-full">
-                    <SelectValue>
-                      {(value: string) =>
-                        rateModelOptions.find((option) => option.value === value)?.label
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {rateModelOptions.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="contract-model">{t.contracts.rateModel}</Label>
+              <Controller
+                control={control}
+                name="rateModel"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="contract-model" className="w-full">
+                      <SelectValue>
+                        {(value: string) =>
+                          rateModelOptions.find((option) => option.value === value)?.label
+                        }
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rateModelOptions.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -234,32 +256,32 @@ export default function TrainersPage() {
             )}
           </div>
 
-          <div className="hidden sm:block" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="contract-from">{t.contracts.validFrom}</Label>
+              <Input id="contract-from" type="date" {...register("validFrom")} />
+              {errors.validFrom && (
+                <p className="text-sm text-destructive">{errors.validFrom.message}</p>
+              )}
+            </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="contract-from">{t.contracts.validFrom}</Label>
-            <Input id="contract-from" type="date" {...register("validFrom")} />
-            {errors.validFrom && (
-              <p className="text-sm text-destructive">{errors.validFrom.message}</p>
-            )}
+            <div className="space-y-1.5">
+              <Label htmlFor="contract-to">{t.contracts.validTo}</Label>
+              <Input id="contract-to" type="date" {...register("validTo")} />
+              {errors.validTo && (
+                <p className="text-sm text-destructive">{errors.validTo.message}</p>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="contract-to">{t.contracts.validTo}</Label>
-            <Input id="contract-to" type="date" {...register("validTo")} />
-            {errors.validTo && (
-              <p className="text-sm text-destructive">{errors.validTo.message}</p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 pt-1 sm:col-span-2">
-            <Button type="submit" disabled={isSubmitting} className="gap-1.5">
+          <div className="flex items-center gap-2 border-t border-border pt-4">
+            <Button type="submit" disabled={isSubmitting} className="flex-1 gap-1.5">
               <Send className="size-4" />
               <span>{t.contracts.offer}</span>
             </Button>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={() => {
                 reset();
                 setFormOpen(false);
@@ -269,7 +291,7 @@ export default function TrainersPage() {
             </Button>
           </div>
         </form>
-      )}
+      </Drawer>
 
       {contracts && contracts.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
@@ -318,40 +340,49 @@ export default function TrainersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t.trainers.tableTrainer}</TableHead>
-                <TableHead>{t.trainers.tableContract}</TableHead>
-                <TableHead>{t.trainers.tableValidity}</TableHead>
-                <TableHead>{t.trainers.tableStatus}</TableHead>
-                <TableHead className="text-right">{t.trainers.tableAction}</TableHead>
+                <TableHead className="px-3.5">{t.trainers.tableTrainer}</TableHead>
+                <TableHead className="px-3">{t.trainers.tableContract}</TableHead>
+                <TableHead className="hidden px-3 lg:table-cell">
+                  {t.trainers.tableValidity}
+                </TableHead>
+                <TableHead className="px-3">{t.trainers.tableStatus}</TableHead>
+                <TableHead className="px-3.5 text-right">{t.trainers.tableAction}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredContracts.map((c) => (
                 <TableRow key={c.id}>
-                  <TableCell>
+                  <TableCell className="max-w-[240px] whitespace-normal px-3.5">
                     <div className="flex items-center gap-3">
                       <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-900/60 dark:text-primary-200">
                         {getInitials(c.trainer_name, c.trainer_email)}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold">{c.trainer_name || c.trainer_email}</p>
+                        <p className="truncate font-semibold">
+                          {c.trainer_name || c.trainer_email}
+                        </p>
                         {c.trainer_name && (
-                          <p className="text-xs text-muted-foreground">{c.trainer_email}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {c.trainer_email}
+                          </p>
                         )}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatContractTerms(c)}
+                  <TableCell className="whitespace-normal px-3 text-muted-foreground">
+                    <p className="font-medium text-foreground">{formatContractTerms(c)}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground lg:hidden">
+                      {formatContractValidity(c)}
+                    </p>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="hidden whitespace-normal px-3 text-muted-foreground lg:table-cell">
                     {formatContractValidity(c)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-3">
                     <ContractStatusBadge status={c.status} />
                   </TableCell>
-                  <TableCell className="text-right">
-                    {(c.status === "active" || c.status === "pending") ? (
+                  <TableCell className="px-3.5 text-right">
+                    {c.status === "active" || c.status === "pending" ? (
                       <Button
                         size="sm"
                         variant="outline"

@@ -10,6 +10,7 @@ test("Company anlegen, Studio anlegen, Admin hinzufügen", async ({ page }) => {
 
   // Company anlegen
   await page.goto("/companies");
+  await page.getByRole("button", { name: "Neue Company" }).click();
   await page.getByLabel("Name").fill(companyName);
   await page.getByRole("button", { name: "Company anlegen" }).click();
   await expect(page.getByRole("link", { name: new RegExp(companyName) })).toBeVisible();

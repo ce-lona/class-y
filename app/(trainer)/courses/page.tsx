@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  Building2,
   CalendarCheck,
+  CalendarRange,
   Check,
   Clock,
   FileText,
@@ -71,9 +73,11 @@ function SessionStatusBadge({ status }: { status: MyCourseSession["status"] }) {
 
 function PlannedCourseCard({
   item,
+  highlighted = false,
   onLogged,
 }: {
   item: WeekSlotOccurrence;
+  highlighted?: boolean;
   onLogged: (error: string | null) => void;
 }) {
   const logSession = useLogCourseSession();
@@ -110,23 +114,40 @@ function PlannedCourseCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border border-l-4 bg-card p-4 shadow-xs transition-colors sm:p-5",
-        accent.border
+        "rounded-2xl border p-4 shadow-xs transition-colors sm:p-5",
+        highlighted
+          ? "border-primary bg-primary text-primary-foreground"
+          : cn("border-border border-l-4 bg-card", accent.border)
       )}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
+          {highlighted && (
+            <p className="mb-1 text-xs font-semibold text-primary-foreground/80">
+              {t.trainer.nextCourseToday}
+            </p>
+          )}
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-heading text-base font-bold text-foreground">
+            <h2
+              className={cn(
+                "font-heading text-base font-bold",
+                highlighted ? "text-primary-foreground" : "text-foreground"
+              )}
+            >
               {item.slot.course_type_name}
             </h2>
-            {item.isToday && !item.session && (
+            {item.isToday && !item.session && !highlighted && (
               <Badge className="bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200">
                 {t.trainer.today}
               </Badge>
             )}
           </div>
-          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-muted-foreground">
+          <p
+            className={cn(
+              "mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm",
+              highlighted ? "text-primary-foreground/85" : "text-muted-foreground"
+            )}
+          >
             <span className="inline-flex items-center gap-1 font-medium tabular-nums">
               <Clock className="size-3.5" />
               <span>
@@ -134,12 +155,29 @@ function PlannedCourseCard({
                 {formatTimeShort(item.slot.end_time)}
               </span>
             </span>
-            <span aria-hidden="true">·</span>
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="size-3.5" />
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md px-2 py-0.5",
+                highlighted
+                  ? "bg-white/15 text-primary-foreground"
+                  : "bg-muted/70 text-foreground"
+              )}
+            >
+              <Building2 className="size-3 shrink-0" />
+              <span>{item.slot.company_name}</span>
+            </span>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1",
+                highlighted ? "text-primary-foreground/85" : "text-muted-foreground"
+              )}
+            >
+              <MapPin className="size-3 shrink-0" />
               <span>{item.slot.studio_name}</span>
             </span>
-          </p>
+          </div>
         </div>
 
         {item.session && <SessionStatusBadge status={item.session.status} />}
@@ -154,7 +192,7 @@ function PlannedCourseCard({
       {!item.session && (
         <div className="mt-4 space-y-2.5">
           {cancelling ? (
-            <div className="space-y-2.5 rounded-xl border border-border bg-background/60 p-3">
+            <div className="space-y-2.5 rounded-xl border border-border bg-card p-3 text-foreground">
               <Input
                 value={cancelNote}
                 onChange={(e) => setCancelNote(e.target.value)}
@@ -190,9 +228,13 @@ function PlannedCourseCard({
               <Button
                 type="button"
                 size="lg"
+                variant={highlighted ? "secondary" : "default"}
                 disabled={logSession.isPending}
                 onClick={() => submitStatus("completed")}
-                className="h-11 flex-1 gap-2"
+                className={cn(
+                  "h-11 flex-1 gap-2",
+                  highlighted && "bg-white text-primary-800 hover:bg-white/90"
+                )}
               >
                 <Check className="size-4" />
                 <span>{t.trainer.markCompleted}</span>
@@ -203,9 +245,18 @@ function PlannedCourseCard({
                 size="lg"
                 disabled={logSession.isPending}
                 onClick={() => setCancelling(true)}
-                className="h-11 gap-1.5"
+                className={cn(
+                  "h-11 gap-1.5",
+                  highlighted &&
+                    "border-white/30 bg-white/10 text-primary-foreground hover:bg-white/20"
+                )}
               >
-                <XCircle className="size-4 text-muted-foreground" />
+                <XCircle
+                  className={cn(
+                    "size-4",
+                    highlighted ? "text-primary-foreground" : "text-muted-foreground"
+                  )}
+                />
                 <span>{t.trainer.markCancelled}</span>
               </Button>
             </div>
@@ -224,6 +275,8 @@ export default function TrainerCoursesPage() {
   const deleteSession = useDeleteCourseSession();
 
   const [tab, setTab] = useState<CoursesTab>("upcoming");
+  const [companyFilter, setCompanyFilter] = useState<string>("all");
+  const [studioFilter, setStudioFilter] = useState<string>("all");
   const [actionError, setActionError] = useState<string | null>(null);
 
   const hasActiveContract = (myContracts ?? []).some((c) => c.status === "active");
@@ -234,12 +287,42 @@ export default function TrainerCoursesPage() {
     (sl) => sl.scheduled_trainer_id === session?.user.id
   );
 
+  // Filter-Optionen aus eigenen Slots & erfassten Kursen sammeln
+  const companyMap = new Map<string, string>();
+  const studioEntries: { id: string; name: string; companyId: string }[] = [];
+  const seenStudios = new Set<string>();
+
+  for (const sl of ownSlots) {
+    companyMap.set(sl.company_id, sl.company_name);
+    if (!seenStudios.has(sl.studio_id)) {
+      seenStudios.add(sl.studio_id);
+      studioEntries.push({ id: sl.studio_id, name: sl.studio_name, companyId: sl.company_id });
+    }
+  }
+  for (const ms of mySessions ?? []) {
+    companyMap.set(ms.company_id, ms.company_name);
+    if (!seenStudios.has(ms.studio_id)) {
+      seenStudios.add(ms.studio_id);
+      studioEntries.push({ id: ms.studio_id, name: ms.studio_name, companyId: ms.company_id });
+    }
+  }
+
+  const companies = Array.from(companyMap.entries()).sort((a, b) => a[1].localeCompare(b[1], "de"));
+  const studios = studioEntries
+    .filter((st) => companyFilter === "all" || st.companyId === companyFilter)
+    .sort((a, b) => a.name.localeCompare(b.name, "de"));
+
+  const showFilterBar = companies.length > 1 || studios.length > 1;
+
   // Für jeden Tag der aktuellen Woche die geplanten eigenen Slots auflisten
-  // (inkl. Zuordnung, ob bereits erfasst).
   const weekOccurrences: WeekSlotOccurrence[] = [];
   for (const day of weekDays) {
     const daySlots = ownSlots.filter(
-      (sl) => sl.weekday === day.weekday && sl.plan_valid_from <= day.isoDate
+      (sl) =>
+        sl.weekday === day.weekday &&
+        sl.plan_valid_from <= day.isoDate &&
+        (companyFilter === "all" || sl.company_id === companyFilter) &&
+        (studioFilter === "all" || sl.studio_id === studioFilter)
     );
     for (const slot of daySlots) {
       const existing =
@@ -256,13 +339,21 @@ export default function TrainerCoursesPage() {
     }
   }
 
-  // Heute + noch offene Termine zuerst anzeigen
   const sortedWeek = [...weekOccurrences].sort((a, b) => {
     if (a.isToday !== b.isToday) return a.isToday ? -1 : 1;
     const dateCmp = a.isoDate.localeCompare(b.isoDate);
     if (dateCmp !== 0) return dateCmp;
     return formatTimeShort(a.slot.start_time).localeCompare(formatTimeShort(b.slot.start_time));
   });
+
+  const filteredSessions = (mySessions ?? []).filter((s) => {
+    if (companyFilter !== "all" && s.company_id !== companyFilter) return false;
+    if (studioFilter !== "all" && s.studio_id !== studioFilter) return false;
+    return true;
+  });
+
+  const firstUnloggedTodayKey =
+    sortedWeek.find((item) => item.isToday && !item.session)?.key ?? null;
 
   async function handleUndo(sessionId: string) {
     setActionError(null);
@@ -314,14 +405,105 @@ export default function TrainerCoursesPage() {
           </p>
         </div>
 
-        <Link
-          href="/courses/log"
-          className={cn(buttonVariants({ size: "default" }), "gap-1.5")}
-        >
-          <Plus className="size-4" />
-          <span>{t.trainer.logCourse}</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/courses/schedule"
+            className={cn(buttonVariants({ variant: "outline", size: "default" }), "gap-1.5")}
+          >
+            <CalendarRange className="size-4" />
+            <span>{t.trainer.navSchedule}</span>
+          </Link>
+          <Link
+            href="/courses/log"
+            className={cn(buttonVariants({ size: "default" }), "gap-1.5")}
+          >
+            <Plus className="size-4" />
+            <span>{t.trainer.logCourse}</span>
+          </Link>
+        </div>
       </div>
+
+      {showFilterBar && (
+        <div className="space-y-2 rounded-xl border border-border bg-card p-3.5">
+          {companies.length > 1 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground">
+                <Building2 className="size-3.5" />
+                <span>{t.trainer.filterCompany}:</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setCompanyFilter("all");
+                  setStudioFilter("all");
+                }}
+                className={cn(
+                  "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
+                  companyFilter === "all"
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t.trainer.filterAll}
+              </button>
+              {companies.map(([id, name]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    setCompanyFilter(id);
+                    setStudioFilter("all");
+                  }}
+                  className={cn(
+                    "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
+                    companyFilter === id
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {studios.length > 1 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground">
+                <MapPin className="size-3.5" />
+                <span>{t.trainer.filterStudio}:</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setStudioFilter("all")}
+                className={cn(
+                  "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
+                  studioFilter === "all"
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t.trainer.filterAll}
+              </button>
+              {studios.map((st) => (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => setStudioFilter(st.id)}
+                  className={cn(
+                    "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
+                    studioFilter === st.id
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {st.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div
         role="tablist"
@@ -360,9 +542,9 @@ export default function TrainerCoursesPage() {
           )}
         >
           <span>{t.trainer.tabLogged}</span>
-          {mySessions && mySessions.length > 0 && (
+          {filteredSessions.length > 0 && (
             <span className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] leading-none font-bold text-foreground">
-              {mySessions.length}
+              {filteredSessions.length}
             </span>
           )}
         </button>
@@ -380,7 +562,12 @@ export default function TrainerCoursesPage() {
         ) : sortedWeek.length > 0 ? (
           <div className="space-y-3">
             {sortedWeek.map((item) => (
-              <PlannedCourseCard key={item.key} item={item} onLogged={setActionError} />
+              <PlannedCourseCard
+                key={item.key}
+                item={item}
+                highlighted={item.key === firstUnloggedTodayKey}
+                onLogged={setActionError}
+              />
             ))}
           </div>
         ) : (
@@ -403,9 +590,9 @@ export default function TrainerCoursesPage() {
         )
       ) : sessionsLoading ? (
         <p className="text-sm text-muted-foreground">{t.common.loading}</p>
-      ) : mySessions && mySessions.length > 0 ? (
+      ) : filteredSessions.length > 0 ? (
         <ul className="space-y-3">
-          {mySessions.map((s) => {
+          {filteredSessions.map((s) => {
             const accent = getCourseTypeAccent(s.course_type_id ?? s.id);
             return (
               <li
@@ -416,7 +603,7 @@ export default function TrainerCoursesPage() {
                 )}
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="min-w-0 space-y-1">
+                  <div className="min-w-0 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-heading text-base font-bold">
                         {s.course_type_name || t.trainer.adHocBadge}
@@ -442,12 +629,18 @@ export default function TrainerCoursesPage() {
                           {formatTimeShort(s.end_time)}
                         </span>
                       </span>
-                      <span aria-hidden="true">·</span>
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="size-3.5" />
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-muted/70 px-2 py-0.5 text-foreground">
+                        <Building2 className="size-3 shrink-0" />
+                        <span>{s.company_name}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="size-3 shrink-0" />
                         <span>{s.studio_name}</span>
                       </span>
-                    </p>
+                    </div>
                   </div>
 
                   {!s.locked_at && (

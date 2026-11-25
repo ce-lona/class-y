@@ -68,8 +68,41 @@ export const employmentTypeOptions = [
 export const rateModelOptions = [
   { value: "per_course", label: t.contracts.rateModels.per_course },
   { value: "hourly", label: t.contracts.rateModels.hourly },
+  { value: "per_minute", label: t.contracts.rateModels.per_minute },
   { value: "fixed", label: t.contracts.rateModels.fixed },
 ] as const;
+
+const COMMON_EMAIL_DOMAIN_TYPOS: Record<string, string> = {
+  "gnail.com": "gmail.com",
+  "gmial.com": "gmail.com",
+  "gmai.com": "gmail.com",
+  "gmal.com": "gmail.com",
+  "gamil.com": "gmail.com",
+  "gmail.de": "gmail.com",
+  "gmail.con": "gmail.com",
+  "hotnail.com": "hotmail.com",
+  "hotmial.com": "hotmail.com",
+  "outlok.com": "outlook.com",
+  "outllok.com": "outlook.com",
+  "yaho.com": "yahoo.com",
+  "yahooo.com": "yahoo.com",
+  "iclod.com": "icloud.com",
+  "icoud.com": "icloud.com",
+  "web.ed": "web.de",
+  "gmxx.de": "gmx.de",
+  "gxm.de": "gmx.de",
+  "t-onlien.de": "t-online.de",
+};
+
+export function suggestEmailTypo(rawEmail: string): string | null {
+  const trimmed = rawEmail.trim();
+  const atIndex = trimmed.lastIndexOf("@");
+  if (atIndex <= 0) return null;
+  const local = trimmed.slice(0, atIndex);
+  const domain = trimmed.slice(atIndex + 1).toLowerCase();
+  const replacement = COMMON_EMAIL_DOMAIN_TYPOS[domain];
+  return replacement ? `${local}@${replacement}` : null;
+}
 
 // rateAmount bleibt im Formular ein String (Dezimalkomma erlaubt) und wird beim
 // Absenden mit parseRateAmount in eine Zahl umgewandelt.
@@ -93,7 +126,7 @@ export const offerContractSchema = z
   .object({
     email,
     employmentType: z.enum(["freelancer", "minijob", "festangestellt"]),
-    rateModel: z.enum(["per_course", "hourly", "fixed"]),
+    rateModel: z.enum(["per_course", "hourly", "per_minute", "fixed"]),
     rateAmount: z
       .string()
       .min(1, t.contracts.rateAmountRequired)

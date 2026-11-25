@@ -57,6 +57,10 @@ test("Kurstypen anlegen, Wochen-Stundenplan veröffentlichen und als neue Versio
 
   // 4. Zurück zum Stundenplan-Tab, Studio auswählen und Version 1 veröffentlichen
   await page.getByRole("tab", { name: "Stundenpläne" }).click();
+  await expect(page.getByRole("tab", { name: "Stundenpläne" })).toHaveAttribute(
+    "aria-selected",
+    "true"
+  );
   await page.getByRole("button", { name: studioName }).click();
   await expect(page.getByText("Noch kein Kursplan für dieses Studio.")).toBeVisible();
 

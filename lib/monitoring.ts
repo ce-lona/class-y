@@ -135,6 +135,8 @@ export function summarizeByTrainer(rows: MonitoringRow[]): TrainerMonitoringSumm
         entry.estimatedAmount = entry.completedCount * entry.rate_amount;
       } else if (entry.rate_model === "hourly") {
         entry.estimatedAmount = (entry.completedMinutes / 60) * entry.rate_amount;
+      } else if (entry.rate_model === "per_minute") {
+        entry.estimatedAmount = entry.completedMinutes * entry.rate_amount;
       } else if (entry.rate_model === "fixed") {
         entry.estimatedAmount = entry.rate_amount;
       }

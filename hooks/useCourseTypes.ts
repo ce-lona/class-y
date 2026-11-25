@@ -17,7 +17,7 @@ export function useCourseTypes(companyId: string) {
 export function useCreateCourseType(companyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { name: string; default_duration_min: number }) =>
+    mutationFn: (input: { name: string; default_duration_min: number; studio_ids?: string[] }) =>
       createCourseType({ company_id: companyId, ...input }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["course-types", companyId] });
@@ -32,11 +32,13 @@ export function useUpdateCourseType(companyId: string) {
       id,
       name,
       default_duration_min,
+      studio_ids,
     }: {
       id: string;
       name: string;
       default_duration_min: number;
-    }) => updateCourseType(id, { name, default_duration_min }),
+      studio_ids?: string[];
+    }) => updateCourseType(id, { name, default_duration_min, studio_ids }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["course-types", companyId] });
       queryClient.invalidateQueries({ queryKey: ["course-plans"] });

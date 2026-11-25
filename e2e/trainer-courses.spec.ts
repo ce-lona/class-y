@@ -71,6 +71,10 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await expect(page.getByText(courseTypeName)).toBeVisible();
 
   await page.getByRole("tab", { name: "Stundenpläne" }).click();
+  await expect(page.getByRole("tab", { name: "Stundenpläne" })).toHaveAttribute(
+    "aria-selected",
+    "true"
+  );
   await page.getByRole("button", { name: studioName }).click();
   await page.getByRole("button", { name: "Kursplan anlegen" }).click();
   await page.locator("#plan-valid-from").fill(todayISO());
@@ -84,7 +88,12 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await page.getByRole("button", { name: "Kursplan veröffentlichen" }).click();
   await expect(page.getByText("Neue Kursplan-Version veröffentlicht.")).toBeVisible();
 
-  // 3. Trainer-Ansicht (/courses): heutigen Kurs mit 1 Tap als gegeben markieren
+  // 3. Trainer-Ansicht (/courses) & eigener Stundenplan (/courses/schedule)
+  await page.goto("/courses/schedule");
+  await expect(page.getByRole("heading", { name: "Mein Stundenplan" })).toBeVisible();
+  await expect(page.getByText(courseTypeName).first()).toBeVisible();
+  await expect(page.getByText(studioName).first()).toBeVisible();
+
   await page.goto("/courses");
   const todayCard = page
     .locator("div.rounded-2xl")

@@ -16,6 +16,7 @@ import {
 import { WeeklyTimetable, type TimetableSlot } from "@/components/weekly-timetable";
 import { useCourseTypes } from "@/hooks/useCourseTypes";
 import { useCompanyActiveTrainers, usePublishCoursePlan } from "@/hooks/useCoursePlans";
+import { isCourseTypeAvailableInStudio } from "@/lib/courseTypes";
 import type { CoursePlan, PlanSlotDetailed } from "@/lib/coursePlans";
 import { addMinutesToTime, formatTimeShort, todayISO } from "@/lib/format";
 import { t } from "@/i18n/de";
@@ -37,7 +38,8 @@ export function CoursePlanEditor({
   onCancel: () => void;
   onPublished: () => void;
 }) {
-  const { data: courseTypes, isLoading: typesLoading } = useCourseTypes(companyId);
+  const { data: allCourseTypes, isLoading: typesLoading } = useCourseTypes(companyId);
+  const courseTypes = allCourseTypes?.filter((ct) => isCourseTypeAvailableInStudio(ct, studioId));
   const { data: trainers, isLoading: trainersLoading } = useCompanyActiveTrainers(companyId);
   const publishPlan = usePublishCoursePlan(studioId);
 

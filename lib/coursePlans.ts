@@ -38,6 +38,11 @@ export interface PublishSlotInput {
   trainer_id: string;
 }
 
+export interface CompanyActiveSlot extends PlanSlotDetailed {
+  studio_id: string;
+  studio_name: string;
+}
+
 export async function getActiveCoursePlan(studioId: string): Promise<CoursePlan | null> {
   const supabase = createClient();
   const { data, error } = await supabase
@@ -95,4 +100,34 @@ export async function publishCoursePlan(input: {
   });
   if (error) throw error;
   return data as string;
+}
+
+export async function getCompanyActiveSlots(
+  studios: { id: string; name: string }[]
+): Promise<CompanyActiveSlot[]> {
+  if (studios.length === 0) return [];
+  const supabase = createClient();
+  const studioIds = studios.map((s) => s.id);
+  const { data: activePlans, error } = await supabase
+    .from("course_plans")
+    .select("id, studio_id")
+    .in("studio_id", studioIds)
+    .eq("status", "active");
+  if (error) throw error;
+  if (!activePlans || activePlans.length === 0) return [];
+
+  const studioNames = new Map(studios.map((s) => [s.id, s.name]));
+  const perPlan = await Promise.all(
+    activePlans.map(async (plan) => {
+      const slots = await getPlanSlotsDetailed(plan.id);
+      const studioName = studioNames.get(plan.studio_id) ?? "";
+      return slots.map((slot) => ({
+        ...slot,
+        studio_id: plan.studio_id,
+        studio_name: studioName,
+      }));
+    })
+  );
+
+  return perPlan.flat();
 }

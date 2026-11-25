@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Building2, ChevronRight, MapPin, Plus, X } from "lucide-react";
+import { Building2, ChevronRight, MapPin, Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { Drawer } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -128,7 +129,7 @@ export default function StudiosPage() {
   async function onSubmit(values: CreateStudioInput) {
     if (!company) return;
     await createStudio.mutateAsync({ company_id: company.id, ...values });
-    reset();
+    reset({ country: "DE" });
     setFormOpen(false);
   }
 
@@ -149,24 +150,26 @@ export default function StudiosPage() {
           <p className="mt-1 text-sm text-muted-foreground">{t.studios.subtitle}</p>
         </div>
 
-        <Button onClick={() => setFormOpen((open) => !open)} className="gap-1.5">
-          {formOpen ? <X className="size-4" /> : <Plus className="size-4" />}
+        <Button onClick={() => setFormOpen(true)} className="gap-1.5">
+          <Plus className="size-4" />
           <span>{t.studios.new}</span>
         </Button>
       </div>
 
-      {formOpen && (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-          className="mb-6 space-y-4 rounded-xl border border-border bg-card p-5"
-        >
+      <Drawer
+        open={formOpen}
+        onClose={() => {
+          reset({ country: "DE" });
+          setFormOpen(false);
+        }}
+        title={t.studios.new}
+        description={t.studios.subtitle}
+      >
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="name">{t.studios.name}</Label>
             <Input id="name" {...register("name")} />
-            {errors.name && (
-              <p className="text-sm text-destructive">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
 
           <AddressFields register={register} control={control} />
@@ -175,15 +178,15 @@ export default function StudiosPage() {
             <p className="text-sm text-destructive">{t.studios.createError}</p>
           )}
 
-          <div className="flex items-center gap-2 pt-1">
-            <Button type="submit" disabled={isSubmitting}>
+          <div className="flex items-center gap-2 border-t border-border pt-4">
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
               {t.studios.create}
             </Button>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={() => {
-                reset();
+                reset({ country: "DE" });
                 setFormOpen(false);
               }}
             >
@@ -191,7 +194,7 @@ export default function StudiosPage() {
             </Button>
           </div>
         </form>
-      )}
+      </Drawer>
 
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         {isLoading ? (

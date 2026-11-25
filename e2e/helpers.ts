@@ -34,6 +34,7 @@ export async function ensureAdminHasCompany(page: Page) {
   }
   const companyName = uniqueName("E2E Vertrags-Company");
   await page.goto("/companies");
+  await page.getByRole("button", { name: "Neue Company" }).click();
   await page.getByLabel("Name").fill(companyName);
   await page.getByRole("button", { name: "Company anlegen" }).click();
   await page.getByRole("link", { name: new RegExp(companyName) }).click();

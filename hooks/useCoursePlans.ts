@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getActiveCoursePlan,
+  getCompanyActiveSlots,
   getCompanyActiveTrainers,
   getCoursePlans,
   getPlanSlotsDetailed,
@@ -36,6 +37,18 @@ export function useCompanyActiveTrainers(companyId: string) {
     queryKey: ["course-plans", "active-trainers", companyId],
     queryFn: () => getCompanyActiveTrainers(companyId),
     enabled: !!companyId,
+  });
+}
+
+export function useCompanyActiveSlots(
+  companyId: string,
+  studios: { id: string; name: string }[]
+) {
+  const studioKey = studios.map((s) => s.id).join(",");
+  return useQuery({
+    queryKey: ["course-plans", "company-active-slots", companyId, studioKey],
+    queryFn: () => getCompanyActiveSlots(studios),
+    enabled: !!companyId && studios.length > 0,
   });
 }
 
