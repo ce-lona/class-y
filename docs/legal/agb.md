@@ -23,8 +23,8 @@
 
 ## § 4 Verfügbarkeit und Support
 
-1. Der Anbieter stellt class-y mit einer Verfügbarkeit von [98,0] % im Monatsmittel bereit. Ausgenommen sind angekündigte Wartungsfenster von bis zu [4] Stunden pro Monat sowie Störungen, die außerhalb des Einflussbereichs des Anbieters liegen (z. B. Störungen des Internets, höhere Gewalt, Ausfälle der vom Kunden genutzten Endgeräte oder Netze).
-2. Support erfolgt per E-Mail an j.kuemmele@gmail.com werktags von [9 bis 17 Uhr]. Der Anbieter reagiert auf Störungsmeldungen innerhalb von [einem Werktag].
+1. Der Anbieter bemüht sich um eine möglichst unterbrechungsfreie Verfügbarkeit von class-y. Eine bestimmte Verfügbarkeit wird nicht zugesichert. Wartungsarbeiten kündigt der Anbieter nach Möglichkeit vorher an. Der Anbieter ist nicht verantwortlich für Störungen, die außerhalb des Einflussbereichs des Anbieters liegen (z. B. Störungen des Internets, höhere Gewalt, Ausfälle der vom Kunden genutzten Endgeräte oder Netze).
+2. Support erfolgt per E-Mail an j.kuemmele@gmail.com Der Anbieter bearbeitet Anfragen und Störungsmeldungen so schnell wie möglich.
 
 ## § 5 Pflichten des Kunden
 
@@ -34,21 +34,21 @@
 
 ## § 6 Vergütung und Zahlung
 
-1. Die Vergütung wird für jedes Studio individuell vereinbart und im Angebot bzw. im Vertrag festgehalten. Alle Preise verstehen sich zuzüglich der gesetzlichen Umsatzsteuer. [Falls du Kleinunternehmerin nach § 19 UStG bist: „Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.“]
-2. Die Vergütung wird im vereinbarten Abrechnungszeitraum (monatlich oder jährlich) im Voraus in Rechnung gestellt und ist innerhalb von [14] Tagen nach Rechnungsstellung ohne Abzug fällig. Rechnungen werden elektronisch übermittelt.
+1. Die Vergütung wird für jedes Studio individuell vereinbart und im Angebot bzw. im Vertrag festgehalten. Gemäß § 19 UStG wird keine Umsatzsteuer berechnet. Entfällt die Kleinunternehmerregelung, verstehen sich die vereinbarten Preise zuzüglich der gesetzlichen Umsatzsteuer.
+2. Die Vergütung wird im vereinbarten Abrechnungszeitraum (monatlich oder jährlich) im Voraus in Rechnung gestellt und ist mit Rechnungsstellung ohne Abzug fällig, soweit nichts anderes vereinbart ist. Rechnungen werden elektronisch übermittelt.
 3. Änderungen der vereinbarten Vergütung bedürfen einer Vereinbarung in Textform.
-4. Gerät der Kunde mit einer Zahlung mehr als [30] Tage in Verzug, darf der Anbieter den Zugang nach vorheriger Ankündigung sperren, bis die offenen Beträge bezahlt sind.
+4. Gerät der Kunde mit einer Zahlung mehr als 30 Tage in Verzug, darf der Anbieter den Zugang nach vorheriger Ankündigung sperren, bis die offenen Beträge bezahlt sind.
 
 ## § 7 Laufzeit und Kündigung
 
-1. Der Vertrag läuft auf unbestimmte Zeit [alternativ: Mindestlaufzeit von [12] Monaten] und kann von beiden Seiten mit einer Frist von [einem Monat] zum Ende eines Abrechnungszeitraums gekündigt werden.
+1. Laufzeit und Kündigungsfrist werden im Angebot bzw. im Vertrag vereinbart. Ist nichts vereinbart, läuft der Vertrag auf unbestimmte Zeit und kann von beiden Seiten mit einer Frist von einem Monat zum Ende eines Abrechnungszeitraums gekündigt werden.
 2. Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt.
 3. Kündigungen bedürfen der Textform.
 
 ## § 8 Daten bei Vertragsende
 
-1. Der Kunde kann seine Daten bis zum Vertragsende exportieren. [Hinweis: Eine Exportfunktion (z. B. CSV) gibt es in der App derzeit noch nicht. Bis dahin: „Auf Anfrage stellt der Anbieter dem Kunden seine Daten in einem gängigen maschinenlesbaren Format zur Verfügung.“]
-2. Der Anbieter löscht die Daten des Kunden [30] Tage nach Vertragsende, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Konten von Trainer:innen, die noch mit anderen Unternehmen verbunden sind, bleiben bestehen; die Verbindung zum Kunden wird entfernt.
+1. Auf Anfrage stellt der Anbieter dem Kunden bis zum Vertragsende seine Daten in einem gängigen maschinenlesbaren Format zur Verfügung.
+2. Der Anbieter löscht die Daten des Kunden 30 Tage nach Vertragsende, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Konten von Trainer:innen, die noch mit anderen Unternehmen verbunden sind, bleiben bestehen; die Verbindung zum Kunden wird entfernt.
 
 ## § 9 Datenschutz
 
@@ -64,13 +64,13 @@
 ## § 11 Haftung
 
 1. Der Anbieter haftet unbeschränkt bei Vorsatz und grober Fahrlässigkeit, bei der Verletzung von Leben, Körper oder Gesundheit, nach dem Produkthaftungsgesetz und im Umfang einer übernommenen Garantie.
-2. Bei leicht fahrlässiger Verletzung einer wesentlichen Vertragspflicht (einer Pflicht, deren Erfüllung die ordnungsgemäße Durchführung des Vertrags überhaupt erst ermöglicht und auf deren Einhaltung der Kunde regelmäßig vertrauen darf) ist die Haftung auf den vertragstypischen, vorhersehbaren Schaden begrenzt, höchstens jedoch auf [die Vergütung der letzten zwölf Monate].
+2. Bei leicht fahrlässiger Verletzung einer wesentlichen Vertragspflicht (einer Pflicht, deren Erfüllung die ordnungsgemäße Durchführung des Vertrags überhaupt erst ermöglicht und auf deren Einhaltung der Kunde regelmäßig vertrauen darf) ist die Haftung auf den vertragstypischen, vorhersehbaren Schaden begrenzt, höchstens jedoch auf die vom Kunden in den letzten zwölf Monaten vor dem Schadensereignis gezahlte Vergütung.
 3. Im Übrigen ist die Haftung für leichte Fahrlässigkeit ausgeschlossen.
 4. Für den Verlust von Daten haftet der Anbieter nur in Höhe des Aufwands, der bei regelmäßiger und angemessener Datensicherung zur Wiederherstellung angefallen wäre.
 
 ## § 12 Änderungen dieser AGB
 
-Der Anbieter kann diese AGB mit Wirkung für die Zukunft ändern, wenn dafür ein sachlicher Grund besteht (z. B. Gesetzesänderungen oder neue Funktionen). Er teilt dem Kunden die Änderungen mindestens [sechs] Wochen vor Inkrafttreten in Textform mit. Widerspricht der Kunde nicht innerhalb dieser Frist, gelten die Änderungen als angenommen. Auf die Frist und die Folgen eines Schweigens weist der Anbieter in der Mitteilung gesondert hin. Widerspricht der Kunde, können beide Seiten den Vertrag zum Inkrafttreten der Änderung kündigen.
+Der Anbieter kann diese AGB mit Wirkung für die Zukunft ändern, wenn dafür ein sachlicher Grund besteht (z. B. Gesetzesänderungen oder neue Funktionen). Er teilt dem Kunden die Änderungen mindestens sechs Wochen vor Inkrafttreten in Textform mit. Widerspricht der Kunde nicht innerhalb dieser Frist, gelten die Änderungen als angenommen. Auf die Frist und die Folgen eines Schweigens weist der Anbieter in der Mitteilung gesondert hin. Widerspricht der Kunde, können beide Seiten den Vertrag zum Inkrafttreten der Änderung kündigen.
 
 ## § 13 Schlussbestimmungen
 

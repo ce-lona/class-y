@@ -1,6 +1,6 @@
 # Impressum
 
-> **Entwurf, nicht anwaltlich geprüft.** Angaben in eckigen Klammern sind noch offen.
+> **Entwurf, nicht anwaltlich geprüft.**
 
 ## Angaben gemäß § 5 DDG
 
@@ -14,11 +14,6 @@ Deutschland
 
 E-Mail: j.kuemmele@gmail.com
 Telefon: +49 152 59167271
-
-## Umsatzsteuer-ID
-
-Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz: [DE …]
-[Falls keine USt-IdNr. vorhanden: Wirtschafts-Identifikationsnummer angeben oder Abschnitt streichen. Die Steuernummer muss nicht angegeben werden.]
 
 ## Verbraucherstreitbeilegung
 
