@@ -57,6 +57,7 @@ test("Kurstypen anlegen, Wochen-Stundenplan veröffentlichen und als neue Versio
   // 4. Zu den Kursplänen, Studio auswählen und Version 1 veröffentlichen
   await page.goto("/plans");
   await page.getByRole("button", { name: studioName }).click();
+  await page.waitForURL(/[?&]studio=/);
   await expect(page.getByText("Noch kein Kursplan für dieses Studio.")).toBeVisible();
 
   await page.getByRole("button", { name: "Kursplan anlegen" }).click();

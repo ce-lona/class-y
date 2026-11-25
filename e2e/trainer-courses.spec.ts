@@ -72,6 +72,7 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
 
   await page.goto("/plans");
   await page.getByRole("button", { name: studioName }).click();
+  await page.waitForURL(/[?&]studio=/);
   await page.getByRole("button", { name: "Kursplan anlegen" }).click();
   await page.locator("#plan-valid-from").fill(todayISO());
   await page.locator("#slot-weekday").click();
@@ -80,6 +81,9 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await page.locator("#slot-end").fill("17:45");
   await page.locator("#slot-course-type").click();
   await page.getByRole("option", { name: new RegExp(courseTypeName) }).click();
+  // Explizit den eigenen Account wählen: Standard ist die erste aktive Trainer:in der Company.
+  await page.locator("#slot-trainer").click();
+  await page.getByRole("option", { name: adminEmail }).click();
   await page.getByRole("button", { name: "Hinzufügen" }).click();
   await page.getByRole("button", { name: "Kursplan veröffentlichen" }).click();
   await expect(page.getByText("Neue Kursplan-Version veröffentlicht.")).toBeVisible();
