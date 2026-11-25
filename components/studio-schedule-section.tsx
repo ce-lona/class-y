@@ -30,15 +30,21 @@ function formatPlanLabel(plan: CoursePlan): string {
 export function StudioScheduleSection({
   studioId,
   companyId,
+  initialEditSlotId = null,
+  onEditDone,
 }: {
   studioId: string;
   companyId: string;
+  /** Öffnet den Editor direkt mit diesem Slot im Bearbeiten-Modus. */
+  initialEditSlotId?: string | null;
+  onEditDone?: () => void;
 }) {
   const { data: plans, isLoading: plansLoading } = useCoursePlans(studioId);
   const activePlan = plans?.find((p) => p.status === "active") ?? null;
 
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(Boolean(initialEditSlotId));
+  const [editSlotId, setEditSlotId] = useState<string | null>(initialEditSlotId);
   const [publishedBanner, setPublishedBanner] = useState(false);
 
   const displayedPlan =
@@ -48,7 +54,7 @@ export function StudioScheduleSection({
     null;
 
   const { data: displayedSlots, isLoading: slotsLoading } = usePlanSlots(displayedPlan?.id);
-  const { data: activeSlots } = usePlanSlots(activePlan?.id);
+  const { data: activeSlots, isLoading: activeSlotsLoading } = usePlanSlots(activePlan?.id);
 
   if (plansLoading) {
     return (
@@ -59,20 +65,40 @@ export function StudioScheduleSection({
   }
 
   if (editing) {
+    if (activePlan && activeSlotsLoading) {
+      return (
+        <div className="rounded-xl border border-border bg-card p-6">
+          <p className="text-sm text-muted-foreground">{t.common.loading}</p>
+        </div>
+      );
+    }
     return (
       <CoursePlanEditor
         studioId={studioId}
         companyId={companyId}
         existingPlan={activePlan}
         existingSlots={activeSlots ?? []}
-        onCancel={() => setEditing(false)}
+        initialEditSlotId={editSlotId}
+        onCancel={() => {
+          setEditing(false);
+          setEditSlotId(null);
+          onEditDone?.();
+        }}
         onPublished={() => {
           setEditing(false);
+          setEditSlotId(null);
           setSelectedPlanId(null);
           setPublishedBanner(true);
+          onEditDone?.();
         }}
       />
     );
+  }
+
+  function startEditing(slotId: string | null) {
+    setPublishedBanner(false);
+    setEditSlotId(slotId);
+    setEditing(true);
   }
 
   const archivedCount = plans?.filter((p) => p.status === "archived").length ?? 0;
@@ -98,10 +124,7 @@ export function StudioScheduleSection({
           </div>
           <Button
             type="button"
-            onClick={() => {
-              setPublishedBanner(false);
-              setEditing(true);
-            }}
+            onClick={() => startEditing(null)}
             className="mt-1 gap-1.5"
           >
             <Plus className="size-4" />
@@ -168,10 +191,7 @@ export function StudioScheduleSection({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setPublishedBanner(false);
-                  setEditing(true);
-                }}
+                onClick={() => startEditing(null)}
                 className="gap-1.5"
               >
                 <Pencil className="size-3.5" />
@@ -185,7 +205,12 @@ export function StudioScheduleSection({
               <p className="text-sm text-muted-foreground">{t.common.loading}</p>
             </div>
           ) : (
-            <WeeklyTimetable slots={displayedSlots ?? []} />
+            <WeeklyTimetable
+              slots={displayedSlots ?? []}
+              onEditSlot={
+                displayedPlan.status === "active" ? (slot) => startEditing(slot.id) : undefined
+              }
+            />
           )}
         </>
       )}

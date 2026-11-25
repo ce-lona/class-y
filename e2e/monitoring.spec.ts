@@ -28,7 +28,7 @@ test("Studio-Monitoring: erfasste Ad-hoc-Vertretung erscheint in Kurs- und Train
     await page.getByRole("button", { name: "Angebot senden" }).click();
     await expect(page.getByText(/Angebot gesendet/)).toBeVisible();
 
-    await page.goto("/settings?tab=contracts");
+    await page.goto("/profile?tab=contracts");
     await page.getByRole("button", { name: "Annehmen" }).first().click();
     await expect(page.getByText("Aktiv").first()).toBeVisible();
   }
@@ -40,7 +40,7 @@ test("Studio-Monitoring: erfasste Ad-hoc-Vertretung erscheint in Kurs- und Train
   await page.getByRole("button", { name: "Studio anlegen" }).click();
   await expect(page.getByRole("link", { name: studioName })).toBeVisible();
 
-  await page.goto("/plans?tab=types");
+  await page.goto("/settings?tab=config");
   await page.getByRole("button", { name: "Neuer Kurstyp" }).click();
   await page.getByLabel("Kursname").fill(courseTypeName);
   await page.getByLabel("Standarddauer (Min.)").fill("60");

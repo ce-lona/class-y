@@ -159,7 +159,7 @@ export default function LogCoursePage() {
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-5">
+    <div className="mx-auto max-w-3xl space-y-5">
       <div>
         <Link
           href="/courses"
@@ -176,7 +176,7 @@ export default function LogCoursePage() {
       {/* Mode Switcher: Geplanter Kurs (inkl. spontane Vertretung) vs. Ad-hoc */}
       <div
         role="tablist"
-        className="grid grid-cols-2 rounded-xl border border-border bg-muted/60 p-1"
+        className="grid grid-cols-2 rounded-xl border border-border bg-muted/60 p-1 md:max-w-sm"
       >
         <button
           type="button"
@@ -261,7 +261,7 @@ export default function LogCoursePage() {
                 {slotsLoading ? (
                   <p className="text-sm text-muted-foreground">{t.common.loading}</p>
                 ) : visibleSlots.length > 0 ? (
-                  <div className="space-y-2">
+                  <div className="grid gap-2 md:grid-cols-2">
                     {visibleSlots.map((sl) => {
                       const isSub = sl.scheduled_trainer_id !== session?.user.id;
                       const selected = activeSlot?.slot_id === sl.slot_id;

@@ -51,7 +51,7 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
     await page.getByRole("button", { name: "Angebot senden" }).click();
     await expect(page.getByText(/Angebot gesendet/)).toBeVisible();
 
-    await page.goto("/settings?tab=contracts");
+    await page.goto("/profile?tab=contracts");
     await page.getByRole("button", { name: "Annehmen" }).first().click();
     await expect(page.getByText("Aktiv").first()).toBeVisible();
   }
@@ -63,18 +63,14 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await page.getByRole("button", { name: "Studio anlegen" }).click();
   await expect(page.getByRole("link", { name: studioName })).toBeVisible();
 
-  await page.goto("/plans?tab=types");
+  await page.goto("/settings?tab=config");
   await page.getByRole("button", { name: "Neuer Kurstyp" }).click();
   await page.getByLabel("Kursname").fill(courseTypeName);
   await page.getByLabel("Standarddauer (Min.)").fill("45");
   await page.getByRole("button", { name: "Kurstyp anlegen" }).click();
   await expect(page.getByText(courseTypeName)).toBeVisible();
 
-  await page.getByRole("tab", { name: "Stundenpläne" }).click();
-  await expect(page.getByRole("tab", { name: "Stundenpläne" })).toHaveAttribute(
-    "aria-selected",
-    "true"
-  );
+  await page.goto("/plans");
   await page.getByRole("button", { name: studioName }).click();
   await page.getByRole("button", { name: "Kursplan anlegen" }).click();
   await page.locator("#plan-valid-from").fill(todayISO());

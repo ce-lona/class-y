@@ -10,7 +10,7 @@ const items = [
   { href: "/courses", label: t.trainer.navMyCourses, icon: CalendarCheck, exact: true },
   { href: "/courses/schedule", label: t.trainer.navSchedule, icon: CalendarRange, exact: false },
   { href: "/courses/log", label: t.trainer.navLogCourse, icon: PlusCircle, exact: false },
-  { href: "/settings", label: t.trainer.navProfile, icon: User, exact: false },
+  { href: "/profile", label: t.trainer.navProfile, icon: User, exact: false },
 ] as const;
 
 export function TrainerBottomNav() {

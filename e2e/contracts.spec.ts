@@ -7,7 +7,7 @@ import {
 } from "./helpers";
 
 // Vertragsfluss gegen den lokalen Stack: braucht `supabase start`, `supabase functions serve`
-// (invite-trainer) und Mailpit. Admin (/trainers) und Trainer:in (/settings?tab=contracts)
+// (invite-trainer) und Mailpit. Admin (/trainers) und Trainer:in (/profile?tab=contracts)
 // laufen in getrennten Browser-Kontexten.
 
 function adminRow(page: Page, trainerEmail: string, amount: string): Locator {
@@ -56,7 +56,7 @@ test("Vertrag: einladen, annehmen, zweites Angebot ablehnen, beenden", async ({
     await trainer.getByRole("button", { name: "Neues Passwort setzen" }).click();
     await trainer.waitForURL("/");
 
-    await trainer.goto("/settings");
+    await trainer.goto("/profile");
     await trainer.getByRole("tab", { name: /Meine Verträge/ }).click();
     const offer = trainerRow(trainer, "42,50");
     await expect(offer).toContainText("Wartet auf Annahme");

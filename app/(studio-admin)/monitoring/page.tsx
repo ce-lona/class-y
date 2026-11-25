@@ -47,6 +47,7 @@ import {
   getIsoWeekday,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SearchInput, matchesSearch } from "@/components/list-toolbar";
 import { t } from "@/i18n/de";
 
 type KpiFilter = "all" | "completed" | "overdue" | "substitutions";
@@ -115,6 +116,7 @@ export default function MonitoringPage() {
   const [studioFilter, setStudioFilter] = useState<string>("all");
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>("all");
   const [tab, setTab] = useState<MonitoringTab>("courses");
+  const [search, setSearch] = useState("");
 
   const range = useMemo(() => getPeriodRange(period), [period]);
   const { data: rows, isLoading, isError } = useCompanyMonitoring({
@@ -144,13 +146,36 @@ export default function MonitoringPage() {
   }, [allRows]);
 
   const filteredRows = useMemo(() => {
-    if (kpiFilter === "completed") return allRows.filter((r) => r.status === "completed");
-    if (kpiFilter === "overdue") return allRows.filter((r) => r.status === "overdue");
-    if (kpiFilter === "substitutions") return allRows.filter((r) => r.is_substitution);
-    return allRows;
-  }, [allRows, kpiFilter]);
+    let result = allRows;
+    if (kpiFilter === "completed") result = result.filter((r) => r.status === "completed");
+    if (kpiFilter === "overdue") result = result.filter((r) => r.status === "overdue");
+    if (kpiFilter === "substitutions") result = result.filter((r) => r.is_substitution);
+    result = result.filter((r) =>
+      matchesSearch(
+        search,
+        r.course_type_name,
+        r.trainer_name,
+        r.trainer_email,
+        r.studio_name,
+        r.scheduled_trainer_name,
+        r.notes
+      )
+    );
+    // Noch nicht bestätigte (überfällige) Kurse zuerst, damit sie geprüft werden.
+    return [...result].sort((a, b) => {
+      const aOver = a.status === "overdue" ? 0 : 1;
+      const bOver = b.status === "overdue" ? 0 : 1;
+      return aOver - bOver;
+    });
+  }, [allRows, kpiFilter, search]);
 
-  const trainerSummaries = useMemo(() => summarizeByTrainer(allRows), [allRows]);
+  const trainerSummaries = useMemo(
+    () =>
+      summarizeByTrainer(allRows).filter((tr) =>
+        matchesSearch(search, tr.trainer_name, tr.trainer_email)
+      ),
+    [allRows, search]
+  );
 
   const trainerTotals = useMemo(() => {
     let completed = 0;
@@ -362,6 +387,12 @@ export default function MonitoringPage() {
           </button>
         </div>
 
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder={t.monitoring.searchPlaceholder}
+        />
         {tab === "courses" && kpiFilter !== "all" && (
           <Button
             type="button"
@@ -374,6 +405,7 @@ export default function MonitoringPage() {
             <span>{t.monitoring.resetFilter}</span>
           </Button>
         )}
+        </div>
       </div>
 
       {/* Main Content Card */}
@@ -462,7 +494,9 @@ export default function MonitoringPage() {
             <div className="flex flex-col items-center gap-2 p-10 text-center">
               <LayoutGrid className="size-8 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">
-                {kpiFilter === "all" ? t.monitoring.emptyCourses : t.monitoring.emptyFilter}
+                {kpiFilter === "all" && !search.trim()
+                  ? t.monitoring.emptyCourses
+                  : t.monitoring.emptyFilter}
               </p>
             </div>
           )}

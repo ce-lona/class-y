@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { loginAsPlatformAdmin, uniqueName } from "./helpers";
 
-test("Stammdaten unter /settings im Read-Only-Modus ansehen, bearbeiten und nach Reload erhalten", async ({
+test("Stammdaten unter /profile im Read-Only-Modus ansehen, bearbeiten und nach Reload erhalten", async ({
   page,
 }) => {
   await loginAsPlatformAdmin(page);
@@ -13,7 +13,7 @@ test("Stammdaten unter /settings im Read-Only-Modus ansehen, bearbeiten und nach
   const postalCode = "10119";
   const city = "Berlin";
 
-  await page.goto("/settings");
+  await page.goto("/profile");
   await expect(page.getByRole("heading", { name: "Meine Stammdaten" })).toBeVisible();
 
   // Read-Only-Modus → Bearbeiten-Modus öffnen

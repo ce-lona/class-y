@@ -30,7 +30,7 @@ test("Kurstypen anlegen, Wochen-Stundenplan veröffentlichen und als neue Versio
     await page.getByRole("button", { name: "Angebot senden" }).click();
     await expect(page.getByText(/Angebot gesendet/)).toBeVisible();
 
-    await page.goto("/settings?tab=contracts");
+    await page.goto("/profile?tab=contracts");
     const acceptBtn = page.getByRole("button", { name: "Annehmen" }).first();
     await expect(acceptBtn).toBeVisible();
     await acceptBtn.click();
@@ -46,21 +46,16 @@ test("Kurstypen anlegen, Wochen-Stundenplan veröffentlichen und als neue Versio
   await page.getByRole("button", { name: "Studio anlegen" }).click();
   await expect(page.getByRole("link", { name: studioName })).toBeVisible();
 
-  // 3. Kurstyp unter /plans?tab=types anlegen
-  await page.goto("/plans");
-  await page.getByRole("tab", { name: "Kurstypen" }).click();
+  // 3. Kurstyp unter Einstellungen → Konfiguration anlegen
+  await page.goto("/settings?tab=config");
   await page.getByRole("button", { name: "Neuer Kurstyp" }).click();
   await page.getByLabel("Kursname").fill(courseTypeName);
   await page.getByLabel("Standarddauer (Min.)").fill("60");
   await page.getByRole("button", { name: "Kurstyp anlegen" }).click();
   await expect(page.getByText(courseTypeName)).toBeVisible();
 
-  // 4. Zurück zum Stundenplan-Tab, Studio auswählen und Version 1 veröffentlichen
-  await page.getByRole("tab", { name: "Stundenpläne" }).click();
-  await expect(page.getByRole("tab", { name: "Stundenpläne" })).toHaveAttribute(
-    "aria-selected",
-    "true"
-  );
+  // 4. Zu den Kursplänen, Studio auswählen und Version 1 veröffentlichen
+  await page.goto("/plans");
   await page.getByRole("button", { name: studioName }).click();
   await expect(page.getByText("Noch kein Kursplan für dieses Studio.")).toBeVisible();
 

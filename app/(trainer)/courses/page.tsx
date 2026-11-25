@@ -54,6 +54,7 @@ import {
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CourseTypeIcon } from "@/components/course-type-icon";
+import { NoSearchResults, SearchInput, matchesSearch } from "@/components/list-toolbar";
 import { t } from "@/i18n/de";
 
 type CoursesTab = "upcoming" | "logged";
@@ -529,6 +530,7 @@ export default function TrainerCoursesPage() {
   const [tab, setTab] = useState<CoursesTab>("upcoming");
   const [companyFilter, setCompanyFilter] = useState<string>("all");
   const [studioFilter, setStudioFilter] = useState<string>("all");
+  const [loggedSearch, setLoggedSearch] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
   const [subDrawerItem, setSubDrawerItem] = useState<WeekSlotOccurrence | null>(null);
 
@@ -673,27 +675,41 @@ export default function TrainerCoursesPage() {
     });
   }
 
-  const sortedWeek = [...weekOccurrences].sort((a, b) => {
-    if (a.isToday !== b.isToday) return a.isToday ? -1 : 1;
+  const todayIso = weekDays.find((d) => d.isToday)?.isoDate ?? weekStart;
+
+  function isOpenItem(item: WeekSlotOccurrence): boolean {
+    const outStatus = item.outgoingSubstitution?.status;
+    return !item.session && outStatus !== "accepted" && outStatus !== "pending";
+  }
+
+  const chronological = (a: WeekSlotOccurrence, b: WeekSlotOccurrence) => {
     const dateCmp = a.isoDate.localeCompare(b.isoDate);
     if (dateCmp !== 0) return dateCmp;
     return formatTimeShort(a.slot.start_time).localeCompare(formatTimeShort(b.slot.start_time));
-  });
+  };
+
+  // Noch nicht bestätigte Kurse (vergangen oder heute) stehen oben zum Prüfen.
+  const toConfirm = weekOccurrences
+    .filter((item) => isOpenItem(item) && item.isoDate <= todayIso)
+    .sort(chronological);
+  const upcoming = weekOccurrences
+    .filter((item) => item.isoDate > todayIso && !item.session)
+    .sort(chronological);
+  const done = weekOccurrences
+    .filter(
+      (item) =>
+        !toConfirm.includes(item) && !upcoming.includes(item)
+    )
+    .sort(chronological);
 
   const filteredSessions = (mySessions ?? []).filter((s) => {
     if (companyFilter !== "all" && s.company_id !== companyFilter) return false;
     if (studioFilter !== "all" && s.studio_id !== studioFilter) return false;
-    return true;
+    return matchesSearch(loggedSearch, s.course_type_name, s.studio_name, s.company_name, s.notes);
   });
 
-  const firstUnloggedTodayKey =
-    sortedWeek.find(
-      (item) =>
-        item.isToday &&
-        !item.session &&
-        item.outgoingSubstitution?.status !== "accepted" &&
-        item.outgoingSubstitution?.status !== "pending"
-    )?.key ?? null;
+  const highlightedKey =
+    toConfirm.find((item) => item.isToday)?.key ?? null;
 
   async function handleUndo(sessionId: string) {
     setActionError(null);
@@ -733,7 +749,7 @@ export default function TrainerCoursesPage() {
           <h1 className="font-heading text-xl font-extrabold">{t.trainer.noActiveContracts}</h1>
           <p className="text-sm text-muted-foreground">{t.trainer.noActiveContractsHint}</p>
           <Link
-            href="/settings?tab=contracts"
+            href="/profile?tab=contracts"
             className={cn(buttonVariants({ size: "lg" }), "mt-2 w-full")}
           >
             {t.trainer.goToContracts}
@@ -743,8 +759,151 @@ export default function TrainerCoursesPage() {
     );
   }
 
+  const chipClass = (selected: boolean) =>
+    cn(
+      "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
+      selected
+        ? "bg-primary text-primary-foreground"
+        : "border border-border bg-background text-muted-foreground hover:text-foreground"
+    );
+
+  const filterPanel = showFilterBar ? (
+    <div className="space-y-3 rounded-xl border border-border bg-card p-3.5 lg:p-4">
+      <p className="hidden text-xs font-bold tracking-wide text-muted-foreground uppercase lg:block">
+        {t.trainer.filtersTitle}
+      </p>
+      {companies.length > 1 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground lg:w-full">
+            <Building2 className="size-3.5" />
+            <span>{t.trainer.filterCompany}:</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setCompanyFilter("all");
+              setStudioFilter("all");
+            }}
+            className={chipClass(companyFilter === "all")}
+          >
+            {t.trainer.filterAll}
+          </button>
+          {companies.map(([id, name]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                setCompanyFilter(id);
+                setStudioFilter("all");
+              }}
+              className={chipClass(companyFilter === id)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {studios.length > 1 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground lg:w-full">
+            <MapPin className="size-3.5" />
+            <span>{t.trainer.filterStudio}:</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setStudioFilter("all")}
+            className={chipClass(studioFilter === "all")}
+          >
+            {t.trainer.filterAll}
+          </button>
+          {studios.map((st) => (
+            <button
+              key={st.id}
+              type="button"
+              onClick={() => setStudioFilter(st.id)}
+              className={chipClass(studioFilter === st.id)}
+            >
+              {st.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  ) : null;
+
+  const stats = [
+    { label: t.trainer.statOpen, value: toConfirm.length, tone: "text-warning" },
+    { label: t.trainer.statUpcoming, value: upcoming.length, tone: "text-primary" },
+    { label: t.trainer.statDone, value: done.length, tone: "text-success" },
+  ];
+
+  const statsPanel = (
+    <div className="rounded-xl border border-border bg-card p-3.5 lg:p-4">
+      <p className="mb-2.5 text-xs font-bold tracking-wide text-muted-foreground uppercase">
+        {t.trainer.weekOverview}
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+        {stats.map((stat) => (
+          <div key={stat.label} className="rounded-lg bg-background/60 px-2.5 py-2">
+            <div className={cn("font-heading text-2xl font-extrabold tabular-nums", stat.tone)}>
+              {stat.value}
+            </div>
+            <div className="text-[11px] font-semibold text-muted-foreground">{stat.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  function renderSection(
+    title: string,
+    items: WeekSlotOccurrence[],
+    options: { hint?: string; tone?: "warning" | "default" } = {}
+  ) {
+    if (items.length === 0) return null;
+    return (
+      <section className="space-y-2.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2
+            className={cn(
+              "flex items-center gap-2 text-xs font-bold tracking-wide uppercase",
+              options.tone === "warning" ? "text-warning" : "text-muted-foreground"
+            )}
+          >
+            <span>{title}</span>
+            <span
+              className={cn(
+                "rounded-full px-1.5 py-0.5 text-[11px] leading-none",
+                options.tone === "warning" ? "bg-warning-bg" : "bg-muted text-foreground"
+              )}
+            >
+              {items.length}
+            </span>
+          </h2>
+        </div>
+        {options.hint && <p className="-mt-1 text-xs text-muted-foreground">{options.hint}</p>}
+        <div className="grid gap-3 xl:grid-cols-2">
+          {items.map((item) => {
+            const highlighted = item.key === highlightedKey;
+            return (
+              <div key={item.key} className={cn(highlighted && "xl:col-span-2")}>
+                <PlannedCourseCard
+                  item={item}
+                  highlighted={highlighted}
+                  onLogged={setActionError}
+                  onRequestSubstitute={setSubDrawerItem}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-2xl space-y-5">
+    <div className="mx-auto max-w-6xl space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
@@ -773,337 +932,295 @@ export default function TrainerCoursesPage() {
         </div>
       </div>
 
-      {/* Eingehende offene Vertretungsanfragen (immer pending bis zur Annahme) */}
-      {incomingPendingRequests.length > 0 && (
-        <section className="space-y-2.5 rounded-2xl border border-warning/35 bg-warning-bg p-4">
-          <div className="flex items-center gap-2 text-sm font-bold text-warning">
-            <Repeat className="size-4 shrink-0" />
-            <span>
-              {t.trainer.incomingRequestsTitle} ({incomingPendingRequests.length})
-            </span>
-          </div>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
+        {/* Seitenleiste: auf Desktop rechts und mitlaufend, mobil oberhalb der Liste */}
+        <aside className="space-y-3 lg:sticky lg:top-24 lg:order-2">
+          {statsPanel}
+          {filterPanel}
+        </aside>
 
-          <div className="space-y-2.5">
-            {incomingPendingRequests.map((req) => (
-              <div
-                key={req.id}
-                className="rounded-xl border border-border bg-card p-3.5 text-foreground"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <p className="font-heading text-sm font-bold">{req.course_type_name}</p>
-                    <p className="text-xs text-muted-foreground tabular-nums">
-                      {formatDateDE(req.date)}, {formatTimeShort(req.start_time)}–
-                      {formatTimeShort(req.end_time)}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
-                      <span className="inline-flex items-center gap-1 rounded-md bg-muted/70 px-2 py-0.5 text-foreground">
-                        <Building2 className="size-3 shrink-0" />
-                        <span>{req.company_name}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-muted-foreground">
-                        <MapPin className="size-3 shrink-0" />
-                        <span>{req.studio_name}</span>
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {t.trainer.incomingRequestFor}{" "}
-                      <strong className="font-semibold text-foreground">
-                        {req.original_trainer_name}
-                      </strong>
-                    </p>
-                    {req.notes && (
-                      <p className="rounded-md bg-muted/40 px-2.5 py-1.5 text-xs text-muted-foreground">
-                        {req.notes}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-3 flex items-center gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={respondSub.isPending}
-                    onClick={() => handleRespond(req.id, "accepted")}
-                    className="flex-1 gap-1.5"
-                  >
-                    <Check className="size-3.5" />
-                    <span>{t.trainer.acceptSubstitution}</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={respondSub.isPending}
-                    onClick={() => handleRespond(req.id, "declined")}
-                    className="gap-1.5"
-                  >
-                    <X className="size-3.5" />
-                    <span>{t.trainer.declineSubstitution}</span>
-                  </Button>
-                </div>
+        <div className="min-w-0 space-y-5 lg:order-1">
+          {/* Eingehende offene Vertretungsanfragen (immer pending bis zur Annahme) */}
+          {incomingPendingRequests.length > 0 && (
+            <section className="space-y-2.5 rounded-2xl border border-warning/35 bg-warning-bg p-4">
+              <div className="flex items-center gap-2 text-sm font-bold text-warning">
+                <Repeat className="size-4 shrink-0" />
+                <span>
+                  {t.trainer.incomingRequestsTitle} ({incomingPendingRequests.length})
+                </span>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
 
-      {showFilterBar && (
-        <div className="space-y-2 rounded-xl border border-border bg-card p-3.5">
-          {companies.length > 1 && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground">
-                <Building2 className="size-3.5" />
-                <span>{t.trainer.filterCompany}:</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setCompanyFilter("all");
-                  setStudioFilter("all");
-                }}
-                className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
-                  companyFilter === "all"
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-background text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t.trainer.filterAll}
-              </button>
-              {companies.map(([id, name]) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => {
-                    setCompanyFilter(id);
-                    setStudioFilter("all");
-                  }}
-                  className={cn(
-                    "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
-                    companyFilter === id
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-background text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {name}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {studios.length > 1 && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground">
-                <MapPin className="size-3.5" />
-                <span>{t.trainer.filterStudio}:</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setStudioFilter("all")}
-                className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
-                  studioFilter === "all"
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-background text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t.trainer.filterAll}
-              </button>
-              {studios.map((st) => (
-                <button
-                  key={st.id}
-                  type="button"
-                  onClick={() => setStudioFilter(st.id)}
-                  className={cn(
-                    "rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors",
-                    studioFilter === st.id
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-background text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {st.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div
-        role="tablist"
-        className="grid grid-cols-2 rounded-xl border border-border bg-muted/60 p-1"
-      >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "upcoming"}
-          onClick={() => setTab("upcoming")}
-          className={cn(
-            "inline-flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors",
-            tab === "upcoming"
-              ? "bg-card text-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <span>{t.trainer.tabUpcoming}</span>
-          {sortedWeek.length > 0 && (
-            <span className="rounded-full bg-primary-100 px-1.5 py-0.5 text-[11px] leading-none font-bold text-primary-700 dark:bg-primary-900/60 dark:text-primary-200">
-              {sortedWeek.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "logged"}
-          onClick={() => setTab("logged")}
-          className={cn(
-            "inline-flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors",
-            tab === "logged"
-              ? "bg-card text-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <span>{t.trainer.tabLogged}</span>
-          {filteredSessions.length > 0 && (
-            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] leading-none font-bold text-foreground">
-              {filteredSessions.length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {actionError && (
-        <div className="rounded-xl bg-destructive-bg px-4 py-3 text-sm text-destructive">
-          {actionError}
-        </div>
-      )}
-
-      {tab === "upcoming" ? (
-        slotsLoading || sessionsLoading ? (
-          <p className="text-sm text-muted-foreground">{t.common.loading}</p>
-        ) : sortedWeek.length > 0 ? (
-          <div className="space-y-3">
-            {sortedWeek.map((item) => (
-              <PlannedCourseCard
-                key={item.key}
-                item={item}
-                highlighted={item.key === firstUnloggedTodayKey}
-                onLogged={setActionError}
-                onRequestSubstitute={setSubDrawerItem}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-8 text-center">
-            <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
-              <CalendarCheck className="size-5" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-heading text-base font-bold">{t.trainer.emptyWeek}</p>
-              <p className="max-w-sm text-sm text-muted-foreground">{t.trainer.emptyWeekHint}</p>
-            </div>
-            <Link
-              href="/courses/log"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-1 gap-1.5")}
-            >
-              <Plus className="size-4" />
-              <span>{t.trainer.logCourse}</span>
-            </Link>
-          </div>
-        )
-      ) : sessionsLoading ? (
-        <p className="text-sm text-muted-foreground">{t.common.loading}</p>
-      ) : filteredSessions.length > 0 ? (
-        <ul className="space-y-3">
-          {filteredSessions.map((s) => {
-            const accent = getCourseTypeAccent(s.course_type_id ?? s.id);
-            return (
-              <li
-                key={s.id}
-                className={cn(
-                  "rounded-2xl border border-border border-l-4 bg-card p-4 shadow-xs",
-                  accent.border
-                )}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="min-w-0 space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <CourseTypeIcon
-                        courseTypeId={s.course_type_id ?? s.id}
-                        name={s.course_type_name}
-                      />
-                      <span className="font-heading text-base font-bold">
-                        {s.course_type_name || t.trainer.adHocBadge}
-                      </span>
-                      <SessionStatusBadge status={s.status} />
-                      {s.is_substitution && (
-                        <Badge className="bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200">
-                          {s.scheduled_trainer_name
-                            ? `${t.trainer.substitutionFor} ${s.scheduled_trainer_name}`
-                            : t.trainer.substitutionBadge}
-                        </Badge>
-                      )}
-                      {!s.course_plan_slot_id && (
-                        <Badge variant="outline">{t.trainer.adHocBadge}</Badge>
+              <div className="grid gap-2.5 xl:grid-cols-2">
+                {incomingPendingRequests.map((req) => (
+                  <div
+                    key={req.id}
+                    className="rounded-xl border border-border bg-card p-3.5 text-foreground"
+                  >
+                    <div className="space-y-1">
+                      <p className="font-heading text-sm font-bold">{req.course_type_name}</p>
+                      <p className="text-xs text-muted-foreground tabular-nums">
+                        {formatDateDE(req.date)}, {formatTimeShort(req.start_time)}–
+                        {formatTimeShort(req.end_time)}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-muted/70 px-2 py-0.5 text-foreground">
+                          <Building2 className="size-3 shrink-0" />
+                          <span>{req.company_name}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-muted-foreground">
+                          <MapPin className="size-3 shrink-0" />
+                          <span>{req.studio_name}</span>
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {t.trainer.incomingRequestFor}{" "}
+                        <strong className="font-semibold text-foreground">
+                          {req.original_trainer_name}
+                        </strong>
+                      </p>
+                      {req.notes && (
+                        <p className="rounded-md bg-muted/40 px-2.5 py-1.5 text-xs text-muted-foreground">
+                          {req.notes}
+                        </p>
                       )}
                     </div>
 
-                    <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-muted-foreground">
-                      <span className="inline-flex items-center gap-1 tabular-nums">
-                        <Clock className="size-3.5" />
-                        <span>
-                          {formatDateDE(s.date)}, {formatTimeShort(s.start_time)}–
-                          {formatTimeShort(s.end_time)}
-                        </span>
-                      </span>
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
-                      <span className="inline-flex items-center gap-1 rounded-md bg-muted/70 px-2 py-0.5 text-foreground">
-                        <Building2 className="size-3 shrink-0" />
-                        <span>{s.company_name}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-muted-foreground">
-                        <MapPin className="size-3 shrink-0" />
-                        <span>{s.studio_name}</span>
-                      </span>
+                    <div className="mt-3 flex items-center gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={respondSub.isPending}
+                        onClick={() => handleRespond(req.id, "accepted")}
+                        className="flex-1 gap-1.5"
+                      >
+                        <Check className="size-3.5" />
+                        <span>{t.trainer.acceptSubstitution}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={respondSub.isPending}
+                        onClick={() => handleRespond(req.id, "declined")}
+                        className="gap-1.5"
+                      >
+                        <X className="size-3.5" />
+                        <span>{t.trainer.declineSubstitution}</span>
+                      </Button>
                     </div>
                   </div>
+                ))}
+              </div>
+            </section>
+          )}
 
-                  {!s.locked_at && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={deleteSession.isPending}
-                      onClick={() => handleUndo(s.id)}
-                      className="gap-1 text-muted-foreground hover:bg-destructive-bg hover:text-destructive"
-                    >
-                      <Trash2 className="size-3.5" />
-                      <span>{t.trainer.undo}</span>
-                    </Button>
-                  )}
-                </div>
+          <div
+            role="tablist"
+            className="grid grid-cols-2 rounded-xl border border-border bg-muted/60 p-1 lg:inline-grid lg:w-auto lg:min-w-80"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === "upcoming"}
+              onClick={() => setTab("upcoming")}
+              className={cn(
+                "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
+                tab === "upcoming"
+                  ? "bg-card text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <span>{t.trainer.tabUpcoming}</span>
+              {toConfirm.length > 0 ? (
+                <span className="rounded-full bg-warning-bg px-1.5 py-0.5 text-[11px] leading-none font-bold text-warning">
+                  {toConfirm.length}
+                </span>
+              ) : weekOccurrences.length > 0 ? (
+                <span className="rounded-full bg-primary-100 px-1.5 py-0.5 text-[11px] leading-none font-bold text-primary-700 dark:bg-primary-900/60 dark:text-primary-200">
+                  {weekOccurrences.length}
+                </span>
+              ) : null}
+            </button>
 
-                {s.notes && (
-                  <p className="mt-2.5 rounded-lg bg-background/70 px-3 py-2 text-xs text-muted-foreground">
-                    {s.notes}
-                  </p>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === "logged"}
+              onClick={() => setTab("logged")}
+              className={cn(
+                "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
+                tab === "logged"
+                  ? "bg-card text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <span>{t.trainer.tabLogged}</span>
+              {(mySessions?.length ?? 0) > 0 && (
+                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] leading-none font-bold text-foreground">
+                  {mySessions?.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {actionError && (
+            <div className="rounded-xl bg-destructive-bg px-4 py-3 text-sm text-destructive">
+              {actionError}
+            </div>
+          )}
+
+          {tab === "upcoming" ? (
+            slotsLoading || sessionsLoading ? (
+              <p className="text-sm text-muted-foreground">{t.common.loading}</p>
+            ) : weekOccurrences.length > 0 ? (
+              <div className="space-y-6">
+                {toConfirm.length === 0 && (
+                  <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success-bg px-4 py-3 text-sm font-medium text-success">
+                    <Check className="size-4 shrink-0" />
+                    <span>{t.trainer.allConfirmed}</span>
+                  </div>
                 )}
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-8 text-center">
-          <CalendarCheck className="size-8 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">{t.trainer.emptyLogged}</p>
+                {renderSection(t.trainer.sectionToConfirm, toConfirm, {
+                  hint: t.trainer.sectionToConfirmHint,
+                  tone: "warning",
+                })}
+                {renderSection(t.trainer.sectionUpcoming, upcoming)}
+                {renderSection(t.trainer.sectionDone, done)}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-8 text-center">
+                <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
+                  <CalendarCheck className="size-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="font-heading text-base font-bold">{t.trainer.emptyWeek}</p>
+                  <p className="max-w-sm text-sm text-muted-foreground">
+                    {t.trainer.emptyWeekHint}
+                  </p>
+                </div>
+                <Link
+                  href="/courses/log"
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "sm" }),
+                    "mt-1 gap-1.5"
+                  )}
+                >
+                  <Plus className="size-4" />
+                  <span>{t.trainer.logCourse}</span>
+                </Link>
+              </div>
+            )
+          ) : sessionsLoading ? (
+            <p className="text-sm text-muted-foreground">{t.common.loading}</p>
+          ) : (mySessions?.length ?? 0) === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-8 text-center">
+              <CalendarCheck className="size-8 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">{t.trainer.emptyLogged}</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <SearchInput
+                value={loggedSearch}
+                onChange={setLoggedSearch}
+                placeholder={t.trainer.searchLogged}
+                className="sm:w-80"
+              />
+              {filteredSessions.length === 0 ? (
+                <div className="rounded-2xl border border-border bg-card">
+                  <NoSearchResults
+                    onReset={() => {
+                      setLoggedSearch("");
+                      setCompanyFilter("all");
+                      setStudioFilter("all");
+                    }}
+                  />
+                </div>
+              ) : (
+                <ul className="grid gap-3 xl:grid-cols-2">
+                  {filteredSessions.map((s) => {
+                    const accent = getCourseTypeAccent(s.course_type_id ?? s.id);
+                    return (
+                      <li
+                        key={s.id}
+                        className={cn(
+                          "rounded-2xl border border-border border-l-4 bg-card p-4 shadow-xs",
+                          accent.border
+                        )}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div className="min-w-0 space-y-1.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <CourseTypeIcon
+                                courseTypeId={s.course_type_id ?? s.id}
+                                name={s.course_type_name}
+                              />
+                              <span className="font-heading text-base font-bold">
+                                {s.course_type_name || t.trainer.adHocBadge}
+                              </span>
+                              <SessionStatusBadge status={s.status} />
+                              {s.is_substitution && (
+                                <Badge className="bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200">
+                                  {s.scheduled_trainer_name
+                                    ? `${t.trainer.substitutionFor} ${s.scheduled_trainer_name}`
+                                    : t.trainer.substitutionBadge}
+                                </Badge>
+                              )}
+                              {!s.course_plan_slot_id && (
+                                <Badge variant="outline">{t.trainer.adHocBadge}</Badge>
+                              )}
+                            </div>
+
+                            <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-muted-foreground">
+                              <span className="inline-flex items-center gap-1 tabular-nums">
+                                <Clock className="size-3.5" />
+                                <span>
+                                  {formatDateDE(s.date)}, {formatTimeShort(s.start_time)}–
+                                  {formatTimeShort(s.end_time)}
+                                </span>
+                              </span>
+                            </p>
+
+                            <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+                              <span className="inline-flex items-center gap-1 rounded-md bg-muted/70 px-2 py-0.5 text-foreground">
+                                <Building2 className="size-3 shrink-0" />
+                                <span>{s.company_name}</span>
+                              </span>
+                              <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                <MapPin className="size-3 shrink-0" />
+                                <span>{s.studio_name}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          {!s.locked_at && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              disabled={deleteSession.isPending}
+                              onClick={() => handleUndo(s.id)}
+                              className="gap-1 text-muted-foreground hover:bg-destructive-bg hover:text-destructive"
+                            >
+                              <Trash2 className="size-3.5" />
+                              <span>{t.trainer.undo}</span>
+                            </Button>
+                          )}
+                        </div>
+
+                        {s.notes && (
+                          <p className="mt-2.5 rounded-lg bg-background/70 px-3 py-2 text-xs text-muted-foreground">
+                            {s.notes}
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <SubstitutionRequestDrawer
         item={subDrawerItem}

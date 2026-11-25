@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AddressFields } from "@/components/address-fields";
+import { NoSearchResults, SearchInput, matchesSearch } from "@/components/list-toolbar";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useStudios, useCreateStudio } from "@/hooks/useStudios";
 import { useActiveCoursePlan, usePlanSlots } from "@/hooks/useCoursePlans";
@@ -114,6 +115,7 @@ export default function StudiosPage() {
   const { data: studios, isLoading } = useStudios(company?.id ?? "");
   const createStudio = useCreateStudio(company?.id ?? "");
   const [formOpen, setFormOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
   const {
     register,
@@ -132,6 +134,11 @@ export default function StudiosPage() {
     reset({ country: "DE" });
     setFormOpen(false);
   }
+
+  const visibleStudios =
+    studios?.filter((studio) =>
+      matchesSearch(search, studio.name, studio.city, studio.street, studio.postal_code)
+    ) ?? [];
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -198,9 +205,21 @@ export default function StudiosPage() {
         </form>
       </Drawer>
 
+      {studios && studios.length > 1 && (
+        <div className="mb-4 flex justify-end">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={t.studios.searchPlaceholder}
+          />
+        </div>
+      )}
+
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         {isLoading ? (
           <p className="p-6 text-sm text-muted-foreground">{t.common.loading}</p>
+        ) : studios && studios.length > 0 && visibleStudios.length === 0 ? (
+          <NoSearchResults onReset={() => setSearch("")} />
         ) : studios && studios.length > 0 ? (
           <Table>
             <TableHeader>
@@ -213,7 +232,7 @@ export default function StudiosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {studios.map((studio) => (
+              {visibleStudios.map((studio) => (
                 <StudioRow key={studio.id} studio={studio} />
               ))}
             </TableBody>

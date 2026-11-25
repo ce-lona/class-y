@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, Clock, MapPin, Trash2 } from "lucide-react";
+import { Building2, Clock, MapPin, Pencil, Trash2 } from "lucide-react";
 import { formatTimeShort, getCourseTypeAccent, getInitials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CourseTypeIcon } from "@/components/course-type-icon";
@@ -19,6 +19,9 @@ export interface TimetableSlot {
   trainer_email: string;
   studio_name?: string | null;
   company_name?: string | null;
+  /** Für kombinierte Ansichten: Studio und ursprüngliche Slot-ID, um zum Bearbeiten zu springen. */
+  studio_id?: string;
+  source_slot_id?: string;
 }
 
 const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
@@ -34,10 +37,14 @@ function sortSlots(slots: TimetableSlot[]): TimetableSlot[] {
 function SlotCard({
   slot,
   onRemove,
+  onEdit,
+  isEditing,
   hideTrainer,
 }: {
   slot: TimetableSlot;
   onRemove?: (id: string) => void;
+  onEdit?: (slot: TimetableSlot) => void;
+  isEditing?: boolean;
   hideTrainer?: boolean;
 }) {
   const accent = getCourseTypeAccent(slot.course_type_id);
@@ -47,7 +54,8 @@ function SlotCard({
     <div
       className={cn(
         "group relative rounded-lg border border-border border-l-[3px] bg-background/60 p-2.5 transition-colors hover:border-primary-300 dark:bg-card/80 dark:hover:border-primary-700",
-        accent.border
+        accent.border,
+        isEditing && "ring-2 ring-primary ring-offset-1 ring-offset-card"
       )}
     >
       <div className="flex items-center justify-between gap-1">
@@ -57,16 +65,31 @@ function SlotCard({
             {formatTimeShort(slot.start_time)}–{formatTimeShort(slot.end_time)}
           </span>
         </span>
-        {onRemove && (
-          <button
-            type="button"
-            onClick={() => onRemove(slot.id)}
-            aria-label={t.plans.removeSlot}
-            title={t.plans.removeSlot}
-            className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-destructive-bg hover:text-destructive"
-          >
-            <Trash2 className="size-3.5" />
-          </button>
+        {(onEdit || onRemove) && (
+          <span className="flex items-center gap-0.5">
+            {onEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(slot)}
+                aria-label={`${slot.course_type_name} ${t.plans.editSlot}`}
+                title={t.plans.editSlot}
+                className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-primary-50 hover:text-primary dark:hover:bg-primary-900/40"
+              >
+                <Pencil className="size-3.5" />
+              </button>
+            )}
+            {onRemove && (
+              <button
+                type="button"
+                onClick={() => onRemove(slot.id)}
+                aria-label={t.plans.removeSlot}
+                title={t.plans.removeSlot}
+                className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-destructive-bg hover:text-destructive"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            )}
+          </span>
         )}
       </div>
 
@@ -112,10 +135,14 @@ function SlotCard({
 export function WeeklyTimetable({
   slots,
   onRemoveSlot,
+  onEditSlot,
+  editingSlotId,
   hideTrainer = false,
 }: {
   slots: TimetableSlot[];
   onRemoveSlot?: (id: string) => void;
+  onEditSlot?: (slot: TimetableSlot) => void;
+  editingSlotId?: string | null;
   hideTrainer?: boolean;
 }) {
   const firstDayWithSlots = WEEKDAYS.find((day) => slots.some((s) => s.weekday === day)) ?? 1;
@@ -154,6 +181,8 @@ export function WeeklyTimetable({
                       key={slot.id}
                       slot={slot}
                       onRemove={onRemoveSlot}
+                      onEdit={onEditSlot}
+                      isEditing={editingSlotId === slot.id}
                       hideTrainer={hideTrainer}
                     />
                   ))
@@ -220,6 +249,8 @@ export function WeeklyTimetable({
                   key={slot.id}
                   slot={slot}
                   onRemove={onRemoveSlot}
+                  onEdit={onEditSlot}
+                  isEditing={editingSlotId === slot.id}
                   hideTrainer={hideTrainer}
                 />
               ))}

@@ -38,6 +38,12 @@ import {
   formatContractTerms,
   formatContractValidity,
 } from "@/components/contract-status-badge";
+import {
+  NoSearchResults,
+  SearchInput,
+  StudioFilterChips,
+  matchesSearch,
+} from "@/components/list-toolbar";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useCompanyContracts, useEndContract, useOfferContract } from "@/hooks/useContracts";
 import {
@@ -83,6 +89,8 @@ export default function TrainersPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [filter, setFilter] = useState<ContractFilter>("activeOpen");
+  const [studioFilter, setStudioFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
 
   // Studio scope for new contract
   const [contractRestricted, setContractRestricted] = useState(false);
@@ -238,24 +246,53 @@ export default function TrainersPage() {
     }
   }
 
+  // Contracts ohne Studio-Einschränkung gelten für alle Studios der Company.
+  const contractMatchesStudio = (studioIds: string[] | null | undefined) =>
+    studioFilter === "all" || !studioIds || studioIds.length === 0 || studioIds.includes(studioFilter);
+
+  const studioNamesFor = (studioIds: string[] | null | undefined) =>
+    (studioIds ?? []).map((sid) => studioNameMap.get(sid)).filter((n): n is string => Boolean(n));
+
+  const contractsInScope =
+    contracts?.filter(
+      (c) =>
+        contractMatchesStudio(c.studio_ids) &&
+        matchesSearch(search, c.trainer_name, c.trainer_email, ...studioNamesFor(c.studio_ids))
+    ) ?? [];
+
   const counts = {
     activeOpen:
-      contracts?.filter((c) => c.status === "active" || c.status === "pending").length ?? 0,
-    active: contracts?.filter((c) => c.status === "active").length ?? 0,
-    pending: contracts?.filter((c) => c.status === "pending").length ?? 0,
+      contractsInScope.filter((c) => c.status === "active" || c.status === "pending").length,
+    active: contractsInScope.filter((c) => c.status === "active").length,
+    pending: contractsInScope.filter((c) => c.status === "pending").length,
     archived:
-      contracts?.filter((c) => c.status === "ended" || c.status === "declined").length ?? 0,
-    all: contracts?.length ?? 0,
+      contractsInScope.filter((c) => c.status === "ended" || c.status === "declined").length,
+    all: contractsInScope.length,
   };
 
-  const filteredContracts =
-    contracts?.filter((c) => {
-      if (filter === "activeOpen") return c.status === "active" || c.status === "pending";
-      if (filter === "active") return c.status === "active";
-      if (filter === "pending") return c.status === "pending";
-      if (filter === "archived") return c.status === "ended" || c.status === "declined";
-      return true;
-    }) ?? [];
+  const filteredContracts = contractsInScope.filter((c) => {
+    if (filter === "activeOpen") return c.status === "active" || c.status === "pending";
+    if (filter === "active") return c.status === "active";
+    if (filter === "pending") return c.status === "pending";
+    if (filter === "archived") return c.status === "ended" || c.status === "declined";
+    return true;
+  });
+
+  const filteredCoordinators =
+    coordinators?.filter(
+      (coord) =>
+        (studioFilter === "all" || coord.studio_ids.includes(studioFilter)) &&
+        matchesSearch(search, coord.full_name, coord.email, ...studioNamesFor(coord.studio_ids))
+    ) ?? [];
+
+  const coordinatorByEmail = new Map(
+    (coordinators ?? []).map((coord) => [coord.email.toLowerCase(), coord])
+  );
+
+  function resetListFilters() {
+    setSearch("");
+    setStudioFilter("all");
+  }
 
   const filterTabs: { id: ContractFilter; label: string; count: number }[] = [
     { id: "activeOpen", label: t.contracts.filters.activeOpen, count: counts.activeOpen },
@@ -693,6 +730,23 @@ export default function TrainersPage() {
         )}
       </Drawer>
 
+      {((section === "contracts" && contracts && contracts.length > 0) ||
+        (section === "coordinators" && coordinators && coordinators.length > 0)) && (
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
+          <StudioFilterChips
+            studios={studios ?? []}
+            value={studioFilter}
+            onChange={setStudioFilter}
+          />
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={t.trainers.searchPlaceholder}
+            className="sm:ml-auto"
+          />
+        </div>
+      )}
+
       {section === "coordinators" && isFullAdmin ? (
         !studios || studios.length === 0 ? (
           <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card p-10 text-center">
@@ -702,8 +756,13 @@ export default function TrainersPage() {
         ) : coordsLoading ? (
           <p className="text-sm text-muted-foreground">{t.common.loading}</p>
         ) : coordinators && coordinators.length > 0 ? (
-          <div className="grid gap-3 md:grid-cols-2">
-            {coordinators.map((coord) => (
+          filteredCoordinators.length === 0 ? (
+            <div className="rounded-xl border border-border bg-card">
+              <NoSearchResults onReset={resetListFilters} />
+            </div>
+          ) : (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {filteredCoordinators.map((coord) => (
               <div
                 key={coord.user_id}
                 className="space-y-3 rounded-xl border border-border bg-card p-5"
@@ -750,6 +809,7 @@ export default function TrainersPage() {
               </div>
             ))}
           </div>
+          )
         ) : (
           <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card p-10 text-center">
             <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
@@ -810,6 +870,9 @@ export default function TrainersPage() {
                   <TableRow>
                     <TableHead className="px-3.5">{t.trainers.tableTrainer}</TableHead>
                     <TableHead className="px-3">{t.trainers.tableContract}</TableHead>
+                    <TableHead className="hidden px-3 md:table-cell">
+                      {t.trainers.tableStudios}
+                    </TableHead>
                     <TableHead className="hidden px-3 lg:table-cell">
                       {t.trainers.tableValidity}
                     </TableHead>
@@ -819,9 +882,23 @@ export default function TrainersPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredContracts.map((c) => {
-                    const contractStudios = (c.studio_ids ?? [])
-                      .map((sid) => studioNameMap.get(sid))
-                      .filter((name): name is string => Boolean(name));
+                    const contractStudios = studioNamesFor(c.studio_ids);
+                    const coordinatorRole = c.trainer_email
+                      ? coordinatorByEmail.get(c.trainer_email.toLowerCase())
+                      : undefined;
+                    const studioBadges =
+                      contractStudios.length > 0 ? (
+                        contractStudios.map((name) => (
+                          <Badge key={name} variant="secondary" className="gap-1 font-medium">
+                            <Building2 className="size-3" />
+                            <span>{name}</span>
+                          </Badge>
+                        ))
+                      ) : (
+                        <Badge variant="outline" className="font-medium">
+                          {t.trainers.allStudiosBadge}
+                        </Badge>
+                      );
                     return (
                       <TableRow key={c.id}>
                         <TableCell className="max-w-[240px] whitespace-normal px-3.5">
@@ -838,19 +915,27 @@ export default function TrainersPage() {
                                   {c.trainer_email}
                                 </p>
                               )}
+                              {coordinatorRole && (
+                                <Badge
+                                  className="mt-1 gap-1 bg-link-500/15 text-link-600 dark:text-link-400"
+                                  title={studioNamesFor(coordinatorRole.studio_ids).join(", ")}
+                                >
+                                  <ShieldCheck className="size-3" />
+                                  <span>{t.trainers.alsoCoordinator}</span>
+                                </Badge>
+                              )}
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="whitespace-normal px-3 text-muted-foreground">
                           <p className="font-medium text-foreground">{formatContractTerms(c)}</p>
-                          {contractStudios.length > 0 && (
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {contractStudios.join(", ")}
-                            </p>
-                          )}
+                          <div className="mt-1 flex flex-wrap gap-1 md:hidden">{studioBadges}</div>
                           <p className="mt-0.5 text-xs text-muted-foreground lg:hidden">
                             {formatContractValidity(c)}
                           </p>
+                        </TableCell>
+                        <TableCell className="hidden whitespace-normal px-3 md:table-cell">
+                          <div className="flex max-w-64 flex-wrap gap-1">{studioBadges}</div>
                         </TableCell>
                         <TableCell className="hidden whitespace-normal px-3 text-muted-foreground lg:table-cell">
                           {formatContractValidity(c)}
@@ -877,6 +962,8 @@ export default function TrainersPage() {
                   })}
                 </TableBody>
               </Table>
+            ) : search.trim() || studioFilter !== "all" ? (
+              <NoSearchResults onReset={resetListFilters} />
             ) : (
               <div className="flex flex-col items-center gap-3 p-10 text-center">
                 <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">

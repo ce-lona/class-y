@@ -77,7 +77,7 @@ export default function Home() {
             <p className="text-sm text-muted-foreground">{session.user.email}</p>
           </div>
           <p className="text-sm text-muted-foreground">{t.landing.trainerWelcomeText}</p>
-          <Link href="/settings" className={cn(buttonVariants({ size: "lg" }), "w-full gap-2")}>
+          <Link href="/profile" className={cn(buttonVariants({ size: "lg" }), "w-full gap-2")}>
             <Settings className="size-4" />
             <span>{t.landing.openSettings}</span>
           </Link>

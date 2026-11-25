@@ -13,6 +13,7 @@ import {
   PlusCircle,
   Settings,
   Shield,
+  User,
   Users,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
@@ -29,7 +30,7 @@ import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
 const authPrefixes = ["/login", "/forgot-password", "/reset-password", "/auth"];
-const adminPrefixes = ["/monitoring", "/plans", "/studios", "/trainers"];
+const adminPrefixes = ["/monitoring", "/plans", "/studios", "/trainers", "/settings"];
 
 type WorkspaceRole = "trainer" | "admin" | "platform";
 
@@ -198,13 +199,24 @@ export function Nav() {
             </Link>
           )}
 
-          <Link
-            href="/settings"
-            className={linkClass(!!pathname?.startsWith("/settings"))}
-          >
-            <Settings className="size-4 shrink-0" />
-            <span>{t.settings.title}</span>
-          </Link>
+          {/* Admin-Arbeit (Konfiguration) und eigene Trainertätigkeit (Profil, Verträge) getrennt */}
+          {activeRole === "admin" && hasAdminRole ? (
+            <Link
+              href="/settings"
+              className={linkClass(!!pathname?.startsWith("/settings"))}
+            >
+              <Settings className="size-4 shrink-0" />
+              <span>{t.settings.title}</span>
+            </Link>
+          ) : (
+            <Link
+              href="/profile"
+              className={linkClass(!!pathname?.startsWith("/profile"))}
+            >
+              <User className="size-4 shrink-0" />
+              <span>{t.profilePage.title}</span>
+            </Link>
+          )}
         </nav>
 
         <div className="order-2 flex h-14 items-center justify-end gap-2 sm:gap-2.5 md:order-3 md:h-auto md:shrink-0">
@@ -238,12 +250,17 @@ export function Nav() {
 
           <ThemeToggle />
 
-          <div
-            title={profile?.full_name || session.user.email || undefined}
-            className="hidden size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground sm:flex"
+          <Link
+            href="/profile"
+            title={`${t.profilePage.openProfile} · ${profile?.full_name || session.user.email || ""}`}
+            aria-label={t.profilePage.openProfile}
+            className={cn(
+              "hidden size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground transition-shadow hover:ring-2 hover:ring-primary/40 sm:flex",
+              pathname?.startsWith("/profile") && "ring-2 ring-primary/50 ring-offset-2 ring-offset-sidebar"
+            )}
           >
             {initials}
-          </div>
+          </Link>
           <Button
             variant="ghost"
             size="sm"

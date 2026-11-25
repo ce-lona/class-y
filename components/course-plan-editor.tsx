@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Calendar, Check, Info, Plus, X } from "lucide-react";
+import { AlertCircle, Calendar, Check, Info, Pencil, Plus, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,7 @@ export function CoursePlanEditor({
   companyId,
   existingPlan,
   existingSlots,
+  initialEditSlotId = null,
   onCancel,
   onPublished,
 }: {
@@ -35,6 +36,8 @@ export function CoursePlanEditor({
   companyId: string;
   existingPlan: CoursePlan | null;
   existingSlots: PlanSlotDetailed[];
+  /** Slot, der beim Öffnen direkt zum Bearbeiten geladen wird (z. B. Stift-Icon im Stundenplan). */
+  initialEditSlotId?: string | null;
   onCancel: () => void;
   onPublished: () => void;
 }) {
@@ -61,11 +64,16 @@ export function CoursePlanEditor({
     }))
   );
 
-  const [weekday, setWeekday] = useState<string>("1");
-  const [startTime, setStartTime] = useState<string>("18:00");
-  const [endTime, setEndTime] = useState<string>("19:00");
-  const [courseTypeId, setCourseTypeId] = useState<string>("");
-  const [trainerId, setTrainerId] = useState<string>("");
+  const initialEditSlot = initialEditSlotId
+    ? (draftSlots.find((s) => s.id === initialEditSlotId) ?? null)
+    : null;
+
+  const [editingSlotId, setEditingSlotId] = useState<string | null>(initialEditSlot?.id ?? null);
+  const [weekday, setWeekday] = useState<string>(String(initialEditSlot?.weekday ?? 1));
+  const [startTime, setStartTime] = useState<string>(initialEditSlot?.start_time ?? "18:00");
+  const [endTime, setEndTime] = useState<string>(initialEditSlot?.end_time ?? "19:00");
+  const [courseTypeId, setCourseTypeId] = useState<string>(initialEditSlot?.course_type_id ?? "");
+  const [trainerId, setTrainerId] = useState<string>(initialEditSlot?.trainer_id ?? "");
   const [slotError, setSlotError] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
 
@@ -110,6 +118,25 @@ export function CoursePlanEditor({
       return;
     }
 
+    const nextSlot: Omit<TimetableSlot, "id"> = {
+      weekday: Number(weekday),
+      start_time: startTime,
+      end_time: endTime,
+      course_type_id: selectedCourseType.id,
+      course_type_name: selectedCourseType.name,
+      trainer_id: selectedTrainer.trainer_id,
+      trainer_name: selectedTrainer.full_name,
+      trainer_email: selectedTrainer.email,
+    };
+
+    if (editingSlotId) {
+      setDraftSlots((prev) =>
+        prev.map((s) => (s.id === editingSlotId ? { ...nextSlot, id: s.id } : s))
+      );
+      setEditingSlotId(null);
+      return;
+    }
+
     setDraftSlots((prev) => [
       ...prev,
       {
@@ -128,6 +155,23 @@ export function CoursePlanEditor({
 
   function handleRemoveSlot(id: string) {
     setDraftSlots((prev) => prev.filter((s) => s.id !== id));
+    if (editingSlotId === id) setEditingSlotId(null);
+  }
+
+  function handleEditSlot(slot: TimetableSlot) {
+    setSlotError(null);
+    setEditingSlotId(slot.id);
+    setWeekday(String(slot.weekday));
+    setStartTime(formatTimeShort(slot.start_time));
+    setEndTime(formatTimeShort(slot.end_time));
+    setCourseTypeId(slot.course_type_id);
+    setTrainerId(slot.trainer_id);
+    document.getElementById("plan-slot-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function cancelSlotEdit() {
+    setEditingSlotId(null);
+    setSlotError(null);
   }
 
   async function handlePublish() {
@@ -216,7 +260,7 @@ export function CoursePlanEditor({
             </span>
           </div>
           <Link
-            href={noCourseTypes ? "/plans?tab=types" : "/trainers"}
+            href={noCourseTypes ? "/settings?tab=config" : "/trainers"}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
             {noCourseTypes ? t.plans.goToCourseTypes : t.plans.goToTrainers}
@@ -224,11 +268,32 @@ export function CoursePlanEditor({
         </div>
       )}
 
-      {/* Quick-Add-Leiste zum Hinzufügen eines Slots */}
-      <div className="rounded-xl border border-border bg-card p-5">
-        <div className="mb-3.5 flex items-center gap-2">
-          <Plus className="size-4 text-primary" />
-          <h3 className="font-heading text-sm font-bold">{t.plans.addSlotTitle}</h3>
+      {/* Quick-Add-Leiste zum Hinzufügen bzw. Bearbeiten eines Slots */}
+      <div
+        id="plan-slot-form"
+        className={
+          editingSlotId
+            ? "rounded-xl border border-primary-300 bg-card p-5 ring-2 ring-primary/15 dark:border-primary-700"
+            : "rounded-xl border border-border bg-card p-5"
+        }
+      >
+        <div className="mb-3.5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            {editingSlotId ? (
+              <Pencil className="size-4 text-primary" />
+            ) : (
+              <Plus className="size-4 text-primary" />
+            )}
+            <h3 className="font-heading text-sm font-bold">
+              {editingSlotId ? t.plans.editSlotTitle : t.plans.addSlotTitle}
+            </h3>
+          </div>
+          {editingSlotId && (
+            <Button type="button" variant="ghost" size="sm" onClick={cancelSlotEdit} className="gap-1">
+              <X className="size-3.5" />
+              <span>{t.plans.cancelSlotEdit}</span>
+            </Button>
+          )}
         </div>
 
         <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[135px_108px_108px_1fr_1fr_auto]">
@@ -323,13 +388,13 @@ export function CoursePlanEditor({
 
           <Button
             type="button"
-            variant="secondary"
+            variant={editingSlotId ? "default" : "secondary"}
             onClick={handleAddSlot}
             disabled={noCourseTypes || noTrainers}
             className="gap-1.5"
           >
-            <Plus className="size-4" />
-            <span>{t.plans.addSlot}</span>
+            {editingSlotId ? <Check className="size-4" /> : <Plus className="size-4" />}
+            <span>{editingSlotId ? t.plans.applySlotChange : t.plans.addSlot}</span>
           </Button>
         </div>
 
@@ -349,7 +414,12 @@ export function CoursePlanEditor({
           </span>
         </div>
 
-        <WeeklyTimetable slots={draftSlots} onRemoveSlot={handleRemoveSlot} />
+        <WeeklyTimetable
+          slots={draftSlots}
+          onRemoveSlot={handleRemoveSlot}
+          onEditSlot={handleEditSlot}
+          editingSlotId={editingSlotId}
+        />
       </div>
     </div>
   );
