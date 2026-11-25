@@ -1,12 +1,13 @@
 // Prüft ein Passwort gegen die HaveIBeenPwned-Datenbank geleakter Passwörter
 // (https://haveibeenpwned.com/API/v3#PwnedPasswords). k-Anonymität: Es verlassen nur die
 // ersten 5 Zeichen des SHA-1-Hashs den Browser, nie das Passwort oder der vollständige Hash.
-// "Add-Padding" füllt die Antwort mit Dummy-Einträgen auf, damit ihre Größe nichts verrät.
+// Die Anfrage läuft über unseren Server (app/api/pwned-range), damit HIBP keine
+// Nutzer-IPs sieht; der Server fragt mit "Add-Padding" an, damit die Antwortgröße nichts verrät.
 //
 // Ist die API nicht erreichbar, wird das Passwort durchgelassen (fail open): ein Ausfall von
 // HIBP soll niemanden aussperren. Die Mindestlänge erzwingt Supabase Auth serverseitig.
 
-const RANGE_URL = "https://api.pwnedpasswords.com/range/";
+const RANGE_URL = "/api/pwned-range/";
 const TIMEOUT_MS = 4000;
 
 async function sha1Hex(value: string): Promise<string> {
@@ -24,8 +25,8 @@ export async function isPasswordPwned(password: string): Promise<boolean> {
     const suffix = hash.slice(5);
 
     const response = await fetch(RANGE_URL + prefix, {
-      headers: { "Add-Padding": "true" },
       signal: AbortSignal.timeout(TIMEOUT_MS),
+      cache: "no-store",
     });
     if (!response.ok) return false;
 

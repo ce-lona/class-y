@@ -92,7 +92,8 @@ Einladungsmail (`supabase/templates/invite.html`) führt deshalb mit `token_hash
 Passwörter brauchen mindestens 8 Zeichen (`minimum_password_length` in `supabase/config.toml`).
 Beim Setzen prüft die App sie zusätzlich gegen die HaveIBeenPwned-Datenbank geleakter Passwörter
 (`lib/passwordBreach.ts`, k-Anonymität: nur die ersten 5 Zeichen des SHA-1-Hashs verlassen den
-Browser). Ist die API nicht erreichbar, wird das Passwort durchgelassen.
+Browser). Die Anfrage läuft über `app/api/pwned-range`, damit HIBP nur die Server-IP sieht. Ist
+die API nicht erreichbar, wird das Passwort durchgelassen.
 
 Auf einem gehosteten Projekt zusätzlich im Dashboard:
 
