@@ -39,6 +39,14 @@
 3. Änderungen der vereinbarten Vergütung bedürfen einer Vereinbarung in Textform.
 4. Gerät der Kunde mit einer Zahlung mehr als 30 Tage in Verzug, darf der Anbieter den Zugang nach vorheriger Ankündigung sperren, bis die offenen Beträge bezahlt sind.
 
+## § 6a Kostenlose Testphase
+
+1. Solange der Anbieter class-y im Testmodus bereitstellt, ist die Nutzung für den Kunden unentgeltlich. § 6 findet in dieser Zeit keine Anwendung.
+2. In der Testphase befindet sich class-y noch in Entwicklung. Funktionen können sich ändern, eingeschränkt sein oder wegfallen, und es kann zu Ausfällen und Fehlern kommen. Ein Anspruch auf bestimmte Funktionen oder eine bestimmte Verfügbarkeit besteht nicht.
+3. Abweichend von §§ 10 und 11 haftet der Anbieter in der Testphase nur für Vorsatz und grobe Fahrlässigkeit sowie bei der Verletzung von Leben, Körper oder Gesundheit und nach dem Produkthaftungsgesetz. Die mietrechtlichen Gewährleistungsregeln in § 10 gelten in der Testphase nicht. § 11 Abs. 4 (Datenverlust) bleibt anwendbar.
+4. Beide Seiten können die Nutzung in der Testphase jederzeit ohne Einhaltung einer Frist in Textform beenden. § 8 (Daten bei Vertragsende) gilt entsprechend.
+5. Der Anbieter kündigt das Ende der Testphase und die Umstellung auf eine kostenpflichtige Nutzung mindestens vier Wochen vorher in Textform an. Eine kostenpflichtige Nutzung setzt eine gesonderte Vereinbarung über die Vergütung voraus. Kommt sie nicht zustande, endet die Nutzung mit dem Ende der Testphase.
+
 ## § 7 Laufzeit und Kündigung
 
 1. Laufzeit und Kündigungsfrist werden im Angebot bzw. im Vertrag vereinbart. Ist nichts vereinbart, läuft der Vertrag auf unbestimmte Zeit und kann von beiden Seiten mit einer Frist von einem Monat zum Ende eines Abrechnungszeitraums gekündigt werden.
