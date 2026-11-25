@@ -89,7 +89,7 @@ Rechtsgrundlage ist § 25 Abs. 2 Nr. 2 TDDDG (unbedingt erforderlich für den vo
 
 Wir setzen folgende Dienstleister ein, die Daten in unserem Auftrag und nach unseren Weisungen verarbeiten. Mit allen haben wir Verträge zur Auftragsverarbeitung nach Art. 28 DSGVO geschlossen.
 
-- **Vercel Inc.**, 440 N Barranca Ave #4133, Covina, CA 91723, USA [Anschrift laut DPA prüfen]: Hosting der Website und der App. [Region der Server-Funktionen eintragen, empfohlen: Frankfurt (fra1).]
+- **Vercel Inc.**, 440 N Barranca Ave #4133, Covina, CA 91723, USA [Anschrift laut DPA prüfen]: Hosting der Website und der App. Die Server-Funktionen laufen in Frankfurt (EU); statische Inhalte werden über Vercels weltweites Netzwerk ausgeliefert.
 - **Supabase Inc.**, [Anschrift laut aktuellem DPA], USA: Datenbank, Benutzerkonten und Anmeldung. Die Daten werden in einem Rechenzentrum in Irland (EU) gespeichert.
 - **Functional Software, Inc. (Sentry)**, [Anschrift laut aktuellem DPA], USA: Fehlerüberwachung. Die Daten werden in der EU-Region (Frankfurt) gespeichert.
 - **Resend** (Plus Five Five, Inc.), [Anschrift laut aktuellem DPA], USA: Versand von E-Mails (Einladungen, Passwort zurücksetzen).

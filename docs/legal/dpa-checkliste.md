@@ -7,7 +7,7 @@
 Im Code gefunden: Supabase (Datenbank, Auth, Edge Functions), Vercel (Hosting), Resend (E-Mail über Supabase-SMTP), Sentry (Fehlerüberwachung, EU-Region) und die Pwned-Passwords-API (Passwortprüfung im Browser). Kein Tracking, keine Analytics, keine externen Fonts zur Laufzeit (next/font hostet Google Fonts selbst), kein Zahlungsanbieter.
 
 - [ ] **Supabase** – DPA unter supabase.com/legal/dpa. Muss in der Regel aktiv angefordert und unterschrieben werden (im Dashboard unter Organization → Legal Documents bzw. über das verlinkte Formular). Unterschriebenes PDF ablegen. Transfer Impact Assessment (TIA) von Supabase mit herunterladen, falls angeboten.
-- [ ] **Vercel** – DPA unter vercel.com/legal/dpa. Gilt meist automatisch als Teil der Nutzungsbedingungen; als PDF herunterladen und ablegen. Prüfen, ob der genutzte Tarif (Hobby ist laut Vercel nur für nicht-kommerzielle Nutzung) für den kommerziellen Betrieb reicht, sonst auf Pro wechseln.
+- [ ] **Vercel** – DPA unter vercel.com/legal/dpa. Gilt meist automatisch als Teil der Nutzungsbedingungen; als PDF herunterladen und ablegen. Aktuell Hobby-Tarif (laut Vercel nur nicht-kommerziell): reicht für die Testphase, spätestens mit dem ersten zahlenden Studio auf Pro wechseln.
 - [ ] **Sentry** – DPA unter sentry.io/legal/dpa. Gilt laut Sentry als Teil der Nutzungsbedingungen; als PDF herunterladen und ablegen. Prüfen, dass die Organisation in der **EU-Region (de.sentry.io)** angelegt ist; die Region lässt sich nachträglich nicht ändern. Datenaufbewahrung im Tarif nachsehen und in der Datenschutzerklärung eintragen. In den Organisationseinstellungen „Prevent Storing of IP Addresses“ und den serverseitigen Data Scrubber aktivieren.
 - [ ] **Resend** – DPA unter resend.com/legal/dpa. Ebenfalls herunterladen bzw. unterschreiben und ablegen.
 - [ ] **IONOS (HiDrive)** – speichert die verschlüsselten nächtlichen Backups. AVV im IONOS Control Center (Menü „Datenschutz“ bzw. „Vertrag zur Auftragsverarbeitung“) abschließen; deckt dann auch ein IONOS-Postfach ab.
@@ -21,7 +21,7 @@ Nicht nötig (keine personenbezogenen Daten der App): IONOS-DNS allein. Hetzner 
 
 ## 2. Einstellungen, die zu den Texten passen müssen
 
-- [ ] Vercel: Function Region auf **fra1 (Frankfurt)** setzen (Project Settings → Functions), dann in Datenschutzerklärung und AVV Anlage 3 eintragen.
+- [x] Vercel: Function Region auf **fra1 (Frankfurt)** setzen (erledigt 25.11.2026, wirksam ab nächstem Deployment) (Project Settings → Functions), dann in Datenschutzerklärung und AVV Anlage 3 eintragen.
 - [ ] Resend: Sende-Region **eu-west-1** prüfen bzw. Domain dort anlegen.
 - [ ] Supabase: Region eu-west-1 ist laut Projekt-Setup gesetzt, im Dashboard bestätigen.
 - [ ] Backups: Die nächtliche GitHub Action muss einmal erfolgreich gelaufen sein, bevor die AVV-Anlage 2 so unterschrieben wird (Supabase läuft im Free-Tarif ohne eigene Backups).

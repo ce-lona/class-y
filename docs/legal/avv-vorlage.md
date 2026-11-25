@@ -122,7 +122,7 @@ Besondere Kategorien personenbezogener Daten (Art. 9 DSGVO) werden nicht verarbe
 | Unternehmen | Leistung | Ort der Verarbeitung | Garantie bei Drittlandbezug |
 |---|---|---|---|
 | Supabase Inc., USA | Datenbank, Authentifizierung, Edge Functions | AWS eu-west-1 (Irland, EU) | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |
-| Vercel Inc., USA | Hosting der Web-App | [Funktionsregion, empfohlen fra1 Frankfurt]; Edge-Netzwerk weltweit | EU-US Data Privacy Framework / Standardvertragsklauseln |
+| Vercel Inc., USA | Hosting der Web-App | Funktionsregion fra1 (Frankfurt, EU); Edge-Netzwerk weltweit | EU-US Data Privacy Framework / Standardvertragsklauseln |
 | Functional Software, Inc. (Sentry), USA | Fehlerüberwachung (technische Fehlerberichte, IP-Adresse bei Übermittlung) | EU-Region (Frankfurt, de.sentry.io) | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |
 | IONOS SE, Montabaur, Deutschland | Speicherung verschlüsselter Datenbank-Sicherungen (HiDrive) | Deutschland | – (EU) |
 | GitHub, Inc., USA (Microsoft) | Ausführung der nächtlichen Datensicherung (GitHub Actions); Daten liegen nur während des Laufs unverschlüsselt im Arbeitsspeicher/temporären Speicher des Runners | [Runner-Region; Standard-Runner laufen u. a. in den USA] | EU-US Data Privacy Framework / Standardvertragsklauseln |
