@@ -37,6 +37,8 @@ import {
   createTestAdminSchema,
   type CreateTestAdminInput,
 } from "@/lib/validators";
+import { CompanyOffboardingCard } from "@/components/privacy/company-offboarding-card";
+import { CompanyPrivacyPanel } from "@/components/privacy/company-privacy-panel";
 import { formatAddress } from "@/lib/address";
 import { getInitials } from "@/lib/format";
 import { t } from "@/i18n/de";
@@ -375,6 +377,9 @@ export default function CompanyDetailPage({
           </div>
         </section>
       </div>
+
+      {company && <CompanyOffboardingCard company={company} />}
+      {company && <CompanyPrivacyPanel companyId={company.id} companyName={company.name} />}
     </div>
   );
 }

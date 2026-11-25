@@ -503,6 +503,65 @@ export const t = {
     removedSuccess: "Koordinator-Rechte entfernt.",
     error: "Aktion fehlgeschlagen. Bitte prüfe die E-Mail-Adresse und Studios.",
   },
+  privacy: {
+    nav: "Datenschutz",
+    title: "Datenschutz",
+    subtitle:
+      "Datenauskunft (DSGVO Art. 15) und Löschung von Konten (Art. 17) für deine Company.",
+    companyExportTitle: "Datenexport der Company",
+    companyExportHint:
+      "Alle Daten der Company: Studios, Personen, Verträge, Kurspläne, erfasste Kurse und Vertretungen.",
+    exportJson: "JSON",
+    exportCsv: "CSV",
+    exportError: "Export fehlgeschlagen. Bitte versuche es erneut.",
+    peopleTitle: "Personen",
+    peopleHint:
+      "Konten mit Bezug zu deiner Company. Sind noch Abrechnungsdaten vorhanden (Verträge, erfasste Kurse), wird das Konto anonymisiert und diese Daten bleiben wegen gesetzlicher Aufbewahrungspflichten erhalten.",
+    peopleEmpty: "Keine Personen gefunden.",
+    roles: {
+      company_admin: "Admin",
+      coordinator: "Koordinator",
+      trainer: "Trainer:in",
+    },
+    exportPerson: "Datenauskunft",
+    deletePerson: "Konto löschen",
+    blocked: {
+      self: "Das eigene Konto kann hier nicht gelöscht werden.",
+      other_company:
+        "Die Person ist auch an eine andere Company gebunden. Die Löschung übernimmt der Plattform-Support.",
+      active_plan: "Die Person ist in einem aktiven Kursplan eingeteilt. Bitte zuerst ausplanen.",
+    },
+    deleteConfirmTitle: "Konto endgültig löschen?",
+    deleteConfirmBody:
+      "Das Login und die Stammdaten (Name, Telefon, Adresse) werden gelöscht. Laufende Verträge enden heute, offene Angebote und Vertretungen werden verworfen. Das lässt sich nicht rückgängig machen.",
+    deleteConfirmHint: "Tipp: Ziehe vorher eine Datenauskunft, falls die Person sie angefordert hat.",
+    deleteConfirmButton: "Endgültig löschen",
+    deleted: "Konto gelöscht.",
+    anonymized: "Konto gelöscht. Abrechnungsdaten bleiben anonymisiert erhalten.",
+    errors: {
+      not_authorized: "Dafür fehlt dir die Berechtigung.",
+      cannot_delete_self: "Das eigene Konto kann hier nicht gelöscht werden.",
+      user_belongs_to_other_company:
+        "Die Person ist auch an eine andere Company gebunden. Die Löschung übernimmt der Plattform-Support.",
+      user_in_active_course_plan:
+        "Die Person ist in einem aktiven Kursplan eingeteilt. Bitte zuerst ausplanen.",
+      user_not_found: "Konto nicht gefunden.",
+      company_deletion_already_scheduled: "Die Löschung ist bereits geplant.",
+      company_deletion_not_scheduled: "Es ist keine Löschung geplant.",
+      generic: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    },
+    offboarding: {
+      title: "Offboarding nach Kündigung",
+      hint: "Nach dem Einplanen bleiben die Daten noch 30 Tage erhalten (für Export oder Widerruf). Danach werden die Company und alle zugehörigen Daten automatisch endgültig gelöscht, inklusive Konten, die an keine andere Company gebunden sind.",
+      schedule: "Löschung in 30 Tagen einplanen",
+      scheduleConfirm:
+        "Löschung dieser Company in 30 Tagen einplanen? Bis dahin kann sie zurückgenommen werden.",
+      scheduledFor: "Endgültige Löschung am",
+      requestedAt: "Eingeplant am",
+      cancel: "Löschung zurücknehmen",
+      badge: "Löschung geplant",
+    },
+  },
   monitoring: {
     title: "Monitoring",
     subtitle: "Überblick über erfasste, offene und überfällige Kurse sowie Trainer-Summen.",

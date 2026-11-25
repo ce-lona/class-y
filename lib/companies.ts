@@ -9,6 +9,10 @@ export interface Company {
   city: string | null;
   country: string;
   created_at: string;
+  /** Offboarding: geplante endgültige Löschung (30 Tage Karenz), siehe lib/gdpr.ts */
+  deletion_requested_at?: string | null;
+  deletion_scheduled_for?: string | null;
+  deletion_requested_by?: string | null;
 }
 
 export async function getCompanies(): Promise<Company[]> {

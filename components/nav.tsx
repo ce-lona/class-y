@@ -14,6 +14,7 @@ import {
   Receipt,
   Settings,
   Shield,
+  ShieldCheck,
   User,
   Users,
 } from "lucide-react";
@@ -31,7 +32,7 @@ import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
 const authPrefixes = ["/login", "/forgot-password", "/reset-password", "/auth"];
-const adminPrefixes = ["/monitoring", "/billing", "/plans", "/studios", "/trainers", "/settings"];
+const adminPrefixes = ["/monitoring", "/billing", "/plans", "/studios", "/trainers", "/privacy", "/settings"];
 
 type WorkspaceRole = "trainer" | "admin" | "platform";
 
@@ -191,6 +192,16 @@ export function Nav() {
                 </Link>
               );
             })}
+
+          {activeRole === "admin" && hasAdminRole && myCompany?.role !== "coordinator" && (
+            <Link
+              href="/privacy"
+              className={linkClass(!!pathname?.startsWith("/privacy"))}
+            >
+              <ShieldCheck className="size-4 shrink-0" />
+              <span>{t.privacy.nav}</span>
+            </Link>
+          )}
 
           {activeRole === "platform" && hasPlatformRole && (
             <Link
