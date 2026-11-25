@@ -7,6 +7,7 @@ import { AlertCircle, ArrowRight, Check, Lock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Logo } from "@/components/logo";
+import { LegalLinks } from "@/components/legal-links";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -147,6 +148,8 @@ export default function LoginPage() {
               <Lock className="size-3.5 shrink-0" />
               <span>{t.auth.inviteOnly}</span>
             </div>
+
+            <LegalLinks className="mt-4 text-xs text-muted-foreground" />
           </div>
         </main>
       </div>

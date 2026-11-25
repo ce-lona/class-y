@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { LegalLinks } from "@/components/legal-links";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
@@ -192,7 +193,10 @@ export default function Home() {
         <div className="text-base text-muted-foreground">
           <Logo aria-hidden="true" />
         </div>
-        <p className="text-sm text-muted-foreground">{t.landing.footerCopyright}</p>
+        <div className="flex flex-col items-end gap-1 text-sm text-muted-foreground">
+          <LegalLinks />
+          <p>{t.landing.footerCopyright}</p>
+        </div>
       </footer>
     </div>
   );

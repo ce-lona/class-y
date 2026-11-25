@@ -202,6 +202,13 @@ export const t = {
       fixed: "Festgehalt (monatlich)",
     },
   },
+  legal: {
+    navLabel: "Rechtliches",
+    impressum: "Impressum",
+    datenschutz: "Datenschutz",
+    agb: "AGB",
+    backHome: "Zur Startseite",
+  },
   landing: {
     eyebrow: "Für Gyms, Studios und ihre Trainer:innen",
     headline: "Kurse tracken. Studios im Blick. Fertig.",
