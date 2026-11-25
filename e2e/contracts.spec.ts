@@ -57,7 +57,7 @@ test("Vertrag: einladen, annehmen, zweites Angebot ablehnen, beenden", async ({
     await trainer.waitForURL("/");
 
     await trainer.goto("/profile");
-    await trainer.getByRole("tab", { name: /Meine Verträge/ }).click();
+    await trainer.getByRole("tab", { name: /^Verträge/ }).click();
     const offer = trainerRow(trainer, "42,50");
     await expect(offer).toContainText("Wartet auf Annahme");
     await offer.getByRole("button", { name: "Annehmen" }).click();
@@ -78,7 +78,7 @@ test("Vertrag: einladen, annehmen, zweites Angebot ablehnen, beenden", async ({
 
     // Admin sieht das abgelehnte Angebot im Filter "Alle" und beendet den aktiven Vertrag
     await page.reload();
-    await page.getByRole("button", { name: /^Alle/ }).click();
+    await page.getByRole("button", { name: /^Alle \d+$/ }).click();
     await expect(adminRow(page, trainerEmail, "30,00")).toContainText("Abgelehnt");
     const active = adminRow(page, trainerEmail, "42,50");
     await active.getByRole("button", { name: "Beenden" }).click();
