@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, Plus, Send, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  Building2,
+  CheckCircle2,
+  Plus,
+  Send,
+  ShieldCheck,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +40,13 @@ import {
 } from "@/components/contract-status-badge";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useCompanyContracts, useEndContract, useOfferContract } from "@/hooks/useContracts";
+import {
+  useCompanyCoordinators,
+  useInviteStudioCoordinator,
+  useUpdateCoordinatorStudios,
+} from "@/hooks/useCoordinators";
+import { useStudios } from "@/hooks/useStudios";
+import type { CompanyCoordinator } from "@/lib/coordinators";
 import { getInitials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
@@ -44,17 +60,44 @@ import {
 import { t } from "@/i18n/de";
 
 type ContractFilter = "activeOpen" | "active" | "pending" | "archived" | "all";
+type TeamSection = "contracts" | "coordinators";
 
 export default function TrainersPage() {
   const { data: company } = useMyCompany();
   const companyId = company?.id ?? "";
+  const isFullAdmin = company?.role !== "coordinator";
+
   const { data: contracts, isLoading, isError } = useCompanyContracts(companyId);
+  const { data: studios } = useStudios(companyId);
+  const { data: coordinators, isLoading: coordsLoading } = useCompanyCoordinators(
+    companyId,
+    isFullAdmin
+  );
+
   const offer = useOfferContract(companyId);
   const end = useEndContract(companyId);
+  const inviteCoordinator = useInviteStudioCoordinator(companyId);
+  const updateCoordinatorStudios = useUpdateCoordinatorStudios(companyId);
 
+  const [section, setSection] = useState<TeamSection>("contracts");
   const [formOpen, setFormOpen] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [filter, setFilter] = useState<ContractFilter>("activeOpen");
+
+  // Studio scope for new contract
+  const [contractRestricted, setContractRestricted] = useState(false);
+  const [contractStudioIds, setContractStudioIds] = useState<string[]>([]);
+  const [contractScopeError, setContractScopeError] = useState<string | null>(null);
+
+  // Coordinator invite / edit drawers
+  const [coordInviteOpen, setCoordInviteOpen] = useState(false);
+  const [coordEmail, setCoordEmail] = useState("");
+  const [coordStudioIds, setCoordStudioIds] = useState<string[]>([]);
+  const [coordError, setCoordError] = useState<string | null>(null);
+
+  const [editingCoord, setEditingCoord] = useState<CompanyCoordinator | null>(null);
+  const [editCoordStudioIds, setEditCoordStudioIds] = useState<string[]>([]);
+  const [editCoordError, setEditCoordError] = useState<string | null>(null);
 
   const {
     register,
@@ -71,10 +114,42 @@ export default function TrainersPage() {
 
   const watchedEmail = useWatch({ control, name: "email" }) ?? "";
   const emailSuggestion = suggestEmailTypo(watchedEmail);
+  const coordEmailSuggestion = suggestEmailTypo(coordEmail);
+
+  const studioNameMap = new Map((studios ?? []).map((s) => [s.id, s.name]));
+
+  function openContractDrawer() {
+    setSuccess(null);
+    setContractScopeError(null);
+    if (!isFullAdmin && studios && studios.length > 0) {
+      setContractRestricted(true);
+      setContractStudioIds(studios.map((s) => s.id));
+    } else {
+      setContractRestricted(false);
+      setContractStudioIds([]);
+    }
+    setFormOpen(true);
+  }
+
+  function closeContractDrawer() {
+    reset();
+    setContractRestricted(false);
+    setContractStudioIds([]);
+    setContractScopeError(null);
+    setFormOpen(false);
+  }
 
   async function onSubmit(values: OfferContractFormInput) {
     if (!company) return;
     setSuccess(null);
+    setContractScopeError(null);
+
+    const needsStudios = !isFullAdmin || contractRestricted;
+    if (needsStudios && contractStudioIds.length === 0) {
+      setContractScopeError(t.contracts.selectAtLeastOneStudio);
+      return;
+    }
+
     try {
       const result = await offer.mutateAsync({
         companyId: company.id,
@@ -84,16 +159,82 @@ export default function TrainersPage() {
         rateAmount: parseRateAmount(values.rateAmount),
         validFrom: values.validFrom,
         validTo: values.validTo || null,
+        studioIds: needsStudios ? contractStudioIds : undefined,
       });
       setSuccess(result.invited ? t.contracts.invited : t.contracts.offered);
-      reset();
-      setFormOpen(false);
+      closeContractDrawer();
       if (filter === "archived") {
         setFilter("activeOpen");
       }
     } catch (error) {
       console.error(error);
       setError("email", { message: t.contracts.offerError });
+    }
+  }
+
+  async function handleInviteCoordinator(e: React.FormEvent) {
+    e.preventDefault();
+    setCoordError(null);
+    setSuccess(null);
+    if (!coordEmail.trim()) {
+      setCoordError(t.auth.emailRequired);
+      return;
+    }
+    if (coordStudioIds.length === 0) {
+      setCoordError(t.coordinators.selectAtLeastOne);
+      return;
+    }
+    try {
+      const result = await inviteCoordinator.mutateAsync({
+        email: coordEmail.trim(),
+        studioIds: coordStudioIds,
+      });
+      setSuccess(result.invited ? t.coordinators.invitedSuccess : t.coordinators.assignedSuccess);
+      setCoordEmail("");
+      setCoordStudioIds([]);
+      setCoordInviteOpen(false);
+    } catch (error) {
+      console.error(error);
+      setCoordError(t.coordinators.error);
+    }
+  }
+
+  async function handleSaveCoordinatorStudios(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingCoord) return;
+    setEditCoordError(null);
+    setSuccess(null);
+    try {
+      await updateCoordinatorStudios.mutateAsync({
+        email: editingCoord.email,
+        studioIds: editCoordStudioIds,
+      });
+      setSuccess(
+        editCoordStudioIds.length === 0
+          ? t.coordinators.removedSuccess
+          : t.coordinators.assignedSuccess
+      );
+      setEditingCoord(null);
+    } catch (error) {
+      console.error(error);
+      setEditCoordError(t.coordinators.error);
+    }
+  }
+
+  async function handleRemoveCoordinator() {
+    if (!editingCoord) return;
+    setEditCoordError(null);
+    setSuccess(null);
+    try {
+      await updateCoordinatorStudios.mutateAsync({
+        email: editingCoord.email,
+        studioIds: [],
+      });
+      setSuccess(t.coordinators.removedSuccess);
+      setEditingCoord(null);
+    } catch (error) {
+      console.error(error);
+      setEditCoordError(t.coordinators.error);
     }
   }
 
@@ -132,26 +273,89 @@ export default function TrainersPage() {
             <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
               {t.trainers.title}
             </h1>
-            {contracts && (
+            {contracts && section === "contracts" && (
               <Badge variant="secondary" className="font-semibold">
                 {counts.activeOpen}
+              </Badge>
+            )}
+            {coordinators && section === "coordinators" && (
+              <Badge variant="secondary" className="font-semibold">
+                {coordinators.length}
               </Badge>
             )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">{t.trainers.subtitle}</p>
         </div>
 
-        <Button
-          onClick={() => {
-            setSuccess(null);
-            setFormOpen(true);
-          }}
-          className="gap-1.5"
-        >
-          <Plus className="size-4" />
-          <span>{t.contracts.offerTitle}</span>
-        </Button>
+        {section === "contracts" ? (
+          <Button onClick={openContractDrawer} className="gap-1.5">
+            <Plus className="size-4" />
+            <span>{t.contracts.offerTitle}</span>
+          </Button>
+        ) : (
+          <Button
+            onClick={() => {
+              setSuccess(null);
+              setCoordError(null);
+              setCoordEmail("");
+              setCoordStudioIds(studios && studios.length === 1 ? [studios[0].id] : []);
+              setCoordInviteOpen(true);
+            }}
+            disabled={!studios || studios.length === 0}
+            className="gap-1.5"
+          >
+            <UserPlus className="size-4" />
+            <span>{t.coordinators.inviteTitle}</span>
+          </Button>
+        )}
       </div>
+
+      {isFullAdmin && (
+        <div role="tablist" className="inline-flex rounded-xl border border-border bg-card p-1">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={section === "contracts"}
+            onClick={() => setSection("contracts")}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
+              section === "contracts"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Users className="size-4" />
+            <span>{t.coordinators.tabContracts}</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={section === "coordinators"}
+            onClick={() => setSection("coordinators")}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
+              section === "coordinators"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <ShieldCheck className="size-4" />
+            <span>{t.coordinators.tabCoordinators}</span>
+            {coordinators && coordinators.length > 0 && (
+              <span
+                className={cn(
+                  "rounded-full px-1.5 py-0.5 text-[11px] leading-none",
+                  section === "coordinators"
+                    ? "bg-primary-foreground/20"
+                    : "bg-muted text-foreground"
+                )}
+              >
+                {coordinators.length}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
 
       {success && (
         <div className="flex items-center gap-2 rounded-xl border border-success/20 bg-success-bg px-4 py-3 text-sm font-medium text-success">
@@ -160,12 +364,10 @@ export default function TrainersPage() {
         </div>
       )}
 
+      {/* Drawer: Vertrag anbieten */}
       <Drawer
         open={formOpen}
-        onClose={() => {
-          reset();
-          setFormOpen(false);
-        }}
+        onClose={closeContractDrawer}
         title={t.contracts.offerTitle}
         description={t.contracts.companyHint}
       >
@@ -274,18 +476,153 @@ export default function TrainersPage() {
             </div>
           </div>
 
+          {studios && studios.length > 0 && (
+            <div className="space-y-2 rounded-xl border border-border bg-muted/35 p-3.5">
+              <p className="text-xs font-bold text-foreground">{t.contracts.studioScopeLabel}</p>
+              {isFullAdmin && (
+                <>
+                  <label className="flex cursor-pointer items-center gap-2 text-xs font-medium">
+                    <input
+                      type="radio"
+                      checked={!contractRestricted}
+                      onChange={() => {
+                        setContractRestricted(false);
+                        setContractScopeError(null);
+                      }}
+                      className="size-3.5 accent-primary"
+                    />
+                    <span>{t.contracts.allStudios}</span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2 text-xs font-medium">
+                    <input
+                      type="radio"
+                      checked={contractRestricted}
+                      onChange={() => {
+                        setContractRestricted(true);
+                        setContractScopeError(null);
+                      }}
+                      className="size-3.5 accent-primary"
+                    />
+                    <span>{t.contracts.selectedStudiosOnly}</span>
+                  </label>
+                </>
+              )}
+              {(!isFullAdmin || contractRestricted) && (
+                <div className={cn("space-y-1.5 pt-1", isFullAdmin && "pl-5")}>
+                  {studios.map((s) => (
+                    <label key={s.id} className="flex cursor-pointer items-center gap-2 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={contractStudioIds.includes(s.id)}
+                        onChange={() => {
+                          setContractScopeError(null);
+                          setContractStudioIds((prev) =>
+                            prev.includes(s.id)
+                              ? prev.filter((id) => id !== s.id)
+                              : [...prev, s.id]
+                          );
+                        }}
+                        className="size-3.5 rounded accent-primary"
+                      />
+                      <span>{s.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              {contractScopeError && (
+                <p className="text-xs text-destructive">{contractScopeError}</p>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center gap-2 border-t border-border pt-4">
             <Button type="submit" disabled={isSubmitting} className="flex-1 gap-1.5">
               <Send className="size-4" />
               <span>{t.contracts.offer}</span>
             </Button>
+            <Button type="button" variant="outline" onClick={closeContractDrawer}>
+              {t.common.cancel}
+            </Button>
+          </div>
+        </form>
+      </Drawer>
+
+      {/* Drawer: Kurskoordinator einladen */}
+      <Drawer
+        open={coordInviteOpen}
+        onClose={() => setCoordInviteOpen(false)}
+        title={t.coordinators.inviteTitle}
+        description={t.coordinators.inviteHint}
+      >
+        <form onSubmit={handleInviteCoordinator} noValidate className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="coord-email">{t.contracts.email}</Label>
+            <Input
+              id="coord-email"
+              type="email"
+              value={coordEmail}
+              onChange={(e) => setCoordEmail(e.target.value)}
+            />
+            {coordEmailSuggestion && (
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning-bg px-3 py-2 text-xs text-warning">
+                <span className="flex items-center gap-1.5">
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  <span>
+                    {t.contracts.emailTypoHint}{" "}
+                    <strong className="font-semibold">{coordEmailSuggestion}</strong>?
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCoordEmail(coordEmailSuggestion)}
+                  className="shrink-0 font-bold underline hover:opacity-80"
+                >
+                  {t.contracts.emailTypoFix}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2 rounded-xl border border-border bg-muted/35 p-3.5">
+            <p className="text-xs font-bold text-foreground">{t.coordinators.selectStudiosLabel}</p>
+            {(studios ?? []).map((studio) => (
+              <label
+                key={studio.id}
+                className="flex cursor-pointer items-center gap-2 text-xs font-medium"
+              >
+                <input
+                  type="checkbox"
+                  checked={coordStudioIds.includes(studio.id)}
+                  onChange={() => {
+                    setCoordError(null);
+                    setCoordStudioIds((prev) =>
+                      prev.includes(studio.id)
+                        ? prev.filter((id) => id !== studio.id)
+                        : [...prev, studio.id]
+                    );
+                  }}
+                  className="size-3.5 rounded accent-primary"
+                />
+                <span>{studio.name}</span>
+              </label>
+            ))}
+          </div>
+
+          {coordError && <p className="text-sm text-destructive">{coordError}</p>}
+
+          <div className="flex items-center gap-2 border-t border-border pt-4">
+            <Button
+              type="submit"
+              disabled={inviteCoordinator.isPending}
+              className="flex-1 gap-1.5"
+            >
+              <Send className="size-4" />
+              <span>{t.coordinators.inviteButton}</span>
+            </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                reset();
-                setFormOpen(false);
-              }}
+              onClick={() => setCoordInviteOpen(false)}
             >
               {t.common.cancel}
             </Button>
@@ -293,132 +630,275 @@ export default function TrainersPage() {
         </form>
       </Drawer>
 
-      {contracts && contracts.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {filterTabs.map((tab) => {
-            const selected = filter === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setFilter(tab.id)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
-                  selected
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 py-0.5 text-[11px] leading-none",
-                    selected ? "bg-primary-foreground/20" : "bg-muted text-foreground"
-                  )}
+      {/* Drawer: Kurskoordinator-Studios ändern */}
+      <Drawer
+        open={Boolean(editingCoord)}
+        onClose={() => setEditingCoord(null)}
+        title={t.coordinators.editStudiosTitle}
+        description={
+          editingCoord
+            ? `${editingCoord.full_name || editingCoord.email} — ${t.coordinators.editStudiosHint}`
+            : undefined
+        }
+      >
+        {editingCoord && (
+          <form onSubmit={handleSaveCoordinatorStudios} className="space-y-4">
+            <div className="space-y-2 rounded-xl border border-border bg-muted/35 p-3.5">
+              <p className="text-xs font-bold text-foreground">
+                {t.coordinators.selectStudiosLabel}
+              </p>
+              {(studios ?? []).map((studio) => (
+                <label
+                  key={studio.id}
+                  className="flex cursor-pointer items-center gap-2 text-xs font-medium"
                 >
-                  {tab.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {isLoading ? (
-          <p className="p-6 text-sm text-muted-foreground">{t.common.loading}</p>
-        ) : isError ? (
-          <p className="p-6 text-sm text-destructive">{t.common.error}</p>
-        ) : contracts && contracts.length === 0 ? (
-          <div className="flex flex-col items-center gap-2.5 p-10 text-center">
-            <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
-              <Users className="size-5" />
-            </div>
-            <p className="font-medium">{t.contracts.companyEmpty}</p>
-          </div>
-        ) : filteredContracts.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="px-3.5">{t.trainers.tableTrainer}</TableHead>
-                <TableHead className="px-3">{t.trainers.tableContract}</TableHead>
-                <TableHead className="hidden px-3 lg:table-cell">
-                  {t.trainers.tableValidity}
-                </TableHead>
-                <TableHead className="px-3">{t.trainers.tableStatus}</TableHead>
-                <TableHead className="px-3.5 text-right">{t.trainers.tableAction}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredContracts.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="max-w-[240px] whitespace-normal px-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-900/60 dark:text-primary-200">
-                        {getInitials(c.trainer_name, c.trainer_email)}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold">
-                          {c.trainer_name || c.trainer_email}
-                        </p>
-                        {c.trainer_name && (
-                          <p className="truncate text-xs text-muted-foreground">
-                            {c.trainer_email}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="whitespace-normal px-3 text-muted-foreground">
-                    <p className="font-medium text-foreground">{formatContractTerms(c)}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground lg:hidden">
-                      {formatContractValidity(c)}
-                    </p>
-                  </TableCell>
-                  <TableCell className="hidden whitespace-normal px-3 text-muted-foreground lg:table-cell">
-                    {formatContractValidity(c)}
-                  </TableCell>
-                  <TableCell className="px-3">
-                    <ContractStatusBadge status={c.status} />
-                  </TableCell>
-                  <TableCell className="px-3.5 text-right">
-                    {c.status === "active" || c.status === "pending" ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={end.isPending}
-                        onClick={() => end.mutate(c.id)}
-                      >
-                        {c.status === "pending" ? t.contracts.withdraw : t.contracts.end}
-                      </Button>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                </TableRow>
+                  <input
+                    type="checkbox"
+                    checked={editCoordStudioIds.includes(studio.id)}
+                    onChange={() => {
+                      setEditCoordError(null);
+                      setEditCoordStudioIds((prev) =>
+                        prev.includes(studio.id)
+                          ? prev.filter((id) => id !== studio.id)
+                          : [...prev, studio.id]
+                      );
+                    }}
+                    className="size-3.5 rounded accent-primary"
+                  />
+                  <span>{studio.name}</span>
+                </label>
               ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <div className="flex flex-col items-center gap-3 p-10 text-center">
-            <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
-              <Users className="size-5" />
             </div>
-            <p className="text-sm text-muted-foreground">
-              {filter === "activeOpen"
-                ? t.trainers.emptyActiveOpen
-                : t.contracts.companyFilterEmpty}
-            </p>
-            {filter === "activeOpen" && counts.archived > 0 && (
-              <Button variant="outline" size="sm" onClick={() => setFilter("archived")}>
-                {t.trainers.showArchive} ({counts.archived})
+
+            {editCoordError && <p className="text-sm text-destructive">{editCoordError}</p>}
+
+            <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+              <Button
+                type="submit"
+                disabled={updateCoordinatorStudios.isPending}
+                className="flex-1"
+              >
+                {t.common.save}
               </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={updateCoordinatorStudios.isPending}
+                onClick={handleRemoveCoordinator}
+              >
+                {t.coordinators.removeAccess}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Drawer>
+
+      {section === "coordinators" && isFullAdmin ? (
+        !studios || studios.length === 0 ? (
+          <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card p-10 text-center">
+            <Building2 className="size-8 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">{t.coordinators.noStudiosYet}</p>
+          </div>
+        ) : coordsLoading ? (
+          <p className="text-sm text-muted-foreground">{t.common.loading}</p>
+        ) : coordinators && coordinators.length > 0 ? (
+          <div className="grid gap-3 md:grid-cols-2">
+            {coordinators.map((coord) => (
+              <div
+                key={coord.user_id}
+                className="space-y-3 rounded-xl border border-border bg-card p-5"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-link-500 text-xs font-bold text-white">
+                      {getInitials(coord.full_name, coord.email)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">{coord.full_name || coord.email}</p>
+                      {coord.full_name && (
+                        <p className="truncate text-xs text-muted-foreground">{coord.email}</p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditCoordError(null);
+                      setEditCoordStudioIds(coord.studio_ids);
+                      setEditingCoord(coord);
+                    }}
+                  >
+                    {t.coordinators.editStudiosButton}
+                  </Button>
+                </div>
+
+                <div className="space-y-1.5 border-t border-border pt-3">
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    {t.coordinators.exclusiveStudiosLabel}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {coord.studio_ids.map((sid) => (
+                      <Badge key={sid} variant="secondary" className="gap-1 font-medium">
+                        <Building2 className="size-3" />
+                        <span>{studioNameMap.get(sid) ?? sid}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card p-10 text-center">
+            <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
+              <ShieldCheck className="size-5" />
+            </div>
+            <p className="font-medium">{t.coordinators.empty}</p>
+            <p className="max-w-md text-sm text-muted-foreground">{t.coordinators.emptyHint}</p>
+          </div>
+        )
+      ) : (
+        <>
+          {contracts && contracts.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {filterTabs.map((tab) => {
+                const selected = filter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setFilter(tab.id)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                      selected
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <span>{tab.label}</span>
+                    <span
+                      className={cn(
+                        "rounded-full px-1.5 py-0.5 text-[11px] leading-none",
+                        selected ? "bg-primary-foreground/20" : "bg-muted text-foreground"
+                      )}
+                    >
+                      {tab.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
+            {isLoading ? (
+              <p className="p-6 text-sm text-muted-foreground">{t.common.loading}</p>
+            ) : isError ? (
+              <p className="p-6 text-sm text-destructive">{t.common.error}</p>
+            ) : contracts && contracts.length === 0 ? (
+              <div className="flex flex-col items-center gap-2.5 p-10 text-center">
+                <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
+                  <Users className="size-5" />
+                </div>
+                <p className="font-medium">{t.contracts.companyEmpty}</p>
+              </div>
+            ) : filteredContracts.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="px-3.5">{t.trainers.tableTrainer}</TableHead>
+                    <TableHead className="px-3">{t.trainers.tableContract}</TableHead>
+                    <TableHead className="hidden px-3 lg:table-cell">
+                      {t.trainers.tableValidity}
+                    </TableHead>
+                    <TableHead className="px-3">{t.trainers.tableStatus}</TableHead>
+                    <TableHead className="px-3.5 text-right">{t.trainers.tableAction}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredContracts.map((c) => {
+                    const contractStudios = (c.studio_ids ?? [])
+                      .map((sid) => studioNameMap.get(sid))
+                      .filter((name): name is string => Boolean(name));
+                    return (
+                      <TableRow key={c.id}>
+                        <TableCell className="max-w-[240px] whitespace-normal px-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-900/60 dark:text-primary-200">
+                              {getInitials(c.trainer_name, c.trainer_email)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold">
+                                {c.trainer_name || c.trainer_email}
+                              </p>
+                              {c.trainer_name && (
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {c.trainer_email}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="whitespace-normal px-3 text-muted-foreground">
+                          <p className="font-medium text-foreground">{formatContractTerms(c)}</p>
+                          {contractStudios.length > 0 && (
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {contractStudios.join(", ")}
+                            </p>
+                          )}
+                          <p className="mt-0.5 text-xs text-muted-foreground lg:hidden">
+                            {formatContractValidity(c)}
+                          </p>
+                        </TableCell>
+                        <TableCell className="hidden whitespace-normal px-3 text-muted-foreground lg:table-cell">
+                          {formatContractValidity(c)}
+                        </TableCell>
+                        <TableCell className="px-3">
+                          <ContractStatusBadge status={c.status} />
+                        </TableCell>
+                        <TableCell className="px-3.5 text-right">
+                          {c.status === "active" || c.status === "pending" ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={end.isPending}
+                              onClick={() => end.mutate(c.id)}
+                            >
+                              {c.status === "pending" ? t.contracts.withdraw : t.contracts.end}
+                            </Button>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="flex flex-col items-center gap-3 p-10 text-center">
+                <div className="flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary dark:bg-primary-900/40">
+                  <Users className="size-5" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {filter === "activeOpen"
+                    ? t.trainers.emptyActiveOpen
+                    : t.contracts.companyFilterEmpty}
+                </p>
+                {filter === "activeOpen" && counts.archived > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setFilter("archived")}>
+                    {t.trainers.showArchive} ({counts.archived})
+                  </Button>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
 
-      {end.isError && <p className="text-sm text-destructive">{t.contracts.endError}</p>}
+          {end.isError && <p className="text-sm text-destructive">{t.contracts.endError}</p>}
+        </>
+      )}
     </div>
   );
 }

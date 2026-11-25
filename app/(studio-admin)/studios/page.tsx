@@ -150,10 +150,12 @@ export default function StudiosPage() {
           <p className="mt-1 text-sm text-muted-foreground">{t.studios.subtitle}</p>
         </div>
 
-        <Button onClick={() => setFormOpen(true)} className="gap-1.5">
-          <Plus className="size-4" />
-          <span>{t.studios.new}</span>
-        </Button>
+        {company?.role !== "coordinator" && (
+          <Button onClick={() => setFormOpen(true)} className="gap-1.5">
+            <Plus className="size-4" />
+            <span>{t.studios.new}</span>
+          </Button>
+        )}
       </div>
 
       <Drawer

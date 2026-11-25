@@ -39,6 +39,7 @@ Deno.serve(async (req) => {
     rate_amount,
     valid_from,
     valid_to,
+    studio_ids,
     redirectTo,
   } = body ?? {};
   if (!company_id || !email || !employment_type || !rate_model || rate_amount == null || !valid_from) {
@@ -66,6 +67,7 @@ Deno.serve(async (req) => {
       p_rate_amount: rate_amount,
       p_valid_from: valid_from,
       p_valid_to: valid_to ?? null,
+      p_studio_ids: Array.isArray(studio_ids) && studio_ids.length > 0 ? studio_ids : null,
     });
 
   const first = await offer();

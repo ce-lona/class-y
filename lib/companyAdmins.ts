@@ -10,21 +10,24 @@ async function unwrapFunctionError(error: FunctionsError): Promise<never> {
   throw error;
 }
 
-export async function getMyCompanies(): Promise<Company[]> {
+export type ManagedCompanyRole = "company_admin" | "coordinator";
+
+export interface ManagedCompany extends Company {
+  role: ManagedCompanyRole;
+  /** NULL für Company-Admins (alle Studios); Array zugewiesener Studio-IDs für Kurskoordinatoren. */
+  studio_ids: string[] | null;
+}
+
+export async function getMyCompanies(): Promise<ManagedCompany[]> {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data, error } = await supabase
-    .from("company_admins")
-    .select("companies(*)")
-    .eq("user_id", user.id);
+  const { data, error } = await supabase.rpc("get_my_managed_companies");
   if (error) throw error;
-  return data
-    .map((row) => row.companies as unknown as Company | null)
-    .filter((c): c is Company => c !== null);
+  return (data ?? []) as ManagedCompany[];
 }
 
 export interface CompanyAdmin {

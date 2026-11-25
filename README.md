@@ -1,6 +1,8 @@
 # class-y
 
-> 📄 **DevOps-Projektkonzept (BHT WiSe 2026 – Milestone 1):** [**`docs/concept.md`**](./docs/concept.md)
+> 📄 **DevOps-Projekt (BHT WiSe 2026):**
+> - **Milestone 1 – Projektkonzept:** [**`docs/concept.md`**](./docs/concept.md)
+> - **Uni-Fork (Infrastruktur, OpenTofu, Ansible & Monitoring):** [**`github.com/ce-lona/class-y-devops`**](https://github.com/ce-lona/class-y-devops)
 
 Web-App für Studios und ihre Trainer:innen: gehaltene Kurse erfassen, Studios einen Überblick
 geben und später Gutschriften/Belege automatisiert abwickeln. Installierbar als PWA, Oberfläche

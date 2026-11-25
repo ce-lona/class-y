@@ -1,7 +1,8 @@
 # Projektkonzept: Automatisierte Bereitstellung & Betrieb für `class-y`
 
 - **Kurs:** DevOps – Software Development and Operations (WiSe 2026), BHT Berlin — **Milestone 1: Project Concept**
-- **Anwendung & Repo:** `class-y` (PWA zur Kurserfassung & Studioverwaltung, AGPL-3.0) — https://github.com/ce-lona/class-y
+- **Anwendung & App-Repo:** `class-y` (PWA zur Kurserfassung & Studioverwaltung, AGPL-3.0) — https://github.com/ce-lona/class-y
+- **DevOps-Fork (Uni-Projekt-Repo):** https://github.com/ce-lona/class-y-devops
 - **Basis-Commit (Start DevOps-Modul):** [`ad34ef48c23e301d8f083020138a267c05e17f9d`](https://github.com/ce-lona/class-y/commit/ad34ef48c23e301d8f083020138a267c05e17f9d) | **Fork-Commit (`/api/health`, `Dockerfile`, CI):** [`b3e1df70d5a6ef50c1a6df2fbcdab83233750b83`](https://github.com/ce-lona/class-y/commit/b3e1df70d5a6ef50c1a6df2fbcdab83233750b83)
 
 ---

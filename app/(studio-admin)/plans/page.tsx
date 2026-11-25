@@ -105,11 +105,13 @@ function CourseTypeCard({
   courseType,
   companyId,
   studios,
+  canEdit,
   onDeleteError,
 }: {
   courseType: CourseType;
   companyId: string;
   studios: Studio[];
+  canEdit: boolean;
   onDeleteError: (message: string | null) => void;
 }) {
   const updateCourseType = useUpdateCourseType(companyId);
@@ -265,38 +267,48 @@ function CourseTypeCard({
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label={`${courseType.name} ${t.studioAdmin.edit}`}
-          onClick={() => {
-            onDeleteError(null);
-            setRestricted(courseType.studio_ids.length > 0);
-            setSelectedStudioIds(courseType.studio_ids);
-            setEditing(true);
-          }}
-        >
-          <Pencil className="size-3.5" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label={`${courseType.name} ${t.courseTypes.delete}`}
-          disabled={deleteCourseType.isPending}
-          onClick={handleDelete}
-          className="text-muted-foreground hover:bg-destructive-bg hover:text-destructive"
-        >
-          <Trash2 className="size-3.5" />
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`${courseType.name} ${t.studioAdmin.edit}`}
+            onClick={() => {
+              onDeleteError(null);
+              setRestricted(courseType.studio_ids.length > 0);
+              setSelectedStudioIds(courseType.studio_ids);
+              setEditing(true);
+            }}
+          >
+            <Pencil className="size-3.5" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`${courseType.name} ${t.courseTypes.delete}`}
+            disabled={deleteCourseType.isPending}
+            onClick={handleDelete}
+            className="text-muted-foreground hover:bg-destructive-bg hover:text-destructive"
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
 
-function CourseTypesTab({ companyId, studios }: { companyId: string; studios: Studio[] }) {
+function CourseTypesTab({
+  companyId,
+  studios,
+  canEdit,
+}: {
+  companyId: string;
+  studios: Studio[];
+  canEdit: boolean;
+}) {
   const { data: courseTypes, isLoading } = useCourseTypes(companyId);
   const createCourseType = useCreateCourseType(companyId);
   const [formOpen, setFormOpen] = useState(false);
@@ -368,17 +380,19 @@ function CourseTypesTab({ companyId, studios }: { companyId: string; studios: St
           <p className="text-sm text-muted-foreground">{t.courseTypes.subtitle}</p>
         </div>
 
-        <Button
-          type="button"
-          onClick={() => {
-            setDeleteError(null);
-            setFormOpen(true);
-          }}
-          className="gap-1.5"
-        >
-          <Plus className="size-4" />
-          <span>{t.courseTypes.new}</span>
-        </Button>
+        {canEdit && (
+          <Button
+            type="button"
+            onClick={() => {
+              setDeleteError(null);
+              setFormOpen(true);
+            }}
+            className="gap-1.5"
+          >
+            <Plus className="size-4" />
+            <span>{t.courseTypes.new}</span>
+          </Button>
+        )}
       </div>
 
       {studios.length > 1 && courseTypes && courseTypes.length > 0 && (
@@ -487,6 +501,7 @@ function CourseTypesTab({ companyId, studios }: { companyId: string; studios: St
               courseType={ct}
               companyId={companyId}
               studios={studios}
+              canEdit={canEdit}
               onDeleteError={setDeleteError}
             />
           ))}
@@ -683,7 +698,11 @@ function PlansContent() {
       </div>
 
       {activeTab === "types" ? (
-        <CourseTypesTab companyId={companyId} studios={studios ?? []} />
+        <CourseTypesTab
+          companyId={companyId}
+          studios={studios ?? []}
+          canEdit={company?.role !== "coordinator"}
+        />
       ) : studiosLoading ? (
         <p className="text-sm text-muted-foreground">{t.common.loading}</p>
       ) : !studios || studios.length === 0 ? (

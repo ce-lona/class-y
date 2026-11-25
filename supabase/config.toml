@@ -409,6 +409,12 @@ verify_jwt = true
 import_map = "./functions/invite-trainer/deno.json"
 entrypoint = "./functions/invite-trainer/index.ts"
 
+[functions.invite-studio-coordinator]
+enabled = true
+verify_jwt = true
+import_map = "./functions/invite-studio-coordinator/deno.json"
+entrypoint = "./functions/invite-studio-coordinator/index.ts"
+
 [functions.create-test-admin]
 enabled = true
 verify_jwt = true

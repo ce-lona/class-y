@@ -13,6 +13,7 @@ export interface MyContract {
   valid_to: string | null;
   status: ContractStatus;
   accepted_at: string | null;
+  studio_ids?: string[];
 }
 
 export interface OfferContractInput {
@@ -23,6 +24,7 @@ export interface OfferContractInput {
   rateAmount: number;
   validFrom: string;
   validTo?: string | null;
+  studioIds?: string[];
 }
 
 /** Eigene Contracts (Angebote, aktive, beendete) inkl. Company-Name. */
@@ -67,6 +69,7 @@ export async function offerContract(
       rate_amount: input.rateAmount,
       valid_from: input.validFrom,
       valid_to: input.validTo ?? null,
+      studio_ids: input.studioIds && input.studioIds.length > 0 ? input.studioIds : null,
       redirectTo: `${window.location.origin}/auth/confirm?next=/reset-password`,
     },
   });
@@ -91,6 +94,7 @@ export interface CompanyContract {
   valid_to: string | null;
   status: ContractStatus;
   accepted_at: string | null;
+  studio_ids?: string[];
 }
 
 /** company_admin/platform_admin: alle Verträge und Angebote einer Company. */

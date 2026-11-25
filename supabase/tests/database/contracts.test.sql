@@ -168,7 +168,7 @@ select lives_ok(
 reset role;
 
 select ok(
-  not has_function_privilege('anon', 'public.offer_contract(uuid, text, text, text, numeric, date, date)', 'execute'),
+  not has_function_privilege('anon', 'public.offer_contract(uuid, text, text, text, numeric, date, date, uuid[])', 'execute'),
   'anon darf offer_contract nicht ausführen'
 );
 select ok(

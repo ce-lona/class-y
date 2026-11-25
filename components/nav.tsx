@@ -103,9 +103,11 @@ export function Nav() {
     availableRoles.push({ id: "trainer", label: t.nav.roleTrainer, home: "/courses" });
   }
   if (hasAdminRole && myCompany) {
+    const rolePrefix =
+      myCompany.role === "coordinator" ? t.nav.roleCoordinator : t.nav.roleAdmin;
     availableRoles.push({
       id: "admin",
-      label: `${t.nav.roleAdmin} · ${myCompany.name}`,
+      label: `${rolePrefix} · ${myCompany.name}`,
       home: "/monitoring",
     });
   }
