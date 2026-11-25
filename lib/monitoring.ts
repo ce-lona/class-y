@@ -26,6 +26,7 @@ export interface MonitoringRow {
   employment_type: string | null;
   rate_model: string | null;
   rate_amount: number | null;
+  pending_substitute_name?: string | null;
 }
 
 export interface TrainerMonitoringSummary {

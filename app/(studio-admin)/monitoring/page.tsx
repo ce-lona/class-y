@@ -443,6 +443,11 @@ export default function MonitoringPage() {
                               )
                             </span>
                           )}
+                          {row.pending_substitute_name && (
+                            <span className="mt-0.5 block text-xs font-semibold text-warning">
+                              {t.monitoring.pendingSubstitutionBadge}: {row.pending_substitute_name}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </TableCell>
