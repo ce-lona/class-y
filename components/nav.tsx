@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   LogOut,
   PlusCircle,
+  Receipt,
   Settings,
   Shield,
   User,
@@ -30,7 +31,7 @@ import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
 const authPrefixes = ["/login", "/forgot-password", "/reset-password", "/auth"];
-const adminPrefixes = ["/monitoring", "/plans", "/studios", "/trainers", "/settings"];
+const adminPrefixes = ["/monitoring", "/billing", "/plans", "/studios", "/trainers", "/settings"];
 
 type WorkspaceRole = "trainer" | "admin" | "platform";
 
@@ -41,12 +42,14 @@ const studioNavItems = [
   { href: "/plans", label: t.studioAdmin.nav.plans, icon: Calendar },
   { href: "/studios", label: t.studioAdmin.nav.studios, icon: Building2 },
   { href: "/trainers", label: t.studioAdmin.nav.trainers, icon: Users },
+  { href: "/billing", label: t.billing.navLabel, icon: Receipt },
 ] as const;
 
 const trainerNavItems = [
   { href: "/courses", label: t.trainer.navMyCourses, icon: CalendarCheck, exact: true },
   { href: "/courses/schedule", label: t.trainer.navSchedule, icon: CalendarRange, exact: false },
   { href: "/courses/log", label: t.trainer.navLogCourse, icon: PlusCircle, exact: false },
+  { href: "/courses/billing", label: t.billing.navLabel, icon: Receipt, exact: false },
 ] as const;
 
 function routeWorkspace(pathname: string | null): WorkspaceRole | null {

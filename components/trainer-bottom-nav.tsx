@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarCheck, CalendarRange, PlusCircle, User } from "lucide-react";
+import { CalendarCheck, CalendarRange, PlusCircle, Receipt, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
@@ -10,6 +10,7 @@ const items = [
   { href: "/courses", label: t.trainer.navMyCourses, icon: CalendarCheck, exact: true },
   { href: "/courses/schedule", label: t.trainer.navSchedule, icon: CalendarRange, exact: false },
   { href: "/courses/log", label: t.trainer.navLogCourse, icon: PlusCircle, exact: false },
+  { href: "/courses/billing", label: t.billing.navLabel, icon: Receipt, exact: false },
   { href: "/profile", label: t.trainer.navProfile, icon: User, exact: false },
 ] as const;
 
@@ -18,7 +19,7 @@ export function TrainerBottomNav() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden">
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {items.map((item) => {
           const active = item.exact
             ? pathname === item.href
