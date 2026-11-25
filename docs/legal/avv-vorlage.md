@@ -48,7 +48,7 @@ Der Auftragnehmer setzt nur Personen ein, die zur Vertraulichkeit verpflichtet s
 
 ## § 7 Löschung und Rückgabe
 
-Nach Ende der Leistungen löscht der Auftragnehmer nach Wahl des Auftraggebers alle personenbezogenen Daten oder gibt sie zurück, sofern keine Pflicht zur Speicherung besteht. Ohne Wahl innerhalb von [30] Tagen nach Vertragsende werden die Daten gelöscht. Daten in Sicherungskopien werden mit dem regulären Ablauf der Sicherungen gelöscht, spätestens nach [Anzahl] Tagen.
+Nach Ende der Leistungen löscht der Auftragnehmer nach Wahl des Auftraggebers alle personenbezogenen Daten oder gibt sie zurück, sofern keine Pflicht zur Speicherung besteht. Ohne Wahl innerhalb von [30] Tagen nach Vertragsende werden die Daten gelöscht. Daten in Sicherungskopien werden mit dem regulären Ablauf der Sicherungen gelöscht, spätestens nach 12 Monaten.
 
 ## § 8 Nachweise und Kontrollen
 
@@ -96,7 +96,7 @@ Besondere Kategorien personenbezogener Daten (Art. 9 DSGVO) werden nicht verarbe
 **Vertraulichkeit**
 
 - Zutrittskontrolle: Betrieb ausschließlich in Rechenzentren der Unterauftragsverarbeiter (AWS über Supabase, Vercel) mit eigenen, zertifizierten Zutrittskontrollen (SOC 2 Typ II / ISO 27001). Keine eigenen Server.
-- Zugangskontrolle: Konten nur auf Einladung, keine Selbstregistrierung; Passwörter nur als Hash gespeichert; Passwort-Mindestlänge [Wert aus Supabase-Dashboard, empfohlen mindestens 10 Zeichen]; Administrationszugänge zu Supabase, Vercel, Resend und GitHub mit Zwei-Faktor-Authentifizierung [bestätigen].
+- Zugangskontrolle: Konten nur auf Einladung, keine Selbstregistrierung; Passwörter nur als Hash gespeichert; Passwörter mit mindestens 8 Zeichen und Prüfung gegen bekannte geleakte Passwörter [Wert im Supabase-Dashboard bestätigen]; Administrationszugänge zu Supabase, Vercel, Resend und GitHub mit Zwei-Faktor-Authentifizierung [bestätigen].
 - Zugriffskontrolle: Row Level Security auf allen Datenbanktabellen; Rollenmodell (Trainer:in, Kurskoordinator:in, Company-Admin, Plattform-Admin); Daten anderer Unternehmen sind technisch nicht abrufbar; Stammdaten von Trainer:innen sind für ein Unternehmen erst nach Annahme eines Vertrags sichtbar; Dienst-Schlüssel mit Vollzugriff nur serverseitig in Edge Functions, nie im Frontend; automatisierte Datenbanktests prüfen die Zugriffsregeln.
 - Trennungskontrolle: Mandantentrennung pro Unternehmen über Row Level Security; getrennte Entwicklungs- und Produktionsumgebungen; Testdaten ohne echte personenbezogene Daten.
 - Pseudonymisierung: Interne Verknüpfung über zufällige IDs (UUID).
@@ -108,7 +108,7 @@ Besondere Kategorien personenbezogener Daten (Art. 9 DSGVO) werden nicht verarbe
 
 **Verfügbarkeit und Belastbarkeit**
 
-- Tägliche Datensicherungen durch Supabase [Tarif prüfen; empfohlen: Pro-Tarif mit Point-in-Time-Recovery], Aufbewahrung [Anzahl] Tage.
+- Nächtliche Datensicherung der Datenbank über GitHub Actions: Vor dem Speichern wird jede Sicherung in einer Wegwerf-Umgebung testweise wiederhergestellt, dann mit age verschlüsselt (privater Schlüssel liegt nur beim Auftragnehmer, nicht beim Speicheranbieter) und bei IONOS HiDrive (Deutschland) abgelegt. Aufbewahrung: 30 tägliche und 12 monatliche Sicherungen; Sicherungen werden danach automatisch gelöscht.
 - Hosting auf skalierender Infrastruktur (Vercel, Supabase); Health-Check-Endpunkt; Fehlerüberwachung mit Sentry (EU-Region), datensparsam konfiguriert: keine Nutzerkennungen, Cookies, Request-Inhalte oder Session Replay, E-Mail-Adressen und Tokens werden vor dem Versand entfernt; [Verfügbarkeitsüberwachung ergänzen, sobald eingerichtet].
 
 **Verfahren zur regelmäßigen Überprüfung**
@@ -124,4 +124,6 @@ Besondere Kategorien personenbezogener Daten (Art. 9 DSGVO) werden nicht verarbe
 | Supabase Inc., USA | Datenbank, Authentifizierung, Edge Functions | AWS eu-west-1 (Irland, EU) | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |
 | Vercel Inc., USA | Hosting der Web-App | [Funktionsregion, empfohlen fra1 Frankfurt]; Edge-Netzwerk weltweit | EU-US Data Privacy Framework / Standardvertragsklauseln |
 | Functional Software, Inc. (Sentry), USA | Fehlerüberwachung (technische Fehlerberichte, IP-Adresse bei Übermittlung) | EU-Region (Frankfurt, de.sentry.io) | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |
+| IONOS SE, Montabaur, Deutschland | Speicherung verschlüsselter Datenbank-Sicherungen (HiDrive) | Deutschland | – (EU) |
+| GitHub, Inc., USA (Microsoft) | Ausführung der nächtlichen Datensicherung (GitHub Actions); Daten liegen nur während des Laufs unverschlüsselt im Arbeitsspeicher/temporären Speicher des Runners | [Runner-Region; Standard-Runner laufen u. a. in den USA] | EU-US Data Privacy Framework / Standardvertragsklauseln |
 | Plus Five Five, Inc. (Resend), USA | Versand von System-E-Mails | [Region prüfen, empfohlen eu-west-1] | [DPF-Zertifizierung prüfen] / Standardvertragsklauseln |

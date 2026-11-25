@@ -92,9 +92,10 @@ Wir setzen folgende Dienstleister ein, die Daten in unserem Auftrag und nach uns
 - **Supabase Inc.**, [Anschrift laut aktuellem DPA], USA: Datenbank, Benutzerkonten und Anmeldung. Die Daten werden in einem Rechenzentrum in Irland (EU) gespeichert.
 - **Functional Software, Inc. (Sentry)**, [Anschrift laut aktuellem DPA], USA: Fehlerüberwachung. Die Daten werden in der EU-Region (Frankfurt) gespeichert.
 - **Resend** (Plus Five Five, Inc.), [Anschrift laut aktuellem DPA], USA: Versand von E-Mails (Einladungen, Passwort zurücksetzen).
-- [Ggf. E-Mail-Hosting für die Kontaktadresse, z. B. IONOS SE, Elgendorfer Str. 57, 56410 Montabaur.]
+- **IONOS SE**, Elgendorfer Str. 57, 56410 Montabaur, Deutschland: Speicherung verschlüsselter Datensicherungen (HiDrive) [ggf. auch E-Mail-Postfach für die Kontaktadresse].
+- **GitHub, Inc.**, 88 Colin P. Kelly Jr. St, San Francisco, CA 94107, USA [Anschrift laut DPA prüfen]: Ausführung der nächtlichen Datensicherung. Die Sicherung wird dort erstellt, verschlüsselt und anschließend gelöscht.
 
-**Übermittlung in Drittländer.** Vercel, Supabase, Sentry und Resend sind Unternehmen mit Sitz außerhalb der EU bzw. mit Konzerngesellschaften in den USA. Ein Zugriff aus den USA ist deshalb nicht ausgeschlossen. Die Übermittlung stützen wir auf den Angemessenheitsbeschluss der EU-Kommission zum EU-US Data Privacy Framework (Art. 45 DSGVO), soweit der Anbieter danach zertifiziert ist, und im Übrigen auf die Standardvertragsklauseln der EU-Kommission (Art. 46 Abs. 2 lit. c DSGVO). [Zertifizierung jedes Anbieters unter dataprivacyframework.gov prüfen und hier konkret benennen.]
+**Übermittlung in Drittländer.** Vercel, Supabase, Sentry, GitHub und Resend sind Unternehmen mit Sitz außerhalb der EU bzw. mit Konzerngesellschaften in den USA. Ein Zugriff aus den USA ist deshalb nicht ausgeschlossen. Die Übermittlung stützen wir auf den Angemessenheitsbeschluss der EU-Kommission zum EU-US Data Privacy Framework (Art. 45 DSGVO), soweit der Anbieter danach zertifiziert ist, und im Übrigen auf die Standardvertragsklauseln der EU-Kommission (Art. 46 Abs. 2 lit. c DSGVO). [Zertifizierung jedes Anbieters unter dataprivacyframework.gov prüfen und hier konkret benennen.]
 
 ## 9. Deine Rechte
 
