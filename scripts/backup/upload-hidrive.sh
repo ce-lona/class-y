@@ -28,7 +28,7 @@ export RCLONE_CONFIG_HIDRIVE_VENDOR=other
 export RCLONE_CONFIG_HIDRIVE_USER="$HIDRIVE_USER"
 RCLONE_CONFIG_HIDRIVE_PASS="$(rclone obscure "$HIDRIVE_PASSWORD")"
 export RCLONE_CONFIG_HIDRIVE_PASS
-rc=(rclone --retries 5 --low-level-retries 10 --stats-log-level DEBUG)
+rc=(rclone --retries 5 --low-level-retries 10 --stats-log-level DEBUG --no-gzip-encoding)
 
 "${rc[@]}" mkdir "hidrive:$base/daily"
 "${rc[@]}" copyto "$file" "hidrive:$base/daily/$name"
