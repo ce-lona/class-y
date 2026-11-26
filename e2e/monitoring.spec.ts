@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { ensureAdminHasCompany, loginAsPlatformAdmin, uniqueName } from "./helpers";
+import {
+  acceptContractOffer,
+  ensureAdminHasCompany,
+  loginAsPlatformAdmin,
+  uniqueName,
+} from "./helpers";
 
 test("Studio-Monitoring: erfasste Ad-hoc-Vertretung erscheint in Kurs- und Trainer-Übersicht", async ({
   page,
@@ -29,7 +34,7 @@ test("Studio-Monitoring: erfasste Ad-hoc-Vertretung erscheint in Kurs- und Train
     await expect(page.getByText(/Angebot gesendet/)).toBeVisible();
 
     await page.goto("/profile?tab=contracts");
-    await page.getByRole("button", { name: "Annehmen" }).first().click();
+    await acceptContractOffer(page, page.getByRole("listitem").filter({ hasText: "40,00" }).first());
     await expect(page.getByText("Aktiv").first()).toBeVisible();
   }
 

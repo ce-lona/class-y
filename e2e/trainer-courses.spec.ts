@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { ensureAdminHasCompany, loginAsPlatformAdmin, uniqueName } from "./helpers";
+import {
+  acceptContractOffer,
+  ensureAdminHasCompany,
+  loginAsPlatformAdmin,
+  uniqueName,
+} from "./helpers";
 
 const WEEKDAYS_DE: Record<number, string> = {
   1: "Montag",
@@ -52,7 +57,7 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
     await expect(page.getByText(/Angebot gesendet/)).toBeVisible();
 
     await page.goto("/profile?tab=contracts");
-    await page.getByRole("button", { name: "Annehmen" }).first().click();
+    await acceptContractOffer(page, page.getByRole("listitem").filter({ hasText: "50,00" }).first());
     await expect(page.getByText("Aktiv").first()).toBeVisible();
   }
 

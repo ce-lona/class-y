@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { ensureAdminHasCompany, loginAsPlatformAdmin, uniqueName } from "./helpers";
+import {
+  acceptContractOffer,
+  ensureAdminHasCompany,
+  loginAsPlatformAdmin,
+  uniqueName,
+} from "./helpers";
 
 test("Kurstypen anlegen, Wochen-Stundenplan veröffentlichen und als neue Version aktualisieren", async ({
   page,
@@ -31,9 +36,9 @@ test("Kurstypen anlegen, Wochen-Stundenplan veröffentlichen und als neue Versio
     await expect(page.getByText(/Angebot gesendet/)).toBeVisible();
 
     await page.goto("/profile?tab=contracts");
-    const acceptBtn = page.getByRole("button", { name: "Annehmen" }).first();
-    await expect(acceptBtn).toBeVisible();
-    await acceptBtn.click();
+    const offer = page.getByRole("listitem").filter({ hasText: "45,00" }).first();
+    await expect(offer.getByRole("button", { name: "Annehmen" })).toBeVisible();
+    await acceptContractOffer(page, offer);
     await expect(page.getByText("Aktiv").first()).toBeVisible();
   } else {
     await expect(activeTab).toBeVisible();

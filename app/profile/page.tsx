@@ -28,6 +28,10 @@ import {
 import { useAuthStore } from "@/store/authStore";
 import { useMyProfile, useUpdateMyProfile } from "@/hooks/useProfile";
 import { useMyContracts, useRespondToContract } from "@/hooks/useContracts";
+import { ContractAcceptanceDrawer } from "@/components/contract-acceptance-drawer";
+import { BillingDetailsSection } from "@/components/billing-details-section";
+import type { MyContract } from "@/lib/contracts";
+import { fillTemplate } from "@/lib/format";
 import type { ProfileCountry } from "@/lib/profiles";
 import { formatAddress } from "@/lib/address";
 import { getInitials } from "@/lib/format";
@@ -290,6 +294,7 @@ function MyProfileSection({ userEmail }: { userEmail: string | undefined }) {
 function MyContractsSection() {
   const { data: contracts, isLoading, isError } = useMyContracts();
   const respond = useRespondToContract();
+  const [accepting, setAccepting] = useState<MyContract | null>(null);
 
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-card">
@@ -330,14 +335,42 @@ function MyContractsSection() {
                   <p className="text-sm text-muted-foreground">
                     {formatContractTerms(c)} · {formatContractValidity(c)}
                   </p>
+                  {c.status === "active" && (c.master_data_gaps?.length ?? 0) > 0 && (
+                    <p className="text-sm font-medium text-destructive">
+                      {t.creditNotes.needsMasterData}:{" "}
+                      {c.master_data_gaps
+                        .map(
+                          (gap) =>
+                            t.creditNotes.skipReasons[
+                              gap as keyof typeof t.creditNotes.skipReasons
+                            ] ?? gap,
+                        )
+                        .join(", ")}
+                    </p>
+                  )}
+                  {c.status === "active" && (c.master_data_gaps?.length ?? 0) === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {c.confirmed_at
+                        ? fillTemplate(t.creditNotes.confirmedAt, {
+                            date: new Date(c.confirmed_at).toLocaleDateString("de-DE"),
+                          })
+                        : t.creditNotes.waitingConfirmation}
+                    </p>
+                  )}
                 </div>
+                {c.status === "active" && (c.master_data_gaps?.length ?? 0) > 0 && (
+                  <Button size="sm" className="gap-1.5" onClick={() => setAccepting(c)}>
+                    <Pencil className="size-3.5" />
+                    <span>{t.creditNotes.completeAction}</span>
+                  </Button>
+                )}
                 {c.status === "pending" && (
                   <div className="flex gap-2">
                     <Button
                       size="sm"
                       className="gap-1.5"
                       disabled={respond.isPending}
-                      onClick={() => respond.mutate({ id: c.id, accept: true })}
+                      onClick={() => setAccepting(c)}
                     >
                       <Check className="size-3.5" />
                       <span>{t.contracts.accept}</span>
@@ -368,6 +401,7 @@ function MyContractsSection() {
           <p className="mt-3 text-sm text-destructive">{t.contracts.respondError}</p>
         )}
       </div>
+      <ContractAcceptanceDrawer contract={accepting} onClose={() => setAccepting(null)} />
     </section>
   );
 }
@@ -398,7 +432,10 @@ function ProfileContent() {
   }
 
   const pendingMyContracts =
-    myContracts?.filter((c) => c.status === "pending").length ?? 0;
+    myContracts?.filter(
+      (c) => c.status === "pending" || (c.status === "active" && (c.master_data_gaps?.length ?? 0) > 0),
+    ).length ?? 0;
+  const hasContracts = (myContracts?.length ?? 0) > 0;
 
   function setTab(next: ProfileTab) {
     router.replace(next === "contracts" ? "/profile?tab=contracts" : "/profile", {
@@ -467,7 +504,10 @@ function ProfileContent() {
       </div>
 
       {activeTab === "profile" ? (
-        <MyProfileSection userEmail={session.user.email} />
+        <>
+          <MyProfileSection userEmail={session.user.email} />
+          {hasContracts && <BillingDetailsSection />}
+        </>
       ) : (
         <MyContractsSection />
       )}

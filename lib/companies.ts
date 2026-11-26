@@ -53,3 +53,20 @@ export async function createCompany(input: {
   if (error) throw error;
   return data;
 }
+
+/** company_admin/platform_admin: Name und Rechnungsanschrift der Company ändern (RLS prüft). */
+export async function updateCompanyAddress(
+  id: string,
+  input: {
+    name: string;
+    street: string | null;
+    house_number: string | null;
+    postal_code: string | null;
+    city: string | null;
+    country: string;
+  },
+): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from("companies").update(input).eq("id", id);
+  if (error) throw error;
+}

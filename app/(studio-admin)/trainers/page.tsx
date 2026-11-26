@@ -46,6 +46,7 @@ import {
 } from "@/components/list-toolbar";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useCompanyContracts, useEndContract, useOfferContract } from "@/hooks/useContracts";
+import { useConfirmContract } from "@/hooks/useCreditNotes";
 import {
   useCompanyCoordinators,
   useInviteStudioCoordinator,
@@ -82,6 +83,7 @@ export default function TrainersPage() {
 
   const offer = useOfferContract(companyId);
   const end = useEndContract(companyId);
+  const confirm = useConfirmContract(companyId);
   const inviteCoordinator = useInviteStudioCoordinator(companyId);
   const updateCoordinatorStudios = useUpdateCoordinatorStudios(companyId);
 
@@ -942,17 +944,38 @@ export default function TrainersPage() {
                         </TableCell>
                         <TableCell className="px-3">
                           <ContractStatusBadge status={c.status} />
+                          {c.status === "active" && (
+                            <ContractBillingHint
+                              gaps={c.master_data_gaps ?? []}
+                              confirmed={!!c.confirmed_at}
+                              changed={c.master_data_changed}
+                            />
+                          )}
                         </TableCell>
                         <TableCell className="px-3.5 text-right">
                           {c.status === "active" || c.status === "pending" ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={end.isPending}
-                              onClick={() => end.mutate(c.id)}
-                            >
-                              {c.status === "pending" ? t.contracts.withdraw : t.contracts.end}
-                            </Button>
+                            <div className="flex flex-wrap justify-end gap-2">
+                              {c.status === "active" &&
+                                (c.master_data_gaps?.length ?? 0) === 0 &&
+                                (!c.confirmed_at || c.master_data_changed) && (
+                                  <Button
+                                    size="sm"
+                                    disabled={confirm.isPending}
+                                    onClick={() => confirm.mutate(c.id)}
+                                    data-testid={`confirm-contract-${c.id}`}
+                                  >
+                                    {c.confirmed_at ? t.creditNotes.reconfirm : t.creditNotes.confirm}
+                                  </Button>
+                                )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={end.isPending}
+                                onClick={() => end.mutate(c.id)}
+                              >
+                                {c.status === "pending" ? t.contracts.withdraw : t.contracts.end}
+                              </Button>
+                            </div>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}
@@ -984,8 +1007,37 @@ export default function TrainersPage() {
           </div>
 
           {end.isError && <p className="text-sm text-destructive">{t.contracts.endError}</p>}
+          {confirm.isError && <p className="text-sm text-destructive">{t.creditNotes.confirmError}</p>}
         </>
       )}
     </div>
   );
+}
+
+function ContractBillingHint({
+  gaps,
+  confirmed,
+  changed,
+}: {
+  gaps: string[];
+  confirmed: boolean;
+  changed: boolean;
+}) {
+  if (gaps.length > 0) {
+    const labels = gaps
+      .map((gap) => t.creditNotes.skipReasons[gap as keyof typeof t.creditNotes.skipReasons] ?? gap)
+      .join(", ");
+    return (
+      <p className="mt-1 text-xs font-medium text-destructive" title={labels}>
+        {t.creditNotes.masterDataMissing}
+      </p>
+    );
+  }
+  if (!confirmed) {
+    return <p className="mt-1 text-xs font-medium text-warning">{t.creditNotes.notConfirmed}</p>;
+  }
+  if (changed) {
+    return <p className="mt-1 text-xs font-medium text-warning">{t.creditNotes.masterDataChanged}</p>;
+  }
+  return null;
 }

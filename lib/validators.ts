@@ -144,3 +144,59 @@ export const offerContractSchema = z
     path: ["validTo"],
   });
 export type OfferContractFormInput = z.infer<typeof offerContractSchema>;
+
+/** Vertragsannahme bzw. Abrechnungsdaten ergänzen (Gutschriftverfahren). */
+export function contractMasterDataSchema(isFreelancer: boolean) {
+  return z
+    .object({
+      full_name: z.string().trim().min(1, t.profile.fullNameRequired),
+      street: z.string().trim(),
+      house_number: z.string().trim(),
+      postal_code: z.string().trim(),
+      city: z.string().trim(),
+      country: z.enum(["DE", "AT", "CH"]),
+      iban: z
+        .string()
+        .trim()
+        .min(1, t.creditNotes.errors.iban_missing)
+        .refine((value) => isValidIbanInput(value), t.creditNotes.ibanInvalid),
+      tax_number: z.string().trim(),
+      vat_id: z.string().trim(),
+      kleinunternehmer: z.boolean(),
+      consent: z.boolean(),
+    })
+    .superRefine((v, ctx) => {
+      if (!v.street || !v.house_number || !v.postal_code || !v.city) {
+        ctx.addIssue({ code: "custom", path: ["street"], message: t.creditNotes.addressRequired });
+      }
+      if (isFreelancer && !v.tax_number && !v.vat_id) {
+        ctx.addIssue({ code: "custom", path: ["tax_number"], message: t.creditNotes.taxRequired });
+      }
+      if (isFreelancer && !v.consent) {
+        ctx.addIssue({ code: "custom", path: ["consent"], message: t.creditNotes.consentRequired });
+      }
+    });
+}
+export type ContractMasterDataFormInput = z.infer<ReturnType<typeof contractMasterDataSchema>>;
+
+function isValidIbanInput(value: string): boolean {
+  const iban = value.replace(/\s+/g, "").toUpperCase();
+  if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(iban)) return false;
+  const rearranged = iban.slice(4) + iban.slice(0, 4);
+  let rest = 0;
+  for (const ch of rearranged) {
+    const digits = /[0-9]/.test(ch) ? ch : String(ch.charCodeAt(0) - 55);
+    for (const d of digits) rest = (rest * 10 + Number(d)) % 97;
+  }
+  return rest === 1;
+}
+
+export const billingDetailsSchema = z.object({
+  iban: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || isValidIbanInput(value), t.creditNotes.ibanInvalid),
+  tax_number: z.string().trim(),
+  vat_id: z.string().trim(),
+});
+export type BillingDetailsFormInput = z.infer<typeof billingDetailsSchema>;

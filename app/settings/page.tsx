@@ -2,10 +2,11 @@
 
 import { Suspense, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Info, SlidersHorizontal, User } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Info, Receipt, SlidersHorizontal, User } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { CourseTypesConfig } from "@/components/course-types-config";
+import { BillingSettingsPanel } from "@/components/billing-settings-panel";
 import { useAuthStore } from "@/store/authStore";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useStudios } from "@/hooks/useStudios";
@@ -14,6 +15,8 @@ import { t } from "@/i18n/de";
 
 function SettingsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab") === "billing" ? "billing" : "config";
   const { session, isLoading: sessionLoading } = useAuthStore();
   const { data: company, isLoading: companyLoading } = useMyCompany();
   const { data: studios } = useStudios(company?.id ?? "");
@@ -53,15 +56,33 @@ function SettingsContent() {
 
         <div className="flex flex-wrap items-center gap-2">
           <div role="tablist" className="inline-flex rounded-xl border border-border bg-card p-1">
-            <button
-              type="button"
-              role="tab"
-              aria-selected
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground"
-            >
-              <SlidersHorizontal className="size-4" />
-              <span>{t.settings.tabConfig}</span>
-            </button>
+            {(
+              [
+                { key: "config", label: t.settings.tabConfig, Icon: SlidersHorizontal },
+                { key: "billing", label: t.creditNotes.settingsTab, Icon: Receipt },
+              ] as const
+            ).map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === key}
+                onClick={() =>
+                  router.replace(key === "billing" ? "/settings?tab=billing" : "/settings", {
+                    scroll: false,
+                  })
+                }
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
+                  activeTab === key
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Icon className="size-4" />
+                <span>{label}</span>
+              </button>
+            ))}
           </div>
           <Link
             href="/profile"
@@ -73,20 +94,26 @@ function SettingsContent() {
         </div>
       </div>
 
-      {isCoordinator && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          <Info className="mt-0.5 size-4 shrink-0 text-primary" />
-          <p>{t.settings.coordinatorReadOnly}</p>
-        </div>
-      )}
+      {activeTab === "billing" ? (
+        <BillingSettingsPanel company={company} />
+      ) : (
+        <>
+          {isCoordinator && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+              <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+              <p>{t.settings.coordinatorReadOnly}</p>
+            </div>
+          )}
 
-      <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-        <CourseTypesConfig
-          companyId={company.id}
-          studios={studios ?? []}
-          canEdit={!isCoordinator}
-        />
-      </section>
+          <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
+            <CourseTypesConfig
+              companyId={company.id}
+              studios={studios ?? []}
+              canEdit={!isCoordinator}
+            />
+          </section>
+        </>
+      )}
     </div>
   );
 }

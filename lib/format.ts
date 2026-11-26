@@ -160,3 +160,10 @@ export function getCourseTypeAccent(key: string) {
   }
   return COURSE_ACCENTS[hash % COURSE_ACCENTS.length];
 }
+
+/** Ersetzt Platzhalter wie {name} in einem Text aus i18n/de.ts. */
+export function fillTemplate(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
+}

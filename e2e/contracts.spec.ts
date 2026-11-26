@@ -1,5 +1,6 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import {
+  acceptContractOffer,
   ensureAdminHasCompany,
   getInviteLink,
   loginAsPlatformAdmin,
@@ -61,7 +62,7 @@ test("Vertrag: einladen, annehmen, zweites Angebot ablehnen, beenden", async ({
     await trainer.getByRole("tab", { name: /^Verträge/ }).click();
     const offer = trainerRow(trainer, "42,50");
     await expect(offer).toContainText("Wartet auf Annahme");
-    await offer.getByRole("button", { name: "Annehmen" }).click();
+    await acceptContractOffer(trainer, offer);
     await expect(offer).toContainText("Aktiv");
     await expect(offer.getByRole("button", { name: "Annehmen" })).toHaveCount(0);
 

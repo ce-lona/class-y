@@ -14,6 +14,10 @@ export interface MyContract {
   status: ContractStatus;
   accepted_at: string | null;
   studio_ids?: string[];
+  credit_note_consent_at: string | null;
+  confirmed_at: string | null;
+  /** Fehlende Abrechnungsangaben (nur bei aktiven Verträgen), z.B. "iban_missing". */
+  master_data_gaps: string[];
 }
 
 export interface OfferContractInput {
@@ -95,6 +99,10 @@ export interface CompanyContract {
   status: ContractStatus;
   accepted_at: string | null;
   studio_ids?: string[];
+  confirmed_at: string | null;
+  master_data_gaps: string[];
+  /** Stammdaten wurden nach der Bestätigung geändert. */
+  master_data_changed: boolean;
 }
 
 /** company_admin/platform_admin: alle Verträge und Angebote einer Company. */

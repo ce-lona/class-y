@@ -1,6 +1,7 @@
 import {
   type Browser,
   type BrowserContext,
+  type Locator,
   type Page,
   type TestInfo,
   expect,
@@ -120,7 +121,7 @@ export async function createActiveTrainer(
   await trainer.goto("/profile");
   await trainer.getByRole("tab", { name: /^Verträge/ }).click();
   const offer = trainer.getByRole("listitem").filter({ hasText: amount });
-  await offer.getByRole("button", { name: "Annehmen" }).click();
+  await acceptContractOffer(trainer, offer);
   await expect(offer).toContainText("Aktiv");
   return { trainer, context, email };
 }
@@ -135,4 +136,40 @@ export async function endTrainerContract(adminPage: Page, email: string) {
   await row.getByRole("button", { name: "Beenden" }).click();
   // Beendete Verträge verschwinden aus dem Standardfilter "Aktiv & Offen".
   await expect(row).toHaveCount(0);
+}
+
+/** Gültige Test-IBAN (Prüfziffer korrekt). */
+export const E2E_IBAN = "DE02 1203 0000 0000 2020 51";
+
+/**
+ * Nimmt ein Vertragsangebot an: „Annehmen“ öffnet das Formular mit Pflicht-Stammdaten
+ * (Name, Anschrift, IBAN; bei Freiberufler:innen Steuernummer + Zustimmung zum
+ * Gutschriftverfahren).
+ */
+export async function acceptContractOffer(
+  page: Page,
+  offer: Locator,
+  data: { name?: string } = {},
+) {
+  await offer.getByRole("button", { name: "Annehmen" }).click();
+  const dialog = page.getByRole("dialog", { name: "Vertrag annehmen" });
+  await expect(dialog).toBeVisible();
+  // Vorhandene Stammdaten (z.B. des Admin-Kontos) bleiben stehen, nur leere Felder werden gefüllt.
+  const fillIfEmpty = async (label: string, value: string) => {
+    const field = dialog.getByLabel(label, { exact: true });
+    if (!(await field.inputValue())) await field.fill(value);
+  };
+  await fillIfEmpty("Vollständiger Name", data.name ?? "E2E Trainer:in");
+  await fillIfEmpty("Straße", "Teststraße");
+  await fillIfEmpty("Hausnummer", "1");
+  await fillIfEmpty("PLZ", "70173");
+  await fillIfEmpty("Ort", "Stuttgart");
+  await dialog.getByLabel("IBAN").fill(E2E_IBAN);
+  const taxNumber = dialog.getByLabel("Steuernummer", { exact: true });
+  if (await taxNumber.isVisible()) {
+    await taxNumber.fill("99/123/45678");
+    await dialog.getByLabel(/Gutschriftverfahren/).check();
+  }
+  await dialog.getByRole("button", { name: "Vertrag annehmen" }).click();
+  await expect(dialog).toHaveCount(0);
 }
