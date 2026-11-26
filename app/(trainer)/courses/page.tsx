@@ -7,6 +7,8 @@ import {
   CalendarCheck,
   CalendarRange,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   FileText,
   MapPin,
@@ -50,7 +52,8 @@ import {
   formatShortDayMonth,
   formatTimeShort,
   getCourseTypeAccent,
-  getCurrentWeekDays,
+  getWeekDays,
+  toLocalISO,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CourseTypeIcon } from "@/components/course-type-icon";
@@ -58,6 +61,9 @@ import { NoSearchResults, SearchInput, matchesSearch } from "@/components/list-t
 import { t } from "@/i18n/de";
 
 type CoursesTab = "upcoming" | "logged";
+
+/** Wie weit Trainer:innen in kommende Wochen blättern können. */
+const MAX_WEEK_OFFSET = 26;
 
 interface WeekSlotOccurrence {
   key: string;
@@ -241,6 +247,7 @@ function PlannedCourseCard({
     : `${t.plans.weekdaysShort[item.slot.weekday as keyof typeof t.plans.weekdaysShort]}, ${formatShortDayMonth(item.isoDate)}`;
 
   const isIncomingAccepted = Boolean(item.incomingAcceptedSubstitution);
+  const isFuture = item.isoDate > toLocalISO(new Date());
   const outgoing = item.outgoingSubstitution;
   const isRelievedBySubstitute = outgoing?.status === "accepted";
   const isPendingSubstitute = outgoing?.status === "pending";
@@ -454,20 +461,22 @@ function PlannedCourseCard({
             </div>
           ) : (
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                size="lg"
-                variant={highlighted ? "secondary" : "default"}
-                disabled={logSession.isPending}
-                onClick={() => submitStatus("completed")}
-                className={cn(
-                  "h-11 flex-1 gap-2",
-                  highlighted && "bg-white text-primary-800 hover:bg-white/90"
-                )}
-              >
-                <Check className="size-4" />
-                <span>{t.trainer.markCompleted}</span>
-              </Button>
+              {!isFuture && (
+                <Button
+                  type="button"
+                  size="lg"
+                  variant={highlighted ? "secondary" : "default"}
+                  disabled={logSession.isPending}
+                  onClick={() => submitStatus("completed")}
+                  className={cn(
+                    "h-11 flex-1 gap-2",
+                    highlighted && "bg-white text-primary-800 hover:bg-white/90"
+                  )}
+                >
+                  <Check className="size-4" />
+                  <span>{t.trainer.markCompleted}</span>
+                </Button>
+              )}
               {!isIncomingAccepted && (
                 <Button
                   type="button"
@@ -533,12 +542,19 @@ export default function TrainerCoursesPage() {
   const [loggedSearch, setLoggedSearch] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
   const [subDrawerItem, setSubDrawerItem] = useState<WeekSlotOccurrence | null>(null);
+  const [weekOffset, setWeekOffset] = useState(0);
 
   const hasActiveContract = (myContracts ?? []).some((c) => c.status === "active");
-  const weekDays = getCurrentWeekDays();
+  const weekDays = getWeekDays(weekOffset);
   const weekStart = weekDays[0].isoDate;
   const weekEnd = weekDays[6].isoDate;
   const weekRangeLabel = `${formatShortDayMonth(weekStart)} – ${formatShortDayMonth(weekEnd)}`;
+  const weekLabel =
+    weekOffset === 0
+      ? t.trainer.thisWeek
+      : weekOffset === 1
+        ? t.trainer.nextWeek
+        : t.trainer.inWeeks.replace("{n}", String(weekOffset));
 
   const incomingPendingRequests = (mySubstitutions ?? []).filter(
     (s) => s.direction === "incoming" && s.status === "pending"
@@ -675,7 +691,7 @@ export default function TrainerCoursesPage() {
     });
   }
 
-  const todayIso = weekDays.find((d) => d.isToday)?.isoDate ?? weekStart;
+  const todayIso = toLocalISO(new Date());
 
   function isOpenItem(item: WeekSlotOccurrence): boolean {
     const outStatus = item.outgoingSubstitution?.status;
@@ -909,9 +925,48 @@ export default function TrainerCoursesPage() {
           <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
             {t.trainer.title}
           </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {t.trainer.thisWeek} · {weekRangeLabel}
-          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              aria-label={t.trainer.prevWeek}
+              title={t.trainer.prevWeek}
+              disabled={weekOffset <= 0}
+              onClick={() => setWeekOffset((w) => Math.max(0, w - 1))}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <p
+              className="min-w-40 text-center text-sm font-medium text-muted-foreground tabular-nums"
+              aria-live="polite"
+              data-testid="week-label"
+            >
+              {weekLabel} · {weekRangeLabel}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              aria-label={t.trainer.nextWeek}
+              title={t.trainer.nextWeek}
+              disabled={weekOffset >= MAX_WEEK_OFFSET}
+              onClick={() => setWeekOffset((w) => Math.min(MAX_WEEK_OFFSET, w + 1))}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+            {weekOffset > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setWeekOffset(0)}
+                className="text-xs"
+              >
+                {t.trainer.backToThisWeek}
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -1030,7 +1085,7 @@ export default function TrainerCoursesPage() {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <span>{t.trainer.tabUpcoming}</span>
+              <span>{weekOffset === 0 ? t.trainer.tabUpcoming : weekLabel}</span>
               {toConfirm.length > 0 ? (
                 <span className="rounded-full bg-warning-bg px-1.5 py-0.5 text-[11px] leading-none font-bold text-warning">
                   {toConfirm.length}
@@ -1074,7 +1129,12 @@ export default function TrainerCoursesPage() {
               <p className="text-sm text-muted-foreground">{t.common.loading}</p>
             ) : weekOccurrences.length > 0 ? (
               <div className="space-y-6">
-                {toConfirm.length === 0 && (
+                {weekOffset > 0 && (
+                  <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+                    {t.trainer.futureWeekHint}
+                  </p>
+                )}
+                {weekOffset === 0 && toConfirm.length === 0 && (
                   <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success-bg px-4 py-3 text-sm font-medium text-success">
                     <Check className="size-4 shrink-0" />
                     <span>{t.trainer.allConfirmed}</span>
@@ -1093,7 +1153,9 @@ export default function TrainerCoursesPage() {
                   <CalendarCheck className="size-5" />
                 </div>
                 <div className="space-y-1">
-                  <p className="font-heading text-base font-bold">{t.trainer.emptyWeek}</p>
+                  <p className="font-heading text-base font-bold">
+                    {weekOffset === 0 ? t.trainer.emptyWeek : t.trainer.emptyFutureWeek}
+                  </p>
                   <p className="max-w-sm text-sm text-muted-foreground">
                     {t.trainer.emptyWeekHint}
                   </p>

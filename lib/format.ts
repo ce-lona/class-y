@@ -68,12 +68,22 @@ export function getIsoWeekday(isoDate: string): number {
   return jsDay === 0 ? 7 : jsDay;
 }
 
-export function getCurrentWeekDays(): { weekday: number; isoDate: string; isToday: boolean }[] {
+/**
+ * Die sieben Tage (Mo–So) einer Woche relativ zur aktuellen Woche.
+ * `weekOffset` 0 = diese Woche, 1 = nächste Woche, -1 = letzte Woche.
+ */
+export function getWeekDays(
+  weekOffset = 0
+): { weekday: number; isoDate: string; isToday: boolean }[] {
   const today = new Date();
   const todayStr = toLocalISO(today);
   const jsDay = today.getDay();
   const diffToMonday = jsDay === 0 ? -6 : 1 - jsDay;
-  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + diffToMonday);
+  const monday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() + diffToMonday + weekOffset * 7
+  );
 
   return Array.from({ length: 7 }, (_, idx) => {
     const dt = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + idx);
@@ -84,6 +94,10 @@ export function getCurrentWeekDays(): { weekday: number; isoDate: string; isToda
       isToday: isoDate === todayStr,
     };
   });
+}
+
+export function getCurrentWeekDays(): { weekday: number; isoDate: string; isToday: boolean }[] {
+  return getWeekDays(0);
 }
 
 export function formatShortDayMonth(isoDate: string): string {

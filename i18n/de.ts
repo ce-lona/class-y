@@ -403,6 +403,13 @@ export const t = {
     noScheduledCourses: "Keine festen Kurse für diesen Filter gefunden.",
     nextCourseToday: "Nächster Kurs · Heute",
     thisWeek: "Diese Woche",
+    nextWeek: "Nächste Woche",
+    inWeeks: "In {n} Wochen",
+    prevWeek: "Vorherige Woche",
+    backToThisWeek: "Zur aktuellen Woche",
+    futureWeekHint:
+      "Vorschau auf eine kommende Woche: Du kannst hier schon Vertretungen anfragen oder Ausfälle eintragen.",
+    emptyFutureWeek: "In dieser Woche sind keine festen Kurse für dich geplant.",
     tabUpcoming: "Diese Woche",
     tabLogged: "Erfasst",
     logCourse: "Kurs eintragen",
