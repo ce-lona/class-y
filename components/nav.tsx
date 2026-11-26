@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -8,6 +7,7 @@ import {
   Calendar,
   CalendarCheck,
   CalendarRange,
+  CircleHelp,
   LayoutGrid,
   LogOut,
   PlusCircle,
@@ -22,9 +22,7 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
-import { useIsPlatformAdmin } from "@/hooks/useRoles";
-import { useMyCompany } from "@/hooks/useCompanyAdmins";
-import { useMyContracts } from "@/hooks/useContracts";
+import { useWorkspace, type WorkspaceRole } from "@/hooks/useWorkspace";
 import { useMyProfile } from "@/hooks/useProfile";
 import { signOut } from "@/lib/auth";
 import { getInitials } from "@/lib/format";
@@ -32,11 +30,6 @@ import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
 const authPrefixes = ["/login", "/forgot-password", "/reset-password", "/auth"];
-const adminPrefixes = ["/monitoring", "/billing", "/plans", "/studios", "/trainers", "/privacy", "/settings"];
-
-type WorkspaceRole = "trainer" | "admin" | "platform";
-
-const WORKSPACE_STORAGE_KEY = "class-y:workspace-role";
 
 const studioNavItems = [
   { href: "/monitoring", label: t.studioAdmin.nav.monitoring, icon: LayoutGrid },
@@ -53,83 +46,25 @@ const trainerNavItems = [
   { href: "/courses/billing", label: t.billing.navLabel, icon: Receipt, exact: false },
 ] as const;
 
-function routeWorkspace(pathname: string | null): WorkspaceRole | null {
-  if (!pathname) return null;
-  if (pathname.startsWith("/courses")) return "trainer";
-  if (pathname.startsWith("/companies")) return "platform";
-  if (adminPrefixes.some((p) => pathname.startsWith(p))) return "admin";
-  return null;
-}
-
 export function Nav() {
   const pathname = usePathname();
   const router = useRouter();
   const session = useAuthStore((state) => state.session);
-  const { data: isPlatformAdmin } = useIsPlatformAdmin();
-  const { data: myCompany } = useMyCompany();
-  const { data: myContracts } = useMyContracts();
   const { data: profile } = useMyProfile();
-
-  const [lastWorkspace, setLastWorkspace] = useState<WorkspaceRole | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const stored = window.sessionStorage.getItem(WORKSPACE_STORAGE_KEY);
-      if (stored === "trainer" || stored === "admin" || stored === "platform") {
-        return stored;
-      }
-    } catch {
-      // ignore storage errors
-    }
-    return null;
-  });
-
-  const fromRoute = routeWorkspace(pathname);
-
-  useEffect(() => {
-    if (!fromRoute) return;
-    try {
-      window.sessionStorage.setItem(WORKSPACE_STORAGE_KEY, fromRoute);
-    } catch {
-      // ignore storage errors
-    }
-  }, [fromRoute]);
+  const {
+    activeRole,
+    availableRoles,
+    hasActiveContract,
+    hasAdminRole,
+    hasPlatformRole,
+    myCompany,
+    rememberWorkspace,
+  } = useWorkspace();
 
   if (!session) return null;
   if (authPrefixes.some((prefix) => pathname?.startsWith(prefix))) {
     return null;
   }
-
-  const hasActiveContract = (myContracts ?? []).some((c) => c.status === "active");
-  const hasAdminRole = Boolean(myCompany);
-  const hasPlatformRole = Boolean(isPlatformAdmin);
-
-  const availableRoles: { id: WorkspaceRole; label: string; home: string }[] = [];
-  if (hasActiveContract) {
-    availableRoles.push({ id: "trainer", label: t.nav.roleTrainer, home: "/courses" });
-  }
-  if (hasAdminRole && myCompany) {
-    const rolePrefix =
-      myCompany.role === "coordinator" ? t.nav.roleCoordinator : t.nav.roleAdmin;
-    availableRoles.push({
-      id: "admin",
-      label: `${rolePrefix} · ${myCompany.name}`,
-      home: "/monitoring",
-    });
-  }
-  if (hasPlatformRole) {
-    availableRoles.push({ id: "platform", label: t.nav.rolePlatform, home: "/companies" });
-  }
-
-  const defaultRole: WorkspaceRole = hasAdminRole
-    ? "admin"
-    : hasActiveContract
-      ? "trainer"
-      : "platform";
-
-  const candidateRole = fromRoute ?? lastWorkspace ?? defaultRole;
-  const activeRole: WorkspaceRole = availableRoles.some((r) => r.id === candidateRole)
-    ? candidateRole
-    : availableRoles[0]?.id ?? defaultRole;
 
   const initials = getInitials(profile?.full_name, session.user.email);
 
@@ -142,12 +77,7 @@ export function Nav() {
     );
 
   function switchWorkspace(role: WorkspaceRole, home: string) {
-    try {
-      window.sessionStorage.setItem(WORKSPACE_STORAGE_KEY, role);
-    } catch {
-      // ignore
-    }
-    setLastWorkspace(role);
+    rememberWorkspace(role);
     router.push(home);
   }
 
@@ -173,7 +103,12 @@ export function Nav() {
                 : !!pathname?.startsWith(item.href);
               const Icon = item.icon;
               return (
-                <Link key={item.href} href={item.href} className={linkClass(active)}>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  data-tour={item.href}
+                  className={linkClass(active)}
+                >
                   <Icon className="size-4 shrink-0" />
                   <span>{item.label}</span>
                 </Link>
@@ -186,7 +121,12 @@ export function Nav() {
               const active = !!pathname?.startsWith(item.href);
               const Icon = item.icon;
               return (
-                <Link key={item.href} href={item.href} className={linkClass(active)}>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  data-tour={item.href}
+                  className={linkClass(active)}
+                >
                   <Icon className="size-4 shrink-0" />
                   <span>{item.label}</span>
                 </Link>
@@ -196,6 +136,7 @@ export function Nav() {
           {activeRole === "admin" && hasAdminRole && myCompany?.role !== "coordinator" && (
             <Link
               href="/privacy"
+              data-tour="/privacy"
               className={linkClass(!!pathname?.startsWith("/privacy"))}
             >
               <ShieldCheck className="size-4 shrink-0" />
@@ -206,6 +147,7 @@ export function Nav() {
           {activeRole === "platform" && hasPlatformRole && (
             <Link
               href="/companies"
+              data-tour="/companies"
               className={linkClass(!!pathname?.startsWith("/companies"))}
             >
               <Shield className="size-4 shrink-0" />
@@ -213,10 +155,22 @@ export function Nav() {
             </Link>
           )}
 
+          {activeRole === "platform" && hasPlatformRole && (
+            <Link
+              href="/platform-settings"
+              data-tour="/platform-settings"
+              className={linkClass(!!pathname?.startsWith("/platform-settings"))}
+            >
+              <Settings className="size-4 shrink-0" />
+              <span>{t.settings.title}</span>
+            </Link>
+          )}
+
           {/* Admin-Arbeit (Konfiguration) und eigene Trainertätigkeit (Profil, Verträge) getrennt */}
           {activeRole === "admin" && hasAdminRole ? (
             <Link
               href="/settings"
+              data-tour="/settings"
               className={linkClass(!!pathname?.startsWith("/settings"))}
             >
               <Settings className="size-4 shrink-0" />
@@ -225,12 +179,22 @@ export function Nav() {
           ) : (
             <Link
               href="/profile"
+              data-tour="/profile"
               className={linkClass(!!pathname?.startsWith("/profile"))}
             >
               <User className="size-4 shrink-0" />
               <span>{t.profilePage.title}</span>
             </Link>
           )}
+
+          <Link
+            href="/help"
+            data-tour="/help"
+            className={cn(linkClass(!!pathname?.startsWith("/help")), "md:ml-auto")}
+          >
+            <CircleHelp className="size-4 shrink-0" />
+            <span>{t.help.nav}</span>
+          </Link>
         </nav>
 
         <div className="order-2 flex h-14 items-center justify-end gap-2 sm:gap-2.5 md:order-3 md:h-auto md:shrink-0">

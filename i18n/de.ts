@@ -702,4 +702,288 @@ export const t = {
       generic: "Export konnte nicht geladen werden. Bitte versuche es erneut.",
     },
   },
+  help: {
+    nav: "Hilfe",
+    title: "Hilfe & Support",
+    subtitle: "Rundgang, Anleitungen und direkter Draht zu uns.",
+    previewBadge: "So sehen es deine Kund:innen",
+    tour: {
+      cardTitle: "Rundgang",
+      cardHint: "{count} kurze Schritte, ca. 1 Minute. Du kannst ihn jederzeit neu starten.",
+      start: "Rundgang starten",
+      stepOf: "Schritt {current} von {total}",
+      next: "Weiter",
+      back: "Zurück",
+      finish: "Fertig",
+      close: "Beenden",
+      done: "Fertig! Den Rundgang findest du jederzeit unter „Hilfe“.",
+      roles: {
+        admin: "für Admins",
+        coordinator: "für Koordination",
+        trainer: "für Trainer:innen",
+        platform: "für die Plattform",
+      },
+      steps: {
+        monitoring: {
+          title: "Monitoring",
+          text: "Hier siehst du, welche Kurse erfasst, offen oder überfällig sind, und wie viele Vertretungen es gab.",
+        },
+        plans: {
+          title: "Kurspläne",
+          text: "Lege fest, welcher Kurs wann in welchem Studio stattfindet. Änderungen werden als neue Version veröffentlicht.",
+        },
+        studios: {
+          title: "Studios",
+          text: "Deine Standorte mit Adresse, aktuellem Kursplan und den Trainer:innen vor Ort.",
+        },
+        trainers: {
+          title: "Trainer:innen einladen",
+          text: "Biete Trainer:innen hier einen Vertrag an. Wer noch kein Konto hat, bekommt automatisch eine Einladung.",
+        },
+        trainersCoordinator: {
+          title: "Trainer:innen",
+          text: "Alle Trainer:innen deiner Company mit ihren Verträgen und Studios.",
+        },
+        billing: {
+          title: "Abrechnung",
+          text: "Am Monatsende lädst du hier die Abrechnung als PDF oder CSV herunter.",
+        },
+        courses: {
+          title: "Meine Kurse",
+          text: "Deine Kurse dieser Woche. Nach dem Kurs markierst du ihn als gegeben, vertreten oder ausgefallen.",
+        },
+        log: {
+          title: "Eintragen",
+          text: "Spontane Vertretungen und Kurse außerhalb des Plans trägst du hier ein.",
+        },
+        trainerBilling: {
+          title: "Abrechnung",
+          text: "Deine Monatsübersicht mit allen Kursen und deinem Honorar zum Herunterladen.",
+        },
+        profile: {
+          title: "Profil",
+          text: "Deine Stammdaten und deine Verträge. Neue Vertragsangebote nimmst du hier an.",
+        },
+        companies: {
+          title: "Companies",
+          text: "Alle Companies, die class-y nutzen. Hier legst du neue an und lädst ihre Admins ein.",
+        },
+        platformSettings: {
+          title: "Support-Empfänger",
+          text: "Hier legst du fest, an welche E-Mail-Adressen Nachrichten aus dem Kontaktformular gehen.",
+        },
+        help: {
+          title: "Hilfe, wann immer du sie brauchst",
+          text: "Hier findest du das Handbuch, kannst uns schreiben und diesen Rundgang jederzeit neu starten.",
+        },
+      },
+    },
+    welcome: {
+      title: "Willkommen bei class-y!",
+      textTrainer:
+        "Schön, dass du da bist{name}. In einer Minute zeigen wir dir, wo du deine Kurse findest und wie du sie einträgst.",
+      textAdmin:
+        "Schön, dass du da bist{name}. In einer Minute zeigen wir dir die wichtigsten Bereiche von class-y.",
+      hint: "Rundgang, Handbuch und den Kontakt zu uns findest du jederzeit unter „Hilfe“.",
+      later: "Später",
+      start: "Rundgang starten",
+      laterToast: "Kein Problem. Der Rundgang wartet unter „Hilfe“.",
+    },
+    handbook: {
+      title: "Handbuch",
+      subtitle: "Kurze Anleitungen mit Bildschirmfotos, passend zu deiner Rolle.",
+      searchPlaceholder: "Wonach suchst du? z. B. Vertretung",
+      searchLabel: "Handbuch durchsuchen",
+      empty: "Dazu haben wir noch keine Anleitung. Schreib uns einfach über das Formular.",
+      back: "Alle Themen",
+      notHelpful: "Hat dir das nicht geholfen?",
+      writeUs: "Schreib uns",
+      screenshotAlt: "Bildschirmfoto: {title}, Schritt {step}",
+      chapters: {
+        start: {
+          title: "Erste Schritte",
+          summary: "Passwort festlegen, Ansicht wechseln, Hilfe finden",
+          steps: [
+            "Du bekommst eine Einladungs-E-Mail. Über den Link legst du dein Passwort fest (mindestens 8 Zeichen) und meldest dich danach mit E-Mail-Adresse und Passwort an.",
+            "Hast du mehrere Rollen, zum Beispiel Admin und Trainer:in, wechselst du oben rechts zwischen den Ansichten.",
+            "Unter „Hilfe“ findest du dieses Handbuch, den Rundgang und unser Kontaktformular.",
+          ],
+        },
+        studios: {
+          title: "Studio anlegen",
+          summary: "Standorte mit Adresse",
+          steps: [
+            "Öffne „Studios“ und klicke auf „Neues Studio“.",
+            "Trage Name und Adresse ein und klicke auf „Studio anlegen“. Danach kannst du dem Studio Kurspläne und Trainer:innen zuordnen.",
+          ],
+        },
+        trainers: {
+          title: "Trainer:innen einladen",
+          summary: "Vertrag anbieten, Einladung per E-Mail",
+          steps: [
+            "Öffne „Trainer“ und klicke auf „Vertrag anbieten“.",
+            "Gib die E-Mail-Adresse, die Konditionen und das Startdatum ein und klicke auf „Angebot senden“.",
+            "Hat die Person noch kein Konto, bekommt sie eine Einladung. Der Vertrag gilt erst, wenn sie ihn annimmt. Den Stand siehst du in der Liste.",
+          ],
+        },
+        plans: {
+          title: "Kursplan erstellen",
+          summary: "Wochenplan pro Studio, neue Versionen",
+          steps: [
+            "Öffne „Kurspläne“ und wähle oben das Studio.",
+            "Klicke auf „Kursplan anlegen“ oder „Kursplan ändern“, füge die Kurse hinzu und lege fest, ab wann der Plan gilt.",
+            "Mit „Kursplan veröffentlichen“ wird er aktiv. Jede Änderung ergibt eine neue Version, vergangene Kurse bleiben nachvollziehbar.",
+          ],
+        },
+        monitoring: {
+          title: "Monitoring nutzen",
+          summary: "Erfasste, offene und überfällige Kurse",
+          steps: [
+            "„Monitoring“ zeigt dir, welche Kurse erfasst, offen oder überfällig sind.",
+            "Oben wählst du Zeitraum und Studio. Unter „Pro Trainer:in“ siehst du die Summen je Person.",
+          ],
+        },
+        billingCompany: {
+          title: "Monatsabrechnung herunterladen",
+          summary: "PDF oder CSV pro Trainer:in und Studio",
+          steps: [
+            "Öffne „Abrechnung“ und wähle Monat, Studio und Trainer:in.",
+            "Lade den Export als PDF oder CSV herunter. Er enthält genau die gewählten Filter.",
+          ],
+        },
+        courseTypes: {
+          title: "Kurstypen anpassen",
+          summary: "Kursarten, Farben und Studios",
+          steps: [
+            "Unter „Einstellungen“ legst du Kurstypen an, gibst ihnen eine Farbe und ordnest sie Studios zu.",
+          ],
+        },
+        privacy: {
+          title: "Datenschutz und Datenexport",
+          summary: "Datenauskunft und Konten löschen",
+          steps: [
+            "Unter „Datenschutz“ lädst du alle Daten deiner Company als JSON oder CSV herunter.",
+            "Bei „Personen“ erstellst du für jede Person eine Datenauskunft oder löschst ihr Konto.",
+          ],
+        },
+        contract: {
+          title: "Vertrag annehmen",
+          summary: "Angebot im Profil bestätigen",
+          steps: [
+            "Öffne dein „Profil“ und dort den Reiter „Verträge“.",
+            "Klicke beim Angebot auf „Annehmen“. Erst danach erscheinen deine Kurse und die Company sieht dein Profil.",
+          ],
+        },
+        courses: {
+          title: "Kurse erfassen",
+          summary: "Gegeben, vertreten oder ausgefallen",
+          steps: [
+            "Unter „Meine Kurse“ siehst du deine Kurse dieser Woche.",
+            "Nach dem Kurs markierst du ihn als gegeben, vertreten oder ausgefallen.",
+            "Spontane Vertretungen oder Kurse außerhalb des Plans trägst du unter „Eintragen“ ein.",
+          ],
+        },
+        substitution: {
+          title: "Vertretung anfragen",
+          summary: "Kolleg:in fragen, Anfragen beantworten",
+          steps: [
+            "Kannst du einen Kurs nicht geben, wählst du bei dem Kurs unter „Meine Kurse“ „Vertretung anfragen“ und dann eine Kollegin oder einen Kollegen.",
+            "Die Vertretung gilt, sobald die Person annimmt. Anfragen an dich findest du unter „Offene Vertretungsanfragen“.",
+          ],
+        },
+        schedule: {
+          title: "Stundenplan ansehen",
+          summary: "Alle festen Kurse auf einen Blick",
+          steps: [
+            "„Stundenplan“ zeigt alle deine festen Kurse über alle Companies und Studios. Oben kannst du filtern.",
+          ],
+        },
+        billingTrainer: {
+          title: "Abrechnung herunterladen",
+          summary: "Deine Monatsübersicht als PDF oder CSV",
+          steps: [
+            "Öffne „Abrechnung“, wähle den Monat und lade deine Übersicht als PDF oder CSV herunter.",
+          ],
+        },
+        password: {
+          title: "Passwort vergessen",
+          summary: "Neues Passwort per E-Mail",
+          steps: [
+            "Klicke auf der Anmeldeseite auf „Passwort vergessen?“ und gib deine E-Mail-Adresse ein. Du bekommst einen Link, mit dem du ein neues Passwort festlegst.",
+          ],
+        },
+      },
+    },
+    contact: {
+      title: "Schreib uns",
+      subtitle: "Frage, Fehler oder Idee? Wir antworten an {email}.",
+      topic: "Worum geht es?",
+      topics: {
+        question: "Frage zur Bedienung",
+        problem: "Etwas funktioniert nicht",
+        idea: "Idee oder Wunsch",
+        other: "Sonstiges",
+      },
+      message: "Deine Nachricht",
+      messagePlaceholder: "Beschreib kurz, was du machen wolltest und was passiert ist.",
+      messageRequired: "Bitte schreib ein paar Worte.",
+      messageTooLong: "Bitte fasse dich etwas kürzer (höchstens 5000 Zeichen).",
+      attachment: "Bildschirmfoto anhängen",
+      optional: "(optional)",
+      attachmentTooLarge: "Das Bild ist zu groß (höchstens 3 MB).",
+      attachmentType: "Bitte nur Bilder anhängen (PNG, JPG, WebP, GIF oder HEIC).",
+      removeAttachment: "Anhang entfernen",
+      tech: "Technische Infos mitschicken (aktuelle Seite, Browser). Hilft uns bei Fehlern.",
+      send: "Nachricht senden",
+      sending: "Wird gesendet…",
+      sentTitle: "Danke, deine Nachricht ist angekommen.",
+      sentText: "Wir antworten an {email}, meist noch am selben Tag.",
+      newMessage: "Neue Nachricht schreiben",
+      errors: {
+        rate_limited: "Du hast in der letzten Stunde schon mehrere Nachrichten geschickt. Bitte versuch es später noch einmal.",
+        generic: "Die Nachricht konnte nicht gesendet werden. Bitte versuch es erneut.",
+      },
+    },
+    recipients: {
+      title: "Support-Empfänger",
+      hint: "Nachrichten aus dem Kontaktformular im Hilfe-Bereich gehen an alle Adressen in dieser Liste. Mindestens eine Adresse muss drin bleiben.",
+      replyHint: "Wenn du auf eine Support-Mail antwortest, geht die Antwort direkt an die Person, die geschrieben hat.",
+      empty: "Noch keine Adresse eingetragen. Bis dahin werden Nachrichten nur gespeichert und erscheinen unten im Posteingang.",
+      add: "Hinzufügen",
+      placeholder: "weitere@adresse.de",
+      emailLabel: "Neue Empfänger-Adresse",
+      remove: "{email} entfernen",
+      lastRecipient: "Mindestens eine Adresse muss bleiben.",
+      errors: {
+        invalid_email: "Das sieht nicht nach einer E-Mail-Adresse aus.",
+        already_exists: "Diese Adresse ist schon in der Liste.",
+        too_many_recipients: "Höchstens 10 Adressen.",
+        last_recipient: "Mindestens eine Adresse muss bleiben.",
+        generic: "Speichern fehlgeschlagen. Bitte versuch es erneut.",
+      },
+    },
+    inbox: {
+      title: "Posteingang",
+      hint: "Die letzten Nachrichten aus dem Kontaktformular. So geht nichts verloren, falls eine E-Mail nicht ankommt.",
+      empty: "Noch keine Nachrichten.",
+      attachment: "Mit Bildschirmfoto (nur in der E-Mail)",
+      status: {
+        pending: "Wird gesendet",
+        sent: "Per E-Mail zugestellt",
+        failed: "E-Mail fehlgeschlagen",
+        not_configured: "Nicht per E-Mail verschickt",
+      },
+    },
+    platformSettings: {
+      title: "Einstellungen",
+      subtitle: "Plattform-Einstellungen, nur für Plattform-Admins sichtbar.",
+      unauthorized: "Nur Platform-Admins können diese Einstellungen sehen.",
+    },
+    roles: {
+      admin: "Admin",
+      coordinator: "Koordination",
+      trainer: "Trainer:in",
+      platform: "Plattform",
+    },
+  },
 } as const;

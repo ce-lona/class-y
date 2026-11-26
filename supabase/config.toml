@@ -418,6 +418,13 @@ verify_jwt = true
 import_map = "./functions/invite-studio-coordinator/deno.json"
 entrypoint = "./functions/invite-studio-coordinator/index.ts"
 
+# Kontaktformular im Hilfe-Bereich. SMTP-Zugang über SUPPORT_SMTP_*-Secrets (siehe README).
+[functions.send-support-message]
+enabled = true
+verify_jwt = true
+import_map = "./functions/send-support-message/deno.json"
+entrypoint = "./functions/send-support-message/index.ts"
+
 # Nur für die lokale Entwicklung: die Function verweigert sich auf gehosteten Projekten
 # (SUPABASE_URL nicht lokal) und ohne Secret ALLOW_TEST_ADMIN=true; die UI zeigt sie nur in `next dev`.
 [functions.create-test-admin]

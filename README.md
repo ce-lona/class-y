@@ -112,6 +112,25 @@ Auf einem gehosteten Projekt zusätzlich im Dashboard:
 Nach Änderungen an `supabase/config.toml` den lokalen Stack neu starten (`supabase stop && supabase start`)
 und die Edge Functions lokal mit `supabase functions serve` laufen lassen.
 
+## Hilfe & Support
+
+Jede Rolle hat unter **Hilfe** (`/help`) einen Rundgang, das Handbuch und ein Kontaktformular.
+
+- Kontaktformular → Edge Function `send-support-message` → Mail an alle Adressen aus
+  **Plattform → Einstellungen** (`/platform-settings`, Tabelle `support_recipients`). Reply-To ist die
+  absendende Person. Jede Nachricht wird zusätzlich in `support_messages` gespeichert und ist dort
+  auch sichtbar, falls der Versand scheitert (max. 5 Nachrichten pro Stunde und Person).
+- SMTP-Secrets (gehostet: `supabase secrets set ...`; Supabase blockt Port 25/587, daher 465):
+  - `SUPPORT_SMTP_HOST=smtp.resend.com`, `SUPPORT_SMTP_PORT=465`, `SUPPORT_SMTP_USER=resend`,
+    `SUPPORT_SMTP_PASS=<Resend-API-Key>`, `SUPPORT_SMTP_FROM=noreply@class-y.de`
+  - lokal (Mailpit): `SUPPORT_SMTP_HOST=supabase_inbucket_class-y`, `SUPPORT_SMTP_PORT=1025`,
+    `SUPPORT_SMTP_SECURE=false`, `SUPPORT_SMTP_FROM=support@class-y.local`
+  - Ohne Secrets wird nur gespeichert (`mail_status = not_configured`).
+- Rundgang und Willkommens-Dialog: `components/help/`, Texte in `constants/help.ts`. Der Dialog
+  erscheint einmal pro Rolle (`profiles.onboarding_seen`).
+- Handbuch-Bildschirmfotos erzeugt `npm run handbook:screenshots` (Playwright,
+  `e2e/handbook.spec.ts`) nach `public/handbook/`. Nach UI-Änderungen neu erzeugen und committen.
+
 ## Vertragsannahme
 
 Verträge zwischen Company und Trainer:in sind erst wirksam, wenn die Trainer:in sie annimmt:

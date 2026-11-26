@@ -12,6 +12,8 @@ export interface Profile {
   city: string | null;
   country: ProfileCountry;
   kleinunternehmer: boolean;
+  /** Rollen, für die der Willkommens-Dialog schon gezeigt wurde. */
+  onboarding_seen: string[];
   created_at: string;
 }
 

@@ -1,4 +1,10 @@
-import { type Page, expect } from "@playwright/test";
+import {
+  type Browser,
+  type BrowserContext,
+  type Page,
+  type TestInfo,
+  expect,
+} from "@playwright/test";
 
 export async function loginAsPlatformAdmin(page: Page) {
   const email = process.env.E2E_PLATFORM_ADMIN_EMAIL;
@@ -74,4 +80,47 @@ export async function getInviteLink(email: string): Promise<string> {
     )
     .toBeTruthy();
   return link!;
+}
+
+/**
+ * Legt per Vertragsangebot eine neue Trainer:in an, die das Angebot annimmt (lokaler Stack mit
+ * Mailpit nötig). Der eingeloggte Platform-Admin muss Company-Admin sein (ensureAdminHasCompany).
+ * Liefert die Seite der Trainer:in in einem eigenen Browser-Kontext.
+ */
+export async function createActiveTrainer(
+  adminPage: Page,
+  browser: Browser,
+  testInfo: TestInfo,
+  options: { showOnboarding?: boolean } = {},
+): Promise<{ trainer: Page; context: BrowserContext; email: string }> {
+  const email = uniqueEmail("e2e-trainer");
+  const amount = "41,00";
+  await adminPage.goto("/trainers");
+  await adminPage.getByRole("button", { name: "Vertrag anbieten" }).click();
+  await adminPage.getByLabel("E-Mail-Adresse der Person").fill(email);
+  await adminPage.getByLabel("Betrag (€)").fill(amount);
+  await adminPage.getByLabel("Gültig ab").fill(new Date().toISOString().slice(0, 10));
+  await adminPage.getByRole("button", { name: "Angebot senden" }).click();
+  await expect(adminPage.getByText("Einladung und Angebot gesendet.")).toBeVisible();
+
+  const context = await browser.newContext({
+    baseURL: testInfo.project.use.baseURL,
+    // Ohne Skip-Flag erscheint der Willkommens-Dialog wie bei echten neuen Konten.
+    storageState: options.showOnboarding
+      ? { cookies: [], origins: [] }
+      : testInfo.project.use.storageState,
+    recordVideo: { dir: testInfo.outputPath("trainer-video") },
+  });
+  const trainer = await context.newPage();
+  await trainer.goto(await getInviteLink(email));
+  await trainer.getByLabel("Neues Passwort").fill(`E2e-${Date.now()}`);
+  await trainer.getByRole("button", { name: "Neues Passwort setzen" }).click();
+  await trainer.waitForURL("/");
+
+  await trainer.goto("/profile");
+  await trainer.getByRole("tab", { name: /^Verträge/ }).click();
+  const offer = trainer.getByRole("listitem").filter({ hasText: amount });
+  await offer.getByRole("button", { name: "Annehmen" }).click();
+  await expect(offer).toContainText("Aktiv");
+  return { trainer, context, email };
 }

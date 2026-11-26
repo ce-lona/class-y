@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report",
+    "handbook:screenshots": "HANDBOOK_SCREENSHOTS=1 playwright test e2e/handbook.spec.ts --trace off",
     "functions:lint": "deno lint --rules-exclude=no-import-prefix supabase/functions",
     "functions:check": "for d in supabase/functions/*/; do (cd \"$d\" && deno check --no-lock --node-modules-dir=none index.ts) || exit 1; done",
     "typecheck": "next typegen && tsc --noEmit"

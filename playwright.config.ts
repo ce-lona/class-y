@@ -12,6 +12,16 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     video: "on",
     trace: "on",
+    // Willkommens-Dialog (Hilfe & Support) in allen Tests aus; e2e/help.spec.ts schaltet ihn gezielt ein.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: "http://localhost:3000",
+          localStorage: [{ name: "class-y:e2e-skip-onboarding", value: "1" }],
+        },
+      ],
+    },
   },
   projects: [
     {

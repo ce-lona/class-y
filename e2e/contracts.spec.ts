@@ -46,6 +46,7 @@ test("Vertrag: einladen, annehmen, zweites Angebot ablehnen, beenden", async ({
   // Trainer:in: Einladungslink → Passwort setzen → Angebot unter Einstellungen annehmen
   const trainerContext = await browser.newContext({
     baseURL: testInfo.project.use.baseURL,
+    storageState: testInfo.project.use.storageState,
     recordVideo: { dir: testInfo.outputPath("trainer-video") },
   });
   const trainer = await trainerContext.newPage();
