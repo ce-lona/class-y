@@ -18,14 +18,22 @@ test("Support: Empfänger pflegen, Nachricht senden, im Posteingang sehen", asyn
   await page.goto("/platform-settings");
   await expect(page.getByRole("heading", { name: "Support-Empfänger" })).toBeVisible();
 
-  // Empfänger hinzufügen (ungültige Adresse wird abgelehnt)
+  // Empfänger hinzufügen (ungültige Adresse wird abgelehnt). Eine feste Basisadresse sorgt dafür,
+  // dass die Testadresse am Ende entfernt werden kann (die letzte Adresse ist nicht löschbar).
   const input = page.getByLabel("Neue Empfänger-Adresse");
+  const recipients = page.getByRole("list", { name: "Support-Empfänger" });
+  const base = "e2e-support-base@example.test";
+  await expect(recipients.or(page.getByText("Noch keine Adresse"))).toBeVisible();
+  if ((await recipients.getByText(base).count()) === 0) {
+    await input.fill(base);
+    await page.getByRole("button", { name: "Hinzufügen" }).click();
+    await expect(recipients.getByText(base)).toBeVisible();
+  }
   await input.fill("keine-mail");
   await page.getByRole("button", { name: "Hinzufügen" }).click();
   await expect(page.getByText("Das sieht nicht nach einer E-Mail-Adresse aus.")).toBeVisible();
   await input.fill(extra);
   await page.getByRole("button", { name: "Hinzufügen" }).click();
-  const recipients = page.getByRole("list", { name: "Support-Empfänger" });
   await expect(recipients.getByText(extra)).toBeVisible();
 
   // Nachricht über das Kontaktformular senden
