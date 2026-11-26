@@ -187,14 +187,6 @@ export function Nav() {
             </Link>
           )}
 
-          <Link
-            href="/help"
-            data-tour="/help"
-            className={cn(linkClass(!!pathname?.startsWith("/help")), "md:ml-auto")}
-          >
-            <CircleHelp className="size-4 shrink-0" />
-            <span>{t.help.nav}</span>
-          </Link>
         </nav>
 
         <div className="order-2 flex h-14 items-center justify-end gap-2 sm:gap-2.5 md:order-3 md:h-auto md:shrink-0">
@@ -225,6 +217,20 @@ export function Nav() {
               })}
             </div>
           )}
+
+          {/* Hilfe immer sichtbar (nicht im scrollbaren Menü), Ziel des Rundgangs */}
+          <Link
+            href="/help"
+            data-tour="/help"
+            aria-label={t.help.nav}
+            className={cn(
+              linkClass(!!pathname?.startsWith("/help")),
+              "px-2 lg:px-2.5"
+            )}
+          >
+            <CircleHelp className="size-4 shrink-0" />
+            <span className="hidden lg:inline">{t.help.nav}</span>
+          </Link>
 
           <ThemeToggle />
 

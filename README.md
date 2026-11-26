@@ -123,7 +123,7 @@ Jede Rolle hat unter **Hilfe** (`/help`) einen Rundgang, das Handbuch und ein Ko
 - SMTP-Secrets (gehostet: `supabase secrets set ...`; Supabase blockt Port 25/587, daher 465):
   - `SUPPORT_SMTP_HOST=smtp.resend.com`, `SUPPORT_SMTP_PORT=465`, `SUPPORT_SMTP_USER=resend`,
     `SUPPORT_SMTP_PASS=<Resend-API-Key>`, `SUPPORT_SMTP_FROM=noreply@class-y.de`
-  - lokal (Mailpit): `SUPPORT_SMTP_HOST=supabase_inbucket_class-y`, `SUPPORT_SMTP_PORT=1025`,
+  - lokal (Mailpit): `SUPPORT_SMTP_HOST=inbucket`, `SUPPORT_SMTP_PORT=1025`,
     `SUPPORT_SMTP_SECURE=false`, `SUPPORT_SMTP_FROM=support@class-y.local`
   - Ohne Secrets wird nur gespeichert (`mail_status = not_configured`).
 - Rundgang und Willkommens-Dialog: `components/help/`, Texte in `constants/help.ts`. Der Dialog

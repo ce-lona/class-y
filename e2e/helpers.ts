@@ -124,3 +124,15 @@ export async function createActiveTrainer(
   await expect(offer).toContainText("Aktiv");
   return { trainer, context, email };
 }
+
+/**
+ * Beendet den Vertrag einer mit createActiveTrainer angelegten Person wieder, damit andere
+ * Specs (die nach "irgendeinem aktiven Vertrag" suchen) nicht über sie stolpern.
+ */
+export async function endTrainerContract(adminPage: Page, email: string) {
+  await adminPage.goto("/trainers");
+  const row = adminPage.getByRole("row").filter({ hasText: email });
+  await row.getByRole("button", { name: "Beenden" }).click();
+  // Beendete Verträge verschwinden aus dem Standardfilter "Aktiv & Offen".
+  await expect(row).toHaveCount(0);
+}

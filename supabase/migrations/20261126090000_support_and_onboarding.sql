@@ -85,7 +85,7 @@ create policy "support_messages: platform_admin liest alle"
 -- Anlegen nur über submit_support_message, Versandstatus setzt die Edge Function (service_role).
 
 -- Speichert die Nachricht und liefert die Absenderangaben für die Support-Mail.
--- Rate-Limit: höchstens 5 Nachrichten pro Stunde und Person.
+-- Rate-Limit: höchstens 5 Nachrichten pro Stunde und Person (außer Plattform-Admins).
 create or replace function submit_support_message(
   p_topic text,
   p_message text,
@@ -108,7 +108,8 @@ begin
   if char_length(v_message) > 5000 then
     raise exception 'message_too_long';
   end if;
-  if (select count(*) from support_messages
+  -- Plattform-Admins sind ausgenommen (eigene Tests, z.B. e2e/help.spec.ts).
+  if not is_platform_admin() and (select count(*) from support_messages
       where sender_id = v_uid and created_at > now() - interval '1 hour') >= 5 then
     raise exception 'rate_limited';
   end if;
@@ -185,6 +186,14 @@ $$;
 -- ─────────────────────────────────────────────────────────────────
 revoke insert, update, delete on support_recipients from authenticated;
 revoke insert, update, delete on support_messages from authenticated;
+
+revoke all on function
+  add_support_recipient(text),
+  remove_support_recipient(text),
+  submit_support_message(text, text, text, jsonb, text),
+  mark_onboarding_seen(text),
+  support_sender_details(uuid[])
+from public, anon;
 
 grant execute on function add_support_recipient(text) to authenticated;
 grant execute on function remove_support_recipient(text) to authenticated;

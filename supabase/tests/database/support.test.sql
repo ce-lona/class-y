@@ -4,6 +4,10 @@
 begin;
 select plan(22);
 
+-- Lokale Daten (z.B. aus E2E-Läufen) ausblenden; wird am Ende zurückgerollt.
+delete from support_recipients;
+delete from support_messages;
+
 insert into auth.users (id, email, aud, role)
 values
   ('00000000-0000-0000-0000-00000000e001', 'pa@support.test', 'authenticated', 'authenticated'),

@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { createActiveTrainer, ensureAdminHasCompany, loginAsPlatformAdmin } from "./helpers";
+import {
+  createActiveTrainer,
+  endTrainerContract,
+  ensureAdminHasCompany,
+  loginAsPlatformAdmin,
+} from "./helpers";
 
 // Hilfe & Support gegen den lokalen Stack (`supabase start`, `supabase functions serve` für
 // send-support-message und invite-trainer, Mailpit). Ohne SUPPORT_SMTP_*-Secrets wird die
@@ -46,7 +51,7 @@ test("Onboarding: Willkommens-Dialog und Rundgang für neue Trainer:innen", asyn
 }, testInfo) => {
   await loginAsPlatformAdmin(page);
   await ensureAdminHasCompany(page);
-  const { trainer, context } = await createActiveTrainer(page, browser, testInfo, {
+  const { trainer, context, email } = await createActiveTrainer(page, browser, testInfo, {
     showOnboarding: true,
   });
   try {
@@ -77,5 +82,6 @@ test("Onboarding: Willkommens-Dialog und Rundgang für neue Trainer:innen", asyn
     await expect(trainer.getByText("Schritt 1 von 5")).toHaveCount(0);
   } finally {
     await context.close();
+    await endTrainerContract(page, email);
   }
 });

@@ -1,5 +1,10 @@
 import { test, expect, type Page } from "@playwright/test";
-import { createActiveTrainer, ensureAdminHasCompany, loginAsPlatformAdmin } from "./helpers";
+import {
+  createActiveTrainer,
+  endTrainerContract,
+  ensureAdminHasCompany,
+  loginAsPlatformAdmin,
+} from "./helpers";
 
 // Erzeugt die Bildschirmfotos für das Handbuch im Hilfe-Bereich (public/handbook/*.png).
 // Läuft nur mit `npm run handbook:screenshots` (HANDBOOK_SCREENSHOTS=1) gegen den lokalen Stack.
@@ -13,6 +18,8 @@ const DIR = "public/handbook";
 
 async function settle(page: Page) {
   await page.waitForLoadState("networkidle");
+  // Next.js-Entwicklungs-Indikator nicht mit fotografieren
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   await expect(page.getByText("Lädt…", { exact: true })).toHaveCount(0);
   await page.waitForTimeout(400);
 }
@@ -54,7 +61,7 @@ test("Handbuch-Bildschirmfotos erzeugen", async ({ page, browser }, testInfo) =>
   await shoot(page, "trainers-offer");
 
   // Trainer-Ansicht mit frischem Konto
-  const { trainer, context } = await createActiveTrainer(page, browser, testInfo);
+  const { trainer, context, email } = await createActiveTrainer(page, browser, testInfo);
   try {
     await trainer.setViewportSize({ width: 1280, height: 800 });
     for (const [name, path] of [
@@ -70,5 +77,6 @@ test("Handbuch-Bildschirmfotos erzeugen", async ({ page, browser }, testInfo) =>
     await shoot(trainer, "profile-contracts");
   } finally {
     await context.close();
+    await endTrainerContract(page, email);
   }
 });
