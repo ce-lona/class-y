@@ -89,8 +89,7 @@ Plan: `design/prototype/PLAN.md`, Referenz: `design/prototype/index.html`. Nur U
 - [x] Trainer:in: Sidebar mit „Kurs eintragen“, Meine Kurse mit Zeitraum (unbegrenzt zurück), mobil Bottom-Bar
   (Woche, Plan, Plus, Abrechnung, Profil).
 - [x] Rundgang-Ziele, Handbuch-Texte, E2E-Tests angepasst. `playwright.config.ts` kennt `E2E_PORT`.
-- Offen (Phase 1 nicht oder nur teilweise): „Kurs eintragen“ als Drawer/Bottom-Sheet (verlinkt weiter auf
-  `/courses/log`), Woche-Ansicht (Liste/Woche-Umschalter) für Trainer:innen, Company-Filter-Chips bei
-  Meine Kurse im neuen Stil, Plattform-Übersicht ohne Spalten „offene Freigaben/überfällig/letzte Aktivität“
-  (brauchen RPC), „Person hinzufügen“ weiter zweistufig (Rolle wählen → bestehendes Formular),
+- [x] Nachtrag: „Kurs eintragen“ als Drawer/Bottom-Sheet (`components/log-course-sheet.tsx`, `/courses/log`
+  bleibt Fallback), Meine Kurse mit Liste/Woche und Company-Chips, „Person hinzufügen“ in einem Schritt.
+- Offen: Plattform-Übersicht-Spalten (offene Freigaben, überfällig, letzte Aktivität) kommen mit RPC in Phase 2;
   Verlauf (Phase 3).
