@@ -6,6 +6,7 @@ import { CircleHelp } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { TrainerBottomBar } from "@/components/app-shell/trainer-bottom-bar";
+import { LogCourseSheet } from "@/components/log-course-sheet";
 import { UserMenu } from "@/components/app-shell/user-menu";
 import { CompanyBadge } from "@/components/app-shell/company-badge";
 import { PLATFORM_PATHS, companyTier } from "@/components/app-shell/company-switcher";
@@ -88,6 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex min-w-0 flex-1 flex-col">{children}</main>
       </div>
       {showTrainerArea && <TrainerBottomBar />}
+      {showTrainerArea && <LogCourseSheet />}
     </div>
   );
 }

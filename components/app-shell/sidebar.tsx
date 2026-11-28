@@ -30,6 +30,7 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { useStudioFilter } from "@/hooks/useStudioFilter";
 import { useCompanyContracts } from "@/hooks/useContracts";
 import { ALL_STUDIOS } from "@/store/studioFilterStore";
+import { useLogCourseStore } from "@/store/logCourseStore";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
@@ -174,6 +175,7 @@ export function Sidebar({
     myCompanies,
   } = useWorkspace();
   const adminItems = useAdminNavItems();
+  const openLogCourse = useLogCourseStore((s) => s.setOpen);
 
   const tier3Platform = hasPlatformRole && companyTier(myCompanies.length) === 3;
   const onPlatformPage = tier3Platform && PLATFORM_PATHS.some((p) => pathname.startsWith(p));
@@ -223,8 +225,9 @@ export function Sidebar({
       <nav aria-label={t.shell.mainNav} className="flex flex-col gap-0.5">
         {showTrainerArea && (
           <>
-            <Link
-              href="/courses/log"
+            <button
+              type="button"
+              onClick={() => openLogCourse(true)}
               data-tour="/courses/log"
               title={collapsed ? t.shell.trainerLogCourse : undefined}
               className={cn(
@@ -235,7 +238,7 @@ export function Sidebar({
               <Plus className="size-[18px]" />
               {!collapsed && <span>{t.shell.trainerLogCourse}</span>}
               {collapsed && <span className="sr-only">{t.shell.trainerLogCourse}</span>}
-            </Link>
+            </button>
             {trainerNavItems.map((item) => (
               <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} />
             ))}

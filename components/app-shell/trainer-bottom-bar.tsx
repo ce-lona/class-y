@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CalendarCheck, CalendarRange, Plus, Receipt, User } from "lucide-react";
 import { isActive, type NavItem } from "@/components/app-shell/sidebar";
+import { useLogCourseStore } from "@/store/logCourseStore";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
@@ -19,6 +20,7 @@ const right: NavItem[] = [
 /** Mobile Bottom-Bar der Trainer:innen: Woche, Plan, Plus (Kurs eintragen), Abrechnung, Profil. */
 export function TrainerBottomBar() {
   const pathname = usePathname() ?? "";
+  const openLogCourse = useLogCourseStore((s) => s.setOpen);
 
   const link = (item: NavItem) => {
     const active = isActive(pathname, item);
@@ -46,13 +48,14 @@ export function TrainerBottomBar() {
       className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 items-center border-t border-border bg-card px-1.5 pt-1.5 pb-[max(env(safe-area-inset-bottom),10px)] md:hidden"
     >
       {left.map(link)}
-      <Link
-        href="/courses/log"
+      <button
+        type="button"
+        onClick={() => openLogCourse(true)}
         aria-label={t.shell.trainerLogCourse}
         className="mx-auto -mt-6 grid size-[52px] place-items-center rounded-2xl bg-primary text-primary-foreground shadow-[0_6px_16px_rgba(31,95,92,0.35)]"
       >
         <Plus className="size-6" />
-      </Link>
+      </button>
       {right.map(link)}
     </nav>
   );

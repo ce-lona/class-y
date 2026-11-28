@@ -5,6 +5,8 @@ import Link from "next/link";
 import {
   Building2,
   CalendarCheck,
+  CalendarDays,
+  List,
   CalendarRange,
   Check,
   Clock,
@@ -543,6 +545,7 @@ export default function TrainerCoursesPage() {
   const [subDrawerItem, setSubDrawerItem] = useState<WeekSlotOccurrence | null>(null);
   // Zeitraum-Steuerung: Woche/Monat/Quartal/Jahr, unbegrenzt zurück und vor.
   const [period, setPeriod] = useState<Period>(DEFAULT_PERIOD);
+  const [view, setView] = useState<"list" | "week">("list");
 
   const hasActiveContract = (myContracts ?? []).some((c) => c.status === "active");
   const weekDays = getDaysInRange(period);
@@ -592,7 +595,7 @@ export default function TrainerCoursesPage() {
     .filter((st) => companyFilter === "all" || st.companyId === companyFilter)
     .sort((a, b) => a.name.localeCompare(b.name, "de"));
 
-  const showFilterBar = companies.length > 1 || studios.length > 1;
+  const showFilterBar = studios.length > 1;
 
   // Für jeden Tag der aktuellen Woche die geplanten eigenen Slots + angenommene Vertretungen sammeln
   const weekOccurrences: WeekSlotOccurrence[] = [];
@@ -784,38 +787,6 @@ export default function TrainerCoursesPage() {
       <p className="hidden text-xs font-bold tracking-wide text-muted-foreground uppercase lg:block">
         {t.trainer.filtersTitle}
       </p>
-      {companies.length > 1 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground lg:w-full">
-            <Building2 className="size-3.5" />
-            <span>{t.trainer.filterCompany}:</span>
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              setCompanyFilter("all");
-              setStudioFilter("all");
-            }}
-            className={chipClass(companyFilter === "all")}
-          >
-            {t.trainer.filterAll}
-          </button>
-          {companies.map(([id, name]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => {
-                setCompanyFilter(id);
-                setStudioFilter("all");
-              }}
-              className={chipClass(companyFilter === id)}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      )}
-
       {studios.length > 1 && (
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground lg:w-full">
@@ -1074,13 +1045,69 @@ export default function TrainerCoursesPage() {
             </button>
           </div>
 
+          {/* Company als Filter-Chips, Umschalter Liste | Woche */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5" data-testid="my-courses-toolbar">
+            <div role="group" aria-label={t.trainer.filterCompany} className="flex flex-wrap gap-1.5">
+              {companies.length > 1 &&
+                [["all", t.trainer.filterAll] as const, ...companies].map(([id, name]) => {
+                  const selected = companyFilter === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => {
+                        setCompanyFilter(id);
+                        setStudioFilter("all");
+                      }}
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-[13.5px] font-semibold whitespace-nowrap transition-colors",
+                        selected
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border bg-card text-foreground/80 hover:border-muted-foreground"
+                      )}
+                    >
+                      {name}
+                    </button>
+                  );
+                })}
+            </div>
+            {tab === "upcoming" && (
+              <div role="tablist" aria-label={t.trainer.viewLabel} className="inline-flex rounded-[9px] border border-border bg-card p-0.5">
+                {(
+                  [
+                    { key: "list", label: t.trainer.viewList, Icon: List },
+                    { key: "week", label: t.trainer.viewWeek, Icon: CalendarDays },
+                  ] as const
+                ).map(({ key, label, Icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={view === key}
+                    onClick={() => setView(key)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-[7px] px-3 py-1.5 text-[13.5px] font-semibold",
+                      view === key ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="size-4" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {actionError && (
             <div className="rounded-xl bg-destructive-bg px-4 py-3 text-sm text-destructive">
               {actionError}
             </div>
           )}
 
-          {tab === "upcoming" ? (
+          {tab === "upcoming" && view === "week" && !slotsLoading && !sessionsLoading ? (
+            <TrainerWeekGrid days={weekDays} items={weekOccurrences} todayIso={todayIso} />
+          ) : tab === "upcoming" ? (
             slotsLoading || sessionsLoading ? (
               <p className="text-sm text-muted-foreground">{t.common.loading}</p>
             ) : weekOccurrences.length > 0 ? (
@@ -1245,6 +1272,71 @@ export default function TrainerCoursesPage() {
         currentUserId={session?.user.id ?? ""}
         onClose={() => setSubDrawerItem(null)}
       />
+    </div>
+  );
+}
+
+/** Woche-Ansicht „Meine Kurse“: Tage als Spalten (bei Monat/Quartal/Jahr als Kalender). */
+function TrainerWeekGrid({
+  days,
+  items,
+  todayIso,
+}: {
+  days: { weekday: number; isoDate: string; isToday: boolean }[];
+  items: WeekSlotOccurrence[];
+  todayIso: string;
+}) {
+  const lead = days.length > 7 ? days[0].weekday - 1 : 0;
+  const statusOf = (item: WeekSlotOccurrence) => {
+    if (item.session?.status === "completed") return { label: t.trainer.statusCompleted, cls: "bg-success-bg text-success" };
+    if (item.session?.status === "cancelled") return { label: t.trainer.statusCancelled, cls: "text-muted-foreground line-through" };
+    if (item.outgoingSubstitution?.status === "accepted") return { label: t.trainer.substitutionBadge, cls: "bg-link-500/12 text-link-600 dark:text-link-400" };
+    if (item.isoDate <= todayIso) return { label: t.trainer.statOpen, cls: "bg-warning-bg text-warning" };
+    return { label: t.trainer.statusPlanned, cls: "bg-muted text-muted-foreground" };
+  };
+  return (
+    <div className="overflow-x-auto pb-1" data-testid="trainer-week-grid">
+      <div className="grid min-w-[910px] grid-cols-7 gap-2.5">
+        {Array.from({ length: lead }, (_, i) => (
+          <div key={`lead-${i}`} />
+        ))}
+        {days.map((day) => {
+          const list = items
+            .filter((item) => item.isoDate === day.isoDate)
+            .sort((a, b) => a.slot.start_time.localeCompare(b.slot.start_time));
+          return (
+            <div
+              key={day.isoDate}
+              className={cn(
+                "flex min-h-40 flex-col rounded-xl border border-border bg-card",
+                day.isToday && "border-primary ring-1 ring-primary ring-inset"
+              )}
+            >
+              <div className="flex items-baseline justify-between border-b border-border/60 px-3 py-2">
+                <b className="font-heading text-sm">
+                  {t.plans.weekdaysShort[day.weekday as keyof typeof t.plans.weekdaysShort]}{" "}
+                  {formatShortDayMonth(day.isoDate)}
+                </b>
+                <span className="text-xs text-muted-foreground">{list.length || ""}</span>
+              </div>
+              {list.map((item) => {
+                const accent = getCourseTypeAccent(item.slot.course_type_id);
+                const status = statusOf(item);
+                return (
+                  <div key={item.key} className={cn("mx-2 mt-2 rounded-lg border-l-[3px] bg-background px-2.5 py-2", accent.border)}>
+                    <div className="font-heading text-sm font-bold tabular-nums">{formatTimeShort(item.slot.start_time)}</div>
+                    <div className="text-sm leading-tight font-semibold">{item.slot.course_type_name}</div>
+                    <div className="text-xs text-muted-foreground">{item.slot.studio_name}</div>
+                    <span className={cn("mt-1 inline-block rounded-md px-1.5 text-[11.5px] font-bold", status.cls)}>
+                      {status.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
