@@ -71,7 +71,7 @@ function Toggle({
   );
 }
 
-function CompanyAddressCard({ company, canEdit }: { company: ManagedCompany; canEdit: boolean }) {
+export function CompanyAddressCard({ company, canEdit }: { company: ManagedCompany; canEdit: boolean }) {
   const update = useUpdateCompanyAddress(company.id);
   const [saved, setSaved] = useState(false);
   const { register, control, handleSubmit, reset, formState } = useForm<AddressForm>({
@@ -352,7 +352,6 @@ export function BillingSettingsPanel({ company }: { company: ManagedCompany }) {
         </form>
       </section>
 
-      <CompanyAddressCard company={company} canEdit={canEdit} />
     </div>
   );
 }

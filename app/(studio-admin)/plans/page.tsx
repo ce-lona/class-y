@@ -168,7 +168,7 @@ function PlansContent() {
             <Building2 className="size-5" />
           </div>
           <p className="text-sm text-muted-foreground">{t.plans.noStudios}</p>
-          <Link href="/studios" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          <Link href="/settings?section=studios" className={buttonVariants({ variant: "outline", size: "sm" })}>
             {t.plans.goToStudios}
           </Link>
         </div>

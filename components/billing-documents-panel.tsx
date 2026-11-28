@@ -281,7 +281,7 @@ export function BillingDocumentsPanel({ company }: { company: ManagedCompany }) 
               <p className="flex flex-wrap items-center gap-2 text-sm text-destructive">
                 <AlertTriangle className="size-4 shrink-0" />
                 <span>{C.checkAddressMissing}</span>
-                <Link href="/settings?tab=billing#company-address" className="font-semibold underline">
+                <Link href="/settings?section=company#company-address" className="font-semibold underline">
                   {C.checkAddressLink}
                 </Link>
               </p>

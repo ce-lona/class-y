@@ -111,7 +111,7 @@ export default function StudioDetailPage({
     <div className="mx-auto max-w-6xl space-y-7">
       <div>
         <Link
-          href="/studios"
+          href="/settings?section=studios"
           className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="size-4" />
