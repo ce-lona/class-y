@@ -15,9 +15,12 @@ test("Stammdaten unter /profile im Read-Only-Modus ansehen, bearbeiten und nach 
 
   await page.goto("/profile");
   await expect(page.getByRole("heading", { name: "Meine Stammdaten" })).toBeVisible();
+  const stammdaten = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { name: "Meine Stammdaten" }) });
 
   // Read-Only-Modus → Bearbeiten-Modus öffnen
-  await page.getByRole("button", { name: "Bearbeiten" }).click();
+  await stammdaten.getByRole("button", { name: "Bearbeiten" }).click();
 
   await page.getByLabel("Vollständiger Name").fill(fullName);
   await page.getByLabel("Telefonnummer").fill(phone);
@@ -34,7 +37,7 @@ test("Stammdaten unter /profile im Read-Only-Modus ansehen, bearbeiten und nach 
     await kleinunternehmer.uncheck();
   }
 
-  await page.getByRole("button", { name: "Speichern" }).click();
+  await stammdaten.getByRole("button", { name: "Speichern" }).click();
   await expect(page.getByText("Stammdaten gespeichert.")).toBeVisible();
 
   // Nach dem Speichern zurück im Read-Only-Modus
