@@ -152,25 +152,24 @@ select is(
   'Kurskoordinator sieht ausschließlich Verträge der Trainer seines Studios A'
 );
 
--- 9. Koordinator kann Vertrag für Studio A anbieten
+-- 9. Studio-Admin kann einen (company-weiten) Vertrag anbieten
 select lives_ok(
   $$ select offer_contract(
        '00000000-0000-0000-0000-00000000a701', 'trainer-a@coord.test',
-       'freelancer', 'per_minute', 0.65, current_date, null,
-       array['00000000-0000-0000-0000-00000000b701'::uuid]
+       'freelancer', 'per_minute', 0.65, current_date, null, null
      ) $$,
-  'Kurskoordinator darf Vertrag für sein Studio A anbieten'
+  'Studio-Admin darf einen company-weiten Vertrag anbieten'
 );
 
--- 10. Koordinator darf KEINEN Vertrag für Studio B anbieten
+-- 10. Nur Company-Admins beschränken Verträge auf Studios
 select throws_ok(
   $$ select offer_contract(
        '00000000-0000-0000-0000-00000000a701', 'trainer-b@coord.test',
        'freelancer', 'per_course', 45, current_date, null,
-       array['00000000-0000-0000-0000-00000000b702'::uuid]
+       array['00000000-0000-0000-0000-00000000b701'::uuid]
      ) $$,
-  'P0001', 'not_authorized',
-  'Kurskoordinator darf keinen Vertrag für fremdes Studio B anbieten'
+  'P0001', 'studio_restriction_admin_only',
+  'Studio-Admin darf Verträge nicht auf Studios beschränken'
 );
 
 -- 11. Koordinator darf keine weiteren Koordinatoren verwalten

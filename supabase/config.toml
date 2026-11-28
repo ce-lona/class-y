@@ -418,6 +418,12 @@ verify_jwt = true
 import_map = "./functions/invite-studio-coordinator/deno.json"
 entrypoint = "./functions/invite-studio-coordinator/index.ts"
 
+[functions.invite-platform-admin]
+enabled = true
+verify_jwt = true
+import_map = "./functions/invite-platform-admin/deno.json"
+entrypoint = "./functions/invite-platform-admin/index.ts"
+
 # Kontaktformular im Hilfe-Bereich. SMTP-Zugang über SUPPORT_SMTP_*-Secrets (siehe README).
 [functions.send-support-message]
 enabled = true

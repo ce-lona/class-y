@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Info, Palette, Receipt, SlidersHorizontal } from "lucide-react";
 import { CourseTypesConfig } from "@/components/course-types-config";
 import { BillingSettingsPanel } from "@/components/billing-settings-panel";
+import { StudioAdminPermissionsCard } from "@/components/studio-admin-permissions-card";
 import { AppearanceSettingsCard } from "@/components/appearance-settings-card";
 import { useAuthStore } from "@/store/authStore";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useStudios } from "@/hooks/useStudios";
+import { useStudioAdminPermissions } from "@/hooks/useStudioAdminPermissions";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
@@ -21,6 +23,7 @@ function SettingsContent() {
   const { session, isLoading: sessionLoading } = useAuthStore();
   const { data: company, isLoading: companyLoading } = useMyCompany();
   const { data: studios } = useStudios(company?.id ?? "");
+  const { data: permissions } = useStudioAdminPermissions(company?.id);
 
   useEffect(() => {
     if (!sessionLoading && !session) {
@@ -44,6 +47,11 @@ function SettingsContent() {
   }
 
   const isCoordinator = company.role === "coordinator";
+  const courseTypesMode = !isCoordinator
+    ? "admin"
+    : (permissions?.course_types ?? "approval") === "denied"
+      ? "readOnly"
+      : "studioAdmin";
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-10">
@@ -106,8 +114,12 @@ function SettingsContent() {
             <CourseTypesConfig
               companyId={company.id}
               studios={studios ?? []}
-              canEdit={!isCoordinator}
+              mode={courseTypesMode}
             />
+          </section>
+
+          <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
+            <StudioAdminPermissionsCard companyId={company.id} canEdit={!isCoordinator} />
           </section>
         </>
       )}

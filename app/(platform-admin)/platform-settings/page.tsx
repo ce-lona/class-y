@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AppearanceSettingsCard } from "@/components/appearance-settings-card";
+import { PlatformAdminsCard } from "@/components/platform-admins-card";
 import { SupportInbox } from "@/components/help/support-inbox";
 import { SupportRecipientsCard } from "@/components/help/support-recipients-card";
 import { useAuthStore } from "@/store/authStore";
@@ -42,6 +43,7 @@ export default function PlatformSettingsPage() {
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">{t.help.platformSettings.subtitle}</p>
       </div>
+      <PlatformAdminsCard />
       <SupportRecipientsCard />
       <SupportInbox />
       <AppearanceSettingsCard />

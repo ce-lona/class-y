@@ -75,8 +75,8 @@ export function Nav() {
         : "text-muted-foreground hover:bg-muted hover:text-foreground"
     );
 
-  function switchWorkspace(role: WorkspaceRole, home: string) {
-    rememberWorkspace(role);
+  function switchWorkspace(role: WorkspaceRole, home: string, companyId?: string) {
+    rememberWorkspace(role, companyId);
     router.push(home);
   }
 
@@ -198,13 +198,14 @@ export function Nav() {
               className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-0.5"
             >
               {availableRoles.map((role) => {
-                const selected = role.id === activeRole;
+                const selected =
+                  role.id === activeRole && (!role.companyId || role.companyId === myCompany?.id);
                 return (
                   <button
-                    key={role.id}
+                    key={role.key}
                     type="button"
                     aria-pressed={selected}
-                    onClick={() => switchWorkspace(role.id, role.home)}
+                    onClick={() => switchWorkspace(role.id, role.home, role.companyId)}
                     className={cn(
                       "max-w-36 truncate rounded-md px-2 py-1 text-xs font-semibold transition-colors sm:px-2.5",
                       selected

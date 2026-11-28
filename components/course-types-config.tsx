@@ -20,9 +20,16 @@ import {
   useCourseTypes,
   useCreateCourseType,
   useDeleteCourseType,
+  useDeleteCourseTypeAsStudioAdmin,
+  useReviewCourseType,
+  useSaveCourseTypeAsStudioAdmin,
   useUpdateCourseType,
 } from "@/hooks/useCourseTypes";
-import { isCourseTypeAvailableInStudio, type CourseType } from "@/lib/courseTypes";
+import {
+  isCourseTypeApproved,
+  isCourseTypeAvailableInStudio,
+  type CourseType,
+} from "@/lib/courseTypes";
 import type { Studio } from "@/lib/studios";
 import { getCourseTypeAccent } from "@/lib/format";
 import { courseTypeSchema, type CourseTypeFormInput } from "@/lib/validators";
@@ -36,6 +43,7 @@ function StudioScopePicker({
   onRestrictedChange,
   onToggleStudio,
   scopeError,
+  allowAllStudios = true,
 }: {
   studios: Studio[];
   restricted: boolean;
@@ -43,12 +51,16 @@ function StudioScopePicker({
   onRestrictedChange: (next: boolean) => void;
   onToggleStudio: (studioId: string) => void;
   scopeError?: string | null;
+  /** Studio-Admins legen nur Kurstypen für ihre eigenen Studios an. */
+  allowAllStudios?: boolean;
 }) {
   if (studios.length === 0) return null;
 
   return (
     <div className="space-y-2.5 rounded-xl border border-border bg-muted/35 p-3.5">
       <p className="text-xs font-bold text-foreground">{t.courseTypes.studioScopeLabel}</p>
+      {allowAllStudios && (
+      <>
       <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-foreground">
         <input
           type="radio"
@@ -67,9 +79,11 @@ function StudioScopePicker({
         />
         <span>{t.courseTypes.selectedStudiosOnly}</span>
       </label>
+      </>
+      )}
 
-      {restricted && (
-        <div className="space-y-1.5 pl-5 pt-1">
+      {(restricted || !allowAllStudios) && (
+        <div className={cn("space-y-1.5 pt-1", allowAllStudios && "pl-5")}>
           {studios.map((studio) => (
             <label
               key={studio.id}
@@ -92,21 +106,48 @@ function StudioScopePicker({
   );
 }
 
+function describePendingChange(courseType: CourseType, studios: Studio[]): string | null {
+  const change = courseType.pending_change;
+  if (!change) return null;
+  if ("delete" in change) return t.roleModel.courseTypeDeletePending;
+  const studioNames = change.studio_ids
+    .map((id) => studios.find((s) => s.id === id)?.name)
+    .filter((name): name is string => Boolean(name));
+  const summary = `${change.name}, ${change.default_duration_min} ${t.courseTypes.minutesUnit}${
+    studioNames.length > 0 ? `, ${studioNames.join(", ")}` : ""
+  }`;
+  return t.roleModel.courseTypeChangePending.replace("{change}", summary);
+}
+
 function CourseTypeCard({
   courseType,
   companyId,
   studios,
-  canEdit,
+  mode,
   onDeleteError,
+  onNotice,
 }: {
   courseType: CourseType;
   companyId: string;
   studios: Studio[];
-  canEdit: boolean;
+  mode: CourseTypesMode;
   onDeleteError: (message: string | null) => void;
+  onNotice: (message: string | null) => void;
 }) {
   const updateCourseType = useUpdateCourseType(companyId);
   const deleteCourseType = useDeleteCourseType(companyId);
+  const saveAsStudioAdmin = useSaveCourseTypeAsStudioAdmin(companyId);
+  const deleteAsStudioAdmin = useDeleteCourseTypeAsStudioAdmin(companyId);
+  const review = useReviewCourseType(companyId);
+  const isStudioAdmin = mode === "studioAdmin";
+  // Studio-Admins bearbeiten nur Kurstypen, die ausschließlich ihren Studios zugeordnet sind.
+  const canEdit =
+    mode === "admin" ||
+    (isStudioAdmin &&
+      courseType.studio_ids.length > 0 &&
+      courseType.studio_ids.every((id) => studios.some((s) => s.id === id)));
+  const isPending = !isCourseTypeApproved(courseType) || Boolean(courseType.pending_change);
+  const pendingChange = describePendingChange(courseType, studios);
   const [editing, setEditing] = useState(false);
   const [restricted, setRestricted] = useState(courseType.studio_ids.length > 0);
   const [selectedStudioIds, setSelectedStudioIds] = useState<string[]>(courseType.studio_ids);
@@ -135,7 +176,23 @@ function CourseTypeCard({
 
   async function onSubmit(values: CourseTypeFormInput) {
     onDeleteError(null);
+    onNotice(null);
     setScopeError(null);
+    if (isStudioAdmin) {
+      if (selectedStudioIds.length === 0) {
+        setScopeError(t.roleModel.courseTypeOwnStudiosOnly);
+        return;
+      }
+      const result = await saveAsStudioAdmin.mutateAsync({
+        id: courseType.id,
+        name: values.name,
+        default_duration_min: Number(values.default_duration_min),
+        studio_ids: selectedStudioIds,
+      });
+      if (result.pending) onNotice(t.roleModel.courseTypeProposed);
+      setEditing(false);
+      return;
+    }
     if (restricted && selectedStudioIds.length === 0) {
       setScopeError(t.courseTypes.selectAtLeastOneStudio);
       return;
@@ -151,7 +208,13 @@ function CourseTypeCard({
 
   async function handleDelete() {
     onDeleteError(null);
+    onNotice(null);
     try {
+      if (isStudioAdmin) {
+        const deleted = await deleteAsStudioAdmin.mutateAsync(courseType.id);
+        if (!deleted) onNotice(t.roleModel.courseTypeProposed);
+        return;
+      }
       await deleteCourseType.mutateAsync(courseType.id);
     } catch (error) {
       console.error(error);
@@ -200,9 +263,10 @@ function CourseTypeCard({
           }}
           onToggleStudio={toggleStudio}
           scopeError={scopeError}
+          allowAllStudios={!isStudioAdmin}
         />
 
-        {updateCourseType.isError && (
+        {(updateCourseType.isError || saveAsStudioAdmin.isError) && (
           <p className="text-xs text-destructive">{t.courseTypes.updateError}</p>
         )}
 
@@ -258,7 +322,36 @@ function CourseTypeCard({
               {studioNames.length === 0 ? t.courseTypes.studioBadgeAll : studioNames.join(", ")}
             </span>
           </Badge>
+          {isPending && (
+            <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300">
+              {t.roleModel.awaitingApproval}
+            </Badge>
+          )}
         </div>
+        {pendingChange && <p className="text-xs text-muted-foreground">{pendingChange}</p>}
+        {mode === "admin" && isPending && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button
+              type="button"
+              size="sm"
+              disabled={review.isPending}
+              onClick={() => review.mutate({ id: courseType.id, approve: true })}
+              data-testid={`approve-course-type-${courseType.id}`}
+            >
+              {t.roleModel.approve}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={review.isPending}
+              onClick={() => review.mutate({ id: courseType.id, approve: false })}
+            >
+              {t.roleModel.reject}
+            </Button>
+          </div>
+        )}
+        {review.isError && <p className="text-xs text-destructive">{t.roleModel.approveError}</p>}
       </div>
 
       {canEdit && (
@@ -282,7 +375,7 @@ function CourseTypeCard({
             variant="ghost"
             size="icon-sm"
             aria-label={`${courseType.name} ${t.courseTypes.delete}`}
-            disabled={deleteCourseType.isPending}
+            disabled={deleteCourseType.isPending || deleteAsStudioAdmin.isPending}
             onClick={handleDelete}
             className="text-muted-foreground hover:bg-destructive-bg hover:text-destructive"
           >
@@ -294,19 +387,29 @@ function CourseTypeCard({
   );
 }
 
+/**
+ * admin: Company-Admin, alles; studioAdmin: Kurstypen der eigenen Studios (ggf. mit Bestätigung);
+ * readOnly: nur ansehen.
+ */
+export type CourseTypesMode = "admin" | "studioAdmin" | "readOnly";
+
 export function CourseTypesConfig({
   companyId,
   studios,
-  canEdit,
+  mode,
 }: {
   companyId: string;
   studios: Studio[];
-  canEdit: boolean;
+  mode: CourseTypesMode;
 }) {
   const { data: courseTypes, isLoading } = useCourseTypes(companyId);
   const createCourseType = useCreateCourseType(companyId);
+  const saveAsStudioAdmin = useSaveCourseTypeAsStudioAdmin(companyId);
+  const isStudioAdmin = mode === "studioAdmin";
+  const canEdit = mode !== "readOnly";
   const [formOpen, setFormOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [studioFilter, setStudioFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
 
@@ -342,7 +445,22 @@ export function CourseTypesConfig({
 
   async function onSubmit(values: CourseTypeFormInput) {
     setDeleteError(null);
+    setNotice(null);
     setScopeError(null);
+    if (isStudioAdmin) {
+      if (selectedStudioIds.length === 0) {
+        setScopeError(t.roleModel.courseTypeOwnStudiosOnly);
+        return;
+      }
+      const result = await saveAsStudioAdmin.mutateAsync({
+        name: values.name,
+        default_duration_min: Number(values.default_duration_min),
+        studio_ids: selectedStudioIds,
+      });
+      if (result.pending) setNotice(t.roleModel.courseTypeProposed);
+      resetDrawer();
+      return;
+    }
     if (restricted && selectedStudioIds.length === 0) {
       setScopeError(t.courseTypes.selectAtLeastOneStudio);
       return;
@@ -382,6 +500,8 @@ export function CourseTypesConfig({
             type="button"
             onClick={() => {
               setDeleteError(null);
+              setNotice(null);
+              if (isStudioAdmin && studios.length === 1) setSelectedStudioIds([studios[0].id]);
               setFormOpen(true);
             }}
             className="gap-1.5"
@@ -445,9 +565,10 @@ export function CourseTypesConfig({
             }}
             onToggleStudio={toggleStudio}
             scopeError={scopeError}
+            allowAllStudios={!isStudioAdmin}
           />
 
-          {createCourseType.isError && (
+          {(createCourseType.isError || saveAsStudioAdmin.isError) && (
             <p className="text-sm text-destructive">{t.courseTypes.createError}</p>
           )}
 
@@ -461,6 +582,12 @@ export function CourseTypesConfig({
           </div>
         </form>
       </Drawer>
+
+      {notice && (
+        <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          {notice}
+        </div>
+      )}
 
       {deleteError && (
         <div className="rounded-xl bg-destructive-bg px-4 py-3 text-sm text-destructive">
@@ -478,8 +605,9 @@ export function CourseTypesConfig({
               courseType={ct}
               companyId={companyId}
               studios={studios}
-              canEdit={canEdit}
+              mode={mode}
               onDeleteError={setDeleteError}
+              onNotice={setNotice}
             />
           ))}
         </div>

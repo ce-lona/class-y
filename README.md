@@ -70,6 +70,7 @@ den Admin nachträglich per SQL in `platform_admins` ein.
 ### Edge Functions
 
 - `invite-company-admin`: lädt Company-Admins ein (nur für `platform_admin`)
+- `invite-platform-admin`: fügt weitere Plattform-Admins hinzu und lädt sie bei Bedarf ein (nur für `platform_admin`)
 - `invite-trainer`: lädt Trainer:innen ein und bietet ihnen einen Vertrag an (nur für Company-Admins der jeweiligen Company bzw. `platform_admin`)
 - `create-test-admin`: Hilfsfunktion **nur für die lokale Entwicklung**. Sie antwortet nur gegen
   den lokalen Supabase-Stack (`SUPABASE_URL` zeigt auf `kong`/`localhost`) und nur mit dem

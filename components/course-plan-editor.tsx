@@ -41,7 +41,7 @@ export function CoursePlanEditor({
   onCancel: () => void;
   onPublished: () => void;
 }) {
-  const { data: allCourseTypes, isLoading: typesLoading } = useCourseTypes(companyId);
+  const { data: allCourseTypes, isLoading: typesLoading } = useCourseTypes(companyId, { approvedOnly: true });
   const courseTypes = allCourseTypes?.filter((ct) => isCourseTypeAvailableInStudio(ct, studioId));
   const { data: trainers, isLoading: trainersLoading } = useCompanyActiveTrainers(companyId);
   const publishPlan = usePublishCoursePlan(studioId);

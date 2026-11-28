@@ -45,7 +45,14 @@ import {
   matchesSearch,
 } from "@/components/list-toolbar";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
-import { useCompanyContracts, useEndContract, useOfferContract } from "@/hooks/useContracts";
+import {
+  useCompanyContracts,
+  useEndContract,
+  useOfferContract,
+  useReviewContract,
+  useSetContractStudios,
+} from "@/hooks/useContracts";
+import { useStudioAdminPermissions } from "@/hooks/useStudioAdminPermissions";
 import { useConfirmContract } from "@/hooks/useCreditNotes";
 import {
   useCompanyCoordinators,
@@ -83,6 +90,13 @@ export default function TrainersPage() {
 
   const offer = useOfferContract(companyId);
   const end = useEndContract(companyId);
+  const review = useReviewContract(companyId);
+  const setStudios = useSetContractStudios(companyId);
+  const { data: permissions } = useStudioAdminPermissions(isFullAdmin ? undefined : companyId);
+  // Studio-Admins: Recht „Verträge“ (darf / mit Bestätigung / darf nicht), Company-Admins dürfen alles.
+  const contractPermission = isFullAdmin ? "allowed" : (permissions?.contracts ?? "approval");
+  const canOffer = contractPermission !== "denied";
+  const canEndContracts = contractPermission === "allowed";
   const confirm = useConfirmContract(companyId);
   const inviteCoordinator = useInviteStudioCoordinator(companyId);
   const updateCoordinatorStudios = useUpdateCoordinatorStudios(companyId);
@@ -109,6 +123,10 @@ export default function TrainersPage() {
   const [editCoordStudioIds, setEditCoordStudioIds] = useState<string[]>([]);
   const [editCoordError, setEditCoordError] = useState<string | null>(null);
 
+  // Company-Admin: Studio-Freigabe eines Vertrags ändern
+  const [editingContract, setEditingContract] = useState<{ id: string; label: string } | null>(null);
+  const [editContractStudioIds, setEditContractStudioIds] = useState<string[]>([]);
+
   const {
     register,
     control,
@@ -131,13 +149,9 @@ export default function TrainersPage() {
   function openContractDrawer() {
     setSuccess(null);
     setContractScopeError(null);
-    if (!isFullAdmin && studios && studios.length > 0) {
-      setContractRestricted(true);
-      setContractStudioIds(studios.map((s) => s.id));
-    } else {
-      setContractRestricted(false);
-      setContractStudioIds([]);
-    }
+    // Verträge gelten company-weit; nur Company-Admins beschränken sie auf Studios.
+    setContractRestricted(false);
+    setContractStudioIds([]);
     setFormOpen(true);
   }
 
@@ -154,7 +168,7 @@ export default function TrainersPage() {
     setSuccess(null);
     setContractScopeError(null);
 
-    const needsStudios = !isFullAdmin || contractRestricted;
+    const needsStudios = isFullAdmin && contractRestricted;
     if (needsStudios && contractStudioIds.length === 0) {
       setContractScopeError(t.contracts.selectAtLeastOneStudio);
       return;
@@ -171,7 +185,13 @@ export default function TrainersPage() {
         validTo: values.validTo || null,
         studioIds: needsStudios ? contractStudioIds : undefined,
       });
-      setSuccess(result.invited ? t.contracts.invited : t.contracts.offered);
+      setSuccess(
+        contractPermission === "approval"
+          ? t.roleModel.offerNeedsApproval
+          : result.invited
+            ? t.contracts.invited
+            : t.contracts.offered
+      );
       closeContractDrawer();
       if (filter === "archived") {
         setFilter("activeOpen");
@@ -179,6 +199,21 @@ export default function TrainersPage() {
     } catch (error) {
       console.error(error);
       setError("email", { message: t.contracts.offerError });
+    }
+  }
+
+  async function handleSaveContractStudios(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingContract) return;
+    try {
+      await setStudios.mutateAsync({
+        contractId: editingContract.id,
+        studioIds: editContractStudioIds,
+      });
+      setSuccess(t.roleModel.studiosSaved);
+      setEditingContract(null);
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -327,10 +362,12 @@ export default function TrainersPage() {
         </div>
 
         {section === "contracts" ? (
-          <Button onClick={openContractDrawer} className="gap-1.5">
-            <Plus className="size-4" />
-            <span>{t.contracts.offerTitle}</span>
-          </Button>
+          canOffer && (
+            <Button onClick={openContractDrawer} className="gap-1.5">
+              <Plus className="size-4" />
+              <span>{t.contracts.offerTitle}</span>
+            </Button>
+          )
         ) : (
           <Button
             onClick={() => {
@@ -515,7 +552,14 @@ export default function TrainersPage() {
             </div>
           </div>
 
-          {studios && studios.length > 0 && (
+          {!isFullAdmin && (
+            <div className="space-y-1.5 rounded-xl border border-border bg-muted/35 p-3.5 text-xs text-muted-foreground">
+              <p>{t.roleModel.contractScopeCompanyWide}</p>
+              {contractPermission === "approval" && <p>{t.roleModel.contractApprovalHint}</p>}
+            </div>
+          )}
+
+          {isFullAdmin && studios && studios.length > 0 && (
             <div className="space-y-2 rounded-xl border border-border bg-muted/35 p-3.5">
               <p className="text-xs font-bold text-foreground">{t.contracts.studioScopeLabel}</p>
               {isFullAdmin && (
@@ -546,7 +590,7 @@ export default function TrainersPage() {
                   </label>
                 </>
               )}
-              {(!isFullAdmin || contractRestricted) && (
+              {contractRestricted && (
                 <div className={cn("space-y-1.5 pt-1", isFullAdmin && "pl-5")}>
                   {studios.map((s) => (
                     <label key={s.id} className="flex cursor-pointer items-center gap-2 text-xs">
@@ -586,7 +630,7 @@ export default function TrainersPage() {
         </form>
       </Drawer>
 
-      {/* Drawer: Kurskoordinator einladen */}
+      {/* Drawer: Studio-Admin einladen */}
       <Drawer
         open={coordInviteOpen}
         onClose={() => setCoordInviteOpen(false)}
@@ -669,7 +713,57 @@ export default function TrainersPage() {
         </form>
       </Drawer>
 
-      {/* Drawer: Kurskoordinator-Studios ändern */}
+      {/* Drawer: Studio-Freigabe eines Vertrags (nur Company-Admins) */}
+      <Drawer
+        open={Boolean(editingContract)}
+        onClose={() => setEditingContract(null)}
+        title={t.roleModel.editStudiosTitle}
+        description={
+          editingContract
+            ? `${editingContract.label} — ${t.roleModel.editStudiosHint}`
+            : undefined
+        }
+      >
+        {editingContract && (
+          <form onSubmit={handleSaveContractStudios} className="space-y-4">
+            <div className="space-y-2 rounded-xl border border-border bg-muted/35 p-3.5">
+              {(studios ?? []).map((studio) => (
+                <label
+                  key={studio.id}
+                  className="flex cursor-pointer items-center gap-2 text-xs font-medium"
+                >
+                  <input
+                    type="checkbox"
+                    checked={editContractStudioIds.includes(studio.id)}
+                    onChange={() =>
+                      setEditContractStudioIds((prev) =>
+                        prev.includes(studio.id)
+                          ? prev.filter((id) => id !== studio.id)
+                          : [...prev, studio.id]
+                      )
+                    }
+                    className="size-3.5 rounded accent-primary"
+                  />
+                  <span>{studio.name}</span>
+                </label>
+              ))}
+            </div>
+            {setStudios.isError && (
+              <p className="text-sm text-destructive">{t.roleModel.studiosError}</p>
+            )}
+            <div className="flex items-center gap-2 border-t border-border pt-4">
+              <Button type="submit" disabled={setStudios.isPending} className="flex-1">
+                {t.common.save}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setEditingContract(null)}>
+                {t.common.cancel}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Drawer>
+
+      {/* Drawer: Studio-Admin-Studios ändern */}
       <Drawer
         open={Boolean(editingCoord)}
         onClose={() => setEditingCoord(null)}
@@ -943,7 +1037,20 @@ export default function TrainersPage() {
                           {formatContractValidity(c)}
                         </TableCell>
                         <TableCell className="px-3">
-                          <ContractStatusBadge status={c.status} />
+                          {c.approval_status === "pending_approval" ? (
+                            <div className="space-y-1">
+                              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                                {t.roleModel.awaitingApproval}
+                              </Badge>
+                              {c.created_by_name && (
+                                <p className="text-xs text-muted-foreground">
+                                  {t.roleModel.requestedBy.replace("{name}", c.created_by_name)}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <ContractStatusBadge status={c.status} />
+                          )}
                           {c.status === "active" && (
                             <ContractBillingHint
                               gaps={c.master_data_gaps ?? []}
@@ -953,7 +1060,30 @@ export default function TrainersPage() {
                           )}
                         </TableCell>
                         <TableCell className="px-3.5 text-right">
-                          {c.status === "active" || c.status === "pending" ? (
+                          {c.approval_status === "pending_approval" ? (
+                            isFullAdmin ? (
+                              <div className="flex flex-wrap justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  disabled={review.isPending}
+                                  onClick={() => review.mutate({ contractId: c.id, approve: true })}
+                                  data-testid={`approve-contract-${c.id}`}
+                                >
+                                  {t.roleModel.approve}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={review.isPending}
+                                  onClick={() => review.mutate({ contractId: c.id, approve: false })}
+                                >
+                                  {t.roleModel.reject}
+                                </Button>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )
+                          ) : c.status === "active" || c.status === "pending" ? (
                             <div className="flex flex-wrap justify-end gap-2">
                               {c.status === "active" &&
                                 (c.master_data_gaps?.length ?? 0) === 0 &&
@@ -967,14 +1097,33 @@ export default function TrainersPage() {
                                     {c.confirmed_at ? t.creditNotes.reconfirm : t.creditNotes.confirm}
                                   </Button>
                                 )}
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={end.isPending}
-                                onClick={() => end.mutate(c.id)}
-                              >
-                                {c.status === "pending" ? t.contracts.withdraw : t.contracts.end}
-                              </Button>
+                              {isFullAdmin && studios && studios.length > 1 && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSuccess(null);
+                                    setEditContractStudioIds(c.studio_ids ?? []);
+                                    setEditingContract({
+                                      id: c.id,
+                                      label: c.trainer_name || c.trainer_email,
+                                    });
+                                  }}
+                                  data-testid={`contract-studios-${c.id}`}
+                                >
+                                  {t.roleModel.editStudiosButton}
+                                </Button>
+                              )}
+                              {canEndContracts && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={end.isPending}
+                                  onClick={() => end.mutate(c.id)}
+                                >
+                                  {c.status === "pending" ? t.contracts.withdraw : t.contracts.end}
+                                </Button>
+                              )}
                             </div>
                           ) : (
                             <span className="text-muted-foreground">—</span>
@@ -1007,6 +1156,7 @@ export default function TrainersPage() {
           </div>
 
           {end.isError && <p className="text-sm text-destructive">{t.contracts.endError}</p>}
+          {review.isError && <p className="text-sm text-destructive">{t.roleModel.approveError}</p>}
           {confirm.isError && <p className="text-sm text-destructive">{t.creditNotes.confirmError}</p>}
         </>
       )}

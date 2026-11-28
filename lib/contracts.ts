@@ -103,6 +103,9 @@ export interface CompanyContract {
   master_data_gaps: string[];
   /** Stammdaten wurden nach der Bestätigung geändert. */
   master_data_changed: boolean;
+  /** Angebote von Studio-Admins warten ggf. auf Bestätigung durch den Company-Admin. */
+  approval_status: "approved" | "pending_approval";
+  created_by_name: string | null;
 }
 
 /** company_admin/platform_admin: alle Verträge und Angebote einer Company. */
@@ -122,5 +125,31 @@ export async function endContract(contractId: string): Promise<void> {
     .from("contracts")
     .update({ status: "ended" })
     .eq("id", contractId);
+  if (error) throw error;
+}
+
+/** Company-Admin: Vertragsangebot eines Studio-Admins bestätigen oder ablehnen (löscht es). */
+export async function reviewContract(input: {
+  contractId: string;
+  approve: boolean;
+}): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("review_contract", {
+    target_contract_id: input.contractId,
+    p_approve: input.approve,
+  });
+  if (error) throw error;
+}
+
+/** Company-Admin: Vertrag auf Studios beschränken (leer = alle Studios der Company). */
+export async function setContractStudios(input: {
+  contractId: string;
+  studioIds: string[];
+}): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("set_contract_studios", {
+    target_contract_id: input.contractId,
+    p_studio_ids: input.studioIds,
+  });
   if (error) throw error;
 }

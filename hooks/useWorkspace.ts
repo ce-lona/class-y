@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
-import { useMyCompany } from "@/hooks/useCompanyAdmins";
+import { useMyCompanies, useMyCompany } from "@/hooks/useCompanyAdmins";
+import { useCompanyStore } from "@/store/companyStore";
 import { useMyContracts } from "@/hooks/useContracts";
 import { t } from "@/i18n/de";
 
@@ -54,6 +55,8 @@ export function useWorkspace() {
   const pathname = usePathname();
   const { data: isPlatformAdmin, isLoading: platformLoading } = useIsPlatformAdmin();
   const { data: myCompany, isLoading: companyLoading } = useMyCompany();
+  const { data: myCompanies } = useMyCompanies();
+  const selectCompany = useCompanyStore((state) => state.selectCompany);
   const { data: myContracts, isLoading: contractsLoading } = useMyContracts();
 
   const [lastWorkspace, setLastWorkspace] = useState<WorkspaceRole | null>(readStoredWorkspace);
@@ -73,20 +76,36 @@ export function useWorkspace() {
   const hasPlatformRole = Boolean(isPlatformAdmin);
   const isCoordinator = myCompany?.role === "coordinator";
 
-  const availableRoles: { id: WorkspaceRole; label: string; home: string }[] = [];
+  // Bei mehreren Companies (Admin oder Studio-Admin) gibt es je Company einen Eintrag.
+  const availableRoles: {
+    id: WorkspaceRole;
+    key: string;
+    label: string;
+    home: string;
+    companyId?: string;
+  }[] = [];
   if (hasActiveContract) {
-    availableRoles.push({ id: "trainer", label: t.nav.roleTrainer, home: "/courses" });
+    availableRoles.push({ id: "trainer", key: "trainer", label: t.nav.roleTrainer, home: "/courses" });
   }
   if (hasAdminRole && myCompany) {
-    const rolePrefix = isCoordinator ? t.nav.roleCoordinator : t.nav.roleAdmin;
-    availableRoles.push({
-      id: "admin",
-      label: `${rolePrefix} · ${myCompany.name}`,
-      home: "/monitoring",
-    });
+    for (const company of myCompanies ?? [myCompany]) {
+      const rolePrefix = company.role === "coordinator" ? t.nav.roleCoordinator : t.nav.roleAdmin;
+      availableRoles.push({
+        id: "admin",
+        key: `admin:${company.id}`,
+        label: `${rolePrefix} · ${company.name}`,
+        home: "/monitoring",
+        companyId: company.id,
+      });
+    }
   }
   if (hasPlatformRole) {
-    availableRoles.push({ id: "platform", label: t.nav.rolePlatform, home: "/companies" });
+    availableRoles.push({
+      id: "platform",
+      key: "platform",
+      label: t.nav.rolePlatform,
+      home: "/companies",
+    });
   }
 
   const defaultRole: WorkspaceRole = hasAdminRole
@@ -109,7 +128,8 @@ export function useWorkspace() {
           : "admin"
         : activeRole;
 
-  function rememberWorkspace(role: WorkspaceRole) {
+  function rememberWorkspace(role: WorkspaceRole, companyId?: string) {
+    if (companyId) selectCompany(companyId);
     try {
       window.sessionStorage.setItem(WORKSPACE_STORAGE_KEY, role);
     } catch {

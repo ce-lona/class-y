@@ -72,7 +72,7 @@ export default function LogCoursePage() {
     studios?.find((st) => st.studio_id === studioId) ?? studios?.[0] ?? null;
   const effectiveStudioId = effectiveStudio?.studio_id ?? "";
 
-  const { data: allCourseTypes } = useCourseTypes(effectiveStudio?.company_id ?? "");
+  const { data: allCourseTypes } = useCourseTypes(effectiveStudio?.company_id ?? "", { approvedOnly: true });
   const courseTypes = allCourseTypes?.filter((ct) =>
     isCourseTypeAvailableInStudio(ct, effectiveStudioId)
   );

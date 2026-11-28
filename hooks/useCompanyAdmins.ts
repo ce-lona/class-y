@@ -6,6 +6,7 @@ import {
   createTestAdmin,
 } from "@/lib/companyAdmins";
 import { useAuthStore } from "@/store/authStore";
+import { useCompanyStore } from "@/store/companyStore";
 
 export function useMyCompanies() {
   const userId = useAuthStore((state) => state.session?.user.id);
@@ -16,11 +17,13 @@ export function useMyCompanies() {
   });
 }
 
-// Nimmt die erste Company-Admin-Mitgliedschaft. Mehrere Memberships sind laut
-// Datenmodell möglich, ein Company-Switcher ist aber (noch) nicht gebaut.
+// Gewählte Company im Admin-Bereich (Auswahl oben in der Navigation, wenn jemand in
+// mehreren Companies Admin oder Studio-Admin ist); sonst die erste.
 export function useMyCompany() {
   const { data: companies, ...rest } = useMyCompanies();
-  return { data: companies?.[0], ...rest };
+  const selectedId = useCompanyStore((state) => state.selectedCompanyId);
+  const selected = companies?.find((c) => c.id === selectedId) ?? companies?.[0];
+  return { data: selected, ...rest };
 }
 
 export function useCompanyAdmins(companyId: string) {

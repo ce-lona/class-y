@@ -6,6 +6,8 @@ import {
   getCompanyContracts,
   getMyContracts,
   offerContract,
+  reviewContract,
+  setContractStudios,
 } from "@/lib/contracts";
 import { useAuthStore } from "@/store/authStore";
 
@@ -51,6 +53,26 @@ export function useEndContract(companyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: endContract,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["company-contracts", companyId] });
+    },
+  });
+}
+
+export function useReviewContract(companyId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: reviewContract,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["company-contracts", companyId] });
+    },
+  });
+}
+
+export function useSetContractStudios(companyId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: setContractStudios,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["company-contracts", companyId] });
     },

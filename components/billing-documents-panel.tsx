@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Send,
 } from "lucide-react";
+import { useStudioAdminPermissions } from "@/hooks/useStudioAdminPermissions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -97,7 +98,9 @@ export function BillingDocumentsPanel({ company }: { company: ManagedCompany }) 
 
   const [studioChoice, setStudioChoice] = useState<string | null>(null);
   const studioId = split ? (studios.find((s) => s.id === studioChoice)?.id ?? studios[0]?.id ?? null) : null;
-  const canIssue = split ? !!studioId : isAdmin;
+  // Nicht getrennte Abrechnung: Studio-Admins nur mit Recht „Abrechnungen ausstellen“.
+  const { data: permissions } = useStudioAdminPermissions(isAdmin ? undefined : company.id);
+  const canIssue = split ? !!studioId : isAdmin || permissions?.billing === "allowed";
   const monthOpen = isMonthOpen(month);
 
   const preview = useBillingPreview({
