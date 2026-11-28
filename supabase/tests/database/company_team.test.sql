@@ -7,7 +7,8 @@ values
   ('00000000-0000-0000-0000-0000000008a1', 'admin@team.test', 'authenticated', 'authenticated'),
   ('00000000-0000-0000-0000-0000000008a2', 'studio@team.test', 'authenticated', 'authenticated'),
   ('00000000-0000-0000-0000-0000000008b1', 'trainer@team.test', 'authenticated', 'authenticated'),
-  ('00000000-0000-0000-0000-0000000008c1', 'fremd@team.test', 'authenticated', 'authenticated');
+  ('00000000-0000-0000-0000-0000000008c1', 'fremd@team.test', 'authenticated', 'authenticated'),
+  ('00000000-0000-0000-0000-0000000008d1', 'neu@team.test', 'authenticated', 'authenticated');
 
 insert into companies (id, name) values
   ('00000000-0000-0000-0000-00000000d080', 'Team GmbH'),
@@ -55,9 +56,9 @@ select is(set_team_member_name('00000000-0000-0000-0000-00000000d080', 'trainer@
   'Ein vorhandener Name wird nicht überschrieben');
 select throws_ok($$ select set_team_member_name('00000000-0000-0000-0000-00000000d080', 'fremd@team.test', 'X') $$,
   'not_a_member', 'Nur Personen der eigenen Company');
-select lives_ok($$ select add_company_admin('00000000-0000-0000-0000-00000000d080', 'studio@team.test') $$,
+select lives_ok($$ select add_company_admin('00000000-0000-0000-0000-00000000d080', 'neu@team.test') $$,
   'Company-Admin fügt weitere Admins der eigenen Company hinzu');
-select throws_ok($$ select add_company_admin('00000000-0000-0000-0000-00000000d081', 'studio@team.test') $$,
+select throws_ok($$ select add_company_admin('00000000-0000-0000-0000-00000000d081', 'neu@team.test') $$,
   'not_authorized', 'aber nicht in fremden Companies');
 reset role;
 
