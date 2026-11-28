@@ -2,11 +2,13 @@
 
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Info, Palette, Receipt, SlidersHorizontal } from "lucide-react";
+import { Info, Palette, Receipt, Shield, SlidersHorizontal } from "lucide-react";
 import { CourseTypesConfig } from "@/components/course-types-config";
 import { BillingSettingsPanel } from "@/components/billing-settings-panel";
 import { StudioAdminPermissionsCard } from "@/components/studio-admin-permissions-card";
 import { AppearanceSettingsCard } from "@/components/appearance-settings-card";
+import { PlatformSettingsPanel } from "@/components/platform-settings-panel";
+import { useIsPlatformAdmin } from "@/hooks/useRoles";
 import { useAuthStore } from "@/store/authStore";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useStudios } from "@/hooks/useStudios";
@@ -18,10 +20,23 @@ function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const activeTab =
-    tabParam === "billing" ? "billing" : tabParam === "appearance" ? "appearance" : "config";
   const { session, isLoading: sessionLoading } = useAuthStore();
   const { data: company, isLoading: companyLoading } = useMyCompany();
+  const { data: isPlatformAdmin, isLoading: platformLoading } = useIsPlatformAdmin();
+  // Plattform-Admins ohne Company (z. B. noch keine angelegt) sehen nur Plattform und Darstellung.
+  const tabs = [
+    ...(company
+      ? ([
+          { key: "config", label: t.settings.tabConfig, Icon: SlidersHorizontal },
+          { key: "billing", label: t.creditNotes.settingsTab, Icon: Receipt },
+        ] as const)
+      : []),
+    ...(isPlatformAdmin
+      ? ([{ key: "platform", label: t.help.platformSettings.tab, Icon: Shield }] as const)
+      : []),
+    { key: "appearance", label: t.appearance.tab, Icon: Palette } as const,
+  ];
+  const activeTab = tabs.find((tab) => tab.key === tabParam)?.key ?? tabs[0].key;
   const { data: studios } = useStudios(company?.id ?? "");
   const { data: permissions } = useStudioAdminPermissions(company?.id);
 
@@ -31,14 +46,15 @@ function SettingsContent() {
     }
   }, [sessionLoading, session, router]);
 
-  // Einstellungen sind reine Admin-Konfiguration. Ohne Company-Rolle → Profil.
+  // Einstellungen sind Admin-Konfiguration. Ohne Company- oder Plattform-Rolle → Profil.
+  const noAccess = !companyLoading && !platformLoading && !company && !isPlatformAdmin;
   useEffect(() => {
-    if (!sessionLoading && session && !companyLoading && !company) {
+    if (!sessionLoading && session && noAccess) {
       router.replace("/profile");
     }
-  }, [sessionLoading, session, companyLoading, company, router]);
+  }, [sessionLoading, session, noAccess, router]);
 
-  if (sessionLoading || !session || companyLoading || !company) {
+  if (sessionLoading || !session || companyLoading || platformLoading || noAccess) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <p className="text-muted-foreground">{t.common.loading}</p>
@@ -46,7 +62,7 @@ function SettingsContent() {
     );
   }
 
-  const isCoordinator = company.role === "coordinator";
+  const isCoordinator = company?.role === "coordinator";
   const courseTypesMode = !isCoordinator
     ? "admin"
     : (permissions?.course_types ?? "approval") === "denied"
@@ -65,13 +81,7 @@ function SettingsContent() {
 
         <div className="flex flex-wrap items-center gap-2">
           <div role="tablist" className="inline-flex rounded-xl border border-border bg-card p-1">
-            {(
-              [
-                { key: "config", label: t.settings.tabConfig, Icon: SlidersHorizontal },
-                { key: "billing", label: t.creditNotes.settingsTab, Icon: Receipt },
-                { key: "appearance", label: t.appearance.tab, Icon: Palette },
-              ] as const
-            ).map(({ key, label, Icon }) => (
+            {tabs.map(({ key, label, Icon }) => (
               <button
                 key={key}
                 type="button"
@@ -99,7 +109,9 @@ function SettingsContent() {
 
       {activeTab === "appearance" ? (
         <AppearanceSettingsCard />
-      ) : activeTab === "billing" ? (
+      ) : activeTab === "platform" ? (
+        <PlatformSettingsPanel />
+      ) : !company ? null : activeTab === "billing" ? (
         <BillingSettingsPanel company={company} />
       ) : (
         <>

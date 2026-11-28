@@ -51,7 +51,7 @@ export const TOURS: Record<HelpRole, TourStep[]> = {
   ],
   platform: [
     { target: "/companies", ...steps.companies },
-    { target: "/platform-settings", ...steps.platformSettings },
+    { target: "/settings", ...steps.platformSettings },
     { target: "/help", ...steps.help },
   ],
 };

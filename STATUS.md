@@ -53,9 +53,13 @@ Regeln für alle Agenten:
 - [x] Hell/Dunkel/System aus der Kopfleiste in die Einstellungen jeder Rolle
   (Admin: Reiter „Darstellung“, Plattform: unten in den Einstellungen, Trainer: `/courses/settings`).
 - [x] Profil nur noch über den Avatar oben rechts, kein eigener Tab mehr.
-- [ ] Umschalter Admin/Plattform/Trainer aus der Kopfleiste entfernen, Ansichtswechsel ins
-  Avatar-Menü (`components/user-menu.tsx`). Wartet auf den Push des Rollen-Umbaus
-  (neue Felder `key`/`companyId` in `useWorkspace().availableRoles`).
+- [x] Umschalter Admin/Plattform/Trainer entfernt (Entscheidung Jennifer 2026-11-28):
+  Plattform-Admins haben eine einzige Ansicht (Companies-Tab + Company-Tabs + Einstellungen mit
+  Reiter „Plattform“, `/platform-settings` leitet dorthin um) und eine Company-Auswahl über alle
+  Companies (`useMyCompanies` mischt für Plattform-Admins alle Companies dazu, eigene zuerst).
+  Company-/Studio-Admins sehen die Auswahl nur bei mehreren Companies. Admin und Trainer
+  gleichzeitig wird nicht unterstützt (Trainer-Tabs nur ohne Admin-Rolle). Avatar öffnet direkt
+  das Profil.
 - [ ] Team-Tab statt „Trainer:innen“ für Admins: alle Personen (Admins, Studio-Admins,
   Trainer:innen), anlegen (mit Vor- und Nachname), filtern, Standard-Sortierung nach Rolle und
   innerhalb nach „zuletzt aktualisiert“. Vertragsbestätigung aus der Trainer-Seite muss erhalten

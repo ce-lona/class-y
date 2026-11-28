@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Building2,
   Calendar,
@@ -19,8 +19,15 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuthStore } from "@/store/authStore";
-import { useWorkspace, type WorkspaceRole } from "@/hooks/useWorkspace";
+import { useWorkspace } from "@/hooks/useWorkspace";
 import { useMyProfile } from "@/hooks/useProfile";
 import { signOut } from "@/lib/auth";
 import { getInitials } from "@/lib/format";
@@ -47,17 +54,16 @@ const trainerNavItems = [
 
 export function Nav() {
   const pathname = usePathname();
-  const router = useRouter();
   const session = useAuthStore((state) => state.session);
   const { data: profile } = useMyProfile();
   const {
-    activeRole,
-    availableRoles,
-    hasActiveContract,
     hasAdminRole,
     hasPlatformRole,
+    hasNoRole,
+    showTrainerArea,
     myCompany,
-    rememberWorkspace,
+    myCompanies,
+    selectCompany,
   } = useWorkspace();
 
   if (!session) return null;
@@ -75,11 +81,6 @@ export function Nav() {
         : "text-muted-foreground hover:bg-muted hover:text-foreground"
     );
 
-  function switchWorkspace(role: WorkspaceRole, home: string, companyId?: string) {
-    rememberWorkspace(role, companyId);
-    router.push(home);
-  }
-
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-sidebar/95 backdrop-blur-sm">
       <div className="grid w-full grid-cols-[auto_1fr] items-center gap-y-0 px-4 sm:px-8 md:flex md:h-16 md:justify-between md:gap-4">
@@ -94,8 +95,7 @@ export function Nav() {
           aria-label="Hauptnavigation"
           className="col-span-2 order-3 -mx-4 flex items-center gap-0.5 overflow-x-auto border-t border-border/70 px-4 py-2 sm:-mx-8 sm:px-8 md:order-2 md:mx-0 md:flex-1 md:border-t-0 md:px-2 md:py-0"
         >
-          {activeRole === "trainer" &&
-            hasActiveContract &&
+          {showTrainerArea &&
             trainerNavItems.map((item) => {
               const active = item.exact
                 ? pathname === item.href
@@ -114,8 +114,18 @@ export function Nav() {
               );
             })}
 
-          {activeRole === "admin" &&
-            hasAdminRole &&
+          {hasPlatformRole && (
+            <Link
+              href="/companies"
+              data-tour="/companies"
+              className={linkClass(!!pathname?.startsWith("/companies"))}
+            >
+              <Shield className="size-4 shrink-0" />
+              <span>{t.companies.title}</span>
+            </Link>
+          )}
+
+          {hasAdminRole &&
             studioNavItems.map((item) => {
               const active = !!pathname?.startsWith(item.href);
               const Icon = item.icon;
@@ -132,7 +142,7 @@ export function Nav() {
               );
             })}
 
-          {activeRole === "admin" && hasAdminRole && myCompany?.role !== "coordinator" && (
+          {hasAdminRole && myCompany?.role !== "coordinator" && (
             <Link
               href="/privacy"
               data-tour="/privacy"
@@ -143,29 +153,7 @@ export function Nav() {
             </Link>
           )}
 
-          {activeRole === "platform" && hasPlatformRole && (
-            <Link
-              href="/companies"
-              data-tour="/companies"
-              className={linkClass(!!pathname?.startsWith("/companies"))}
-            >
-              <Shield className="size-4 shrink-0" />
-              <span>{t.companies.title}</span>
-            </Link>
-          )}
-
-          {activeRole === "platform" && hasPlatformRole && (
-            <Link
-              href="/platform-settings"
-              data-tour="/platform-settings"
-              className={linkClass(!!pathname?.startsWith("/platform-settings"))}
-            >
-              <Settings className="size-4 shrink-0" />
-              <span>{t.settings.title}</span>
-            </Link>
-          )}
-
-          {activeRole === "admin" && hasAdminRole && (
+          {(hasAdminRole || hasPlatformRole) && (
             <Link
               href="/settings"
               data-tour="/settings"
@@ -177,7 +165,7 @@ export function Nav() {
           )}
 
           {/* Ohne Rolle (z. B. Vertragsangebot noch offen): Einstellungen der Trainer-Ansicht */}
-          {availableRoles.length === 0 && (
+          {hasNoRole && (
             <Link
               href="/courses/settings"
               data-tour="/courses/settings"
@@ -191,33 +179,30 @@ export function Nav() {
         </nav>
 
         <div className="order-2 flex h-14 items-center justify-end gap-2 sm:gap-2.5 md:order-3 md:h-auto md:shrink-0">
-          {availableRoles.length > 1 && (
-            <div
-              role="group"
-              aria-label={t.nav.workspaceLabel}
-              className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-0.5"
+          {/* Company-Auswahl: Plattform-Admins (alle Companies) oder Admins mehrerer Companies */}
+          {hasAdminRole && myCompanies.length > 1 && (
+            <Select
+              value={myCompany?.id ?? ""}
+              onValueChange={(id) => id && selectCompany(id)}
             >
-              {availableRoles.map((role) => {
-                const selected =
-                  role.id === activeRole && (!role.companyId || role.companyId === myCompany?.id);
-                return (
-                  <button
-                    key={role.key}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => switchWorkspace(role.id, role.home, role.companyId)}
-                    className={cn(
-                      "max-w-36 truncate rounded-md px-2 py-1 text-xs font-semibold transition-colors sm:px-2.5",
-                      selected
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {role.label}
-                  </button>
-                );
-              })}
-            </div>
+              <SelectTrigger
+                size="sm"
+                aria-label={t.nav.companyPicker}
+                className="w-auto max-w-40 gap-1.5 font-semibold sm:max-w-56"
+              >
+                <Building2 className="size-3.5 shrink-0 text-muted-foreground" />
+                <SelectValue>
+                  {(value: string) => myCompanies.find((c) => c.id === value)?.name ?? ""}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent align="end" alignItemWithTrigger={false}>
+                {myCompanies.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.role === "coordinator" ? `${c.name} · ${t.nav.roleCoordinator}` : c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
 
           {/* Hilfe immer sichtbar (nicht im scrollbaren Menü), Ziel des Rundgangs */}

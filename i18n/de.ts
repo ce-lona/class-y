@@ -40,6 +40,7 @@ export const t = {
   },
   nav: {
     workspaceLabel: "Ansicht wechseln",
+    companyPicker: "Company wählen",
     roleTrainer: "Trainer:in",
     roleAdmin: "Admin",
     roleCoordinator: "Studio-Admin",
@@ -1054,8 +1055,8 @@ export const t = {
           text: "Alle Companies, die class-y nutzen. Hier legst du neue an und lädst ihre Admins ein.",
         },
         platformSettings: {
-          title: "Support-Empfänger",
-          text: "Hier legst du fest, an welche E-Mail-Adressen Nachrichten aus dem Kontaktformular gehen.",
+          title: "Einstellungen",
+          text: "Im Reiter „Plattform“ verwaltest du Plattform-Admins und legst fest, an welche E-Mail-Adressen Nachrichten aus dem Kontaktformular gehen.",
         },
         help: {
           title: "Hilfe, wann immer du sie brauchst",
@@ -1090,7 +1091,7 @@ export const t = {
           summary: "Passwort festlegen, Ansicht wechseln, Hilfe finden",
           steps: [
             "Du bekommst eine Einladungs-E-Mail. Über den Link legst du dein Passwort fest (mindestens 8 Zeichen) und meldest dich danach mit E-Mail-Adresse und Passwort an.",
-            "Hast du mehrere Rollen, zum Beispiel Admin und Trainer:in, wechselst du oben rechts zwischen den Ansichten.",
+            "Bist du in mehreren Companies Admin, wählst du oben rechts die Company, die du gerade bearbeitest.",
             "Unter „Hilfe“ findest du dieses Handbuch, den Rundgang und unser Kontaktformular.",
           ],
         },
@@ -1263,6 +1264,7 @@ export const t = {
       title: "Einstellungen",
       subtitle: "Plattform-Einstellungen, nur für Plattform-Admins sichtbar.",
       unauthorized: "Nur Platform-Admins können diese Einstellungen sehen.",
+      tab: "Plattform",
     },
     roles: {
       admin: "Admin",
