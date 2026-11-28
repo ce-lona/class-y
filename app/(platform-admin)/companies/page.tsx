@@ -84,7 +84,7 @@ export default function CompaniesPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
+            <h1 className="font-heading text-2xl font-extrabold tracking-tight">
               {t.companies.title}
             </h1>
             {companies && (

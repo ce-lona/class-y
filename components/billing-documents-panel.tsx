@@ -39,6 +39,7 @@ import {
   useResolveBillingComment,
 } from "@/hooks/useCreditNotes";
 import { useStudios } from "@/hooks/useStudios";
+import { useStudioFilter } from "@/hooks/useStudioFilter";
 import type { ManagedCompany } from "@/lib/companyAdmins";
 import {
   creditNoteErrorCode,
@@ -96,7 +97,10 @@ export function BillingDocumentsPanel({ company }: { company: ManagedCompany }) 
     return list.filter((s) => company.studio_ids?.includes(s.id));
   }, [allStudios, isAdmin, company.studio_ids]);
 
-  const [studioChoice, setStudioChoice] = useState<string | null>(null);
+  // Bei Abrechnung je Studio startet die Auswahl beim globalen Studio-Filter der Sidebar.
+  const studioFilter = useStudioFilter();
+  const [ownChoice, setStudioChoice] = useState<string | null>(null);
+  const studioChoice = ownChoice ?? studioFilter.queryStudioId;
   const studioId = split ? (studios.find((s) => s.id === studioChoice)?.id ?? studios[0]?.id ?? null) : null;
   // Nicht getrennte Abrechnung: Studio-Admins nur mit Recht „Abrechnungen ausstellen“.
   const { data: permissions } = useStudioAdminPermissions(isAdmin ? undefined : company.id);
@@ -177,7 +181,11 @@ export function BillingDocumentsPanel({ company }: { company: ManagedCompany }) 
         </p>
         <div className="flex flex-wrap items-center gap-2.5">
           {split && studios.length > 0 && (
-            <Select value={studioId ?? ""} onValueChange={(v) => v && setStudioChoice(v)}>
+            <Select value={studioId ?? ""} onValueChange={(v) => {
+              if (!v) return;
+              setStudioChoice(v);
+              studioFilter.setStudioId(v);
+            }}>
               <SelectTrigger aria-label={C.studioLabel} className="min-w-44">
                 <SelectValue>{(value: string) => studios.find((s) => s.id === value)?.name ?? ""}</SelectValue>
               </SelectTrigger>

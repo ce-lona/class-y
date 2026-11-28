@@ -922,7 +922,7 @@ export default function TrainerCoursesPage() {
     <div className="mx-auto max-w-6xl space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
+          <h1 className="font-heading text-2xl font-extrabold tracking-tight">
             {t.trainer.title}
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">

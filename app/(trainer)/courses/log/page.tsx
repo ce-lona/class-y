@@ -168,7 +168,7 @@ export default function LogCoursePage() {
           <ChevronLeft className="size-4" />
           <span>{t.trainer.backToCourses}</span>
         </Link>
-        <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
+        <h1 className="font-heading text-2xl font-extrabold tracking-tight">
           {t.trainer.logTitle}
         </h1>
       </div>

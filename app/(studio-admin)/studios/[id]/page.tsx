@@ -108,7 +108,7 @@ export default function StudioDetailPage({
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-7">
+    <div className="space-y-7">
       <div>
         <Link
           href="/settings?section=studios"
@@ -120,7 +120,7 @@ export default function StudioDetailPage({
 
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
+            <h1 className="font-heading text-2xl font-extrabold tracking-tight">
               {studio.name}
             </h1>
             {plan ? (
