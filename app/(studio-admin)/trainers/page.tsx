@@ -117,7 +117,9 @@ export default function TrainersPage() {
   const section: TeamSection = !isFullAdmin
     ? "contracts"
     : (sectionChoice ?? (pathname?.startsWith("/team") ? "all" : "contracts"));
-  const [addChooserOpen, setAddChooserOpen] = useState(false);
+  // „Person hinzufügen“ in einem Schritt: Rollenwahl oben im jeweiligen Formular-Drawer.
+  const [unifiedAdd, setUnifiedAdd] = useState(false);
+  const [addRole, setAddRole] = useState<AddKind>("trainer");
   const [adminInviteOpen, setAdminInviteOpen] = useState(false);
   const [adminEmail, setAdminEmail] = useState("");
   const [adminName, setAdminName] = useState("");
@@ -187,6 +189,7 @@ export default function TrainersPage() {
   }
 
   function openCoordinatorDrawer() {
+    setUnifiedAdd(false);
     setSuccess(null);
     setCoordError(null);
     setCoordEmail("");
@@ -196,6 +199,7 @@ export default function TrainersPage() {
   }
 
   function openAdminDrawer() {
+    setUnifiedAdd(false);
     setSuccess(null);
     setAdminError(null);
     setAdminEmail("");
@@ -204,7 +208,10 @@ export default function TrainersPage() {
   }
 
   function startAdd(kind: AddKind) {
-    setAddChooserOpen(false);
+    setFormOpen(false);
+    setAdminInviteOpen(false);
+    setCoordInviteOpen(false);
+    setAddRole(kind);
     if (kind === "admin") openAdminDrawer();
     else if (kind === "coordinator") openCoordinatorDrawer();
     else openContractDrawer();
@@ -247,6 +254,7 @@ export default function TrainersPage() {
   }
 
   function openContractDrawer() {
+    setUnifiedAdd(false);
     setSuccess(null);
     setContractScopeError(null);
     // Verträge gelten company-weit; nur Company-Admins beschränken sie auf Studios.
@@ -443,8 +451,48 @@ export default function TrainersPage() {
     { id: "all", label: t.contracts.filters.all, count: counts.all },
   ];
 
+  const noStudios = !studios || studios.length === 0;
+  const roleSwitcher = unifiedAdd ? (
+    <fieldset className="mb-5 space-y-2 border-b border-border pb-5">
+      <legend className="mb-2 text-sm font-semibold">{t.team.colRole}</legend>
+      {(
+        [
+          { kind: "trainer", label: t.team.roleTrainer, hint: t.team.addTrainerHint, disabled: false },
+          {
+            kind: "coordinator",
+            label: t.team.roleStudioAdmin,
+            hint: noStudios ? t.coordinators.noStudiosYet : t.team.addStudioAdminHint,
+            disabled: noStudios,
+          },
+          { kind: "admin", label: t.team.roleAdmin, hint: t.team.addAdminHint, disabled: false },
+        ] as const
+      ).map(({ kind, label, hint, disabled }) => (
+        <button
+          key={kind}
+          type="button"
+          role="radio"
+          aria-checked={addRole === kind}
+          disabled={disabled}
+          onClick={() => {
+            startAdd(kind);
+            setUnifiedAdd(true);
+          }}
+          className={cn(
+            "flex w-full flex-col items-start rounded-[10px] border px-3 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+            addRole === kind
+              ? "border-primary bg-accent ring-1 ring-primary ring-inset"
+              : "border-border bg-card hover:bg-muted/50"
+          )}
+        >
+          <span className="font-bold">{label}</span>
+          <span className="text-[13px] text-muted-foreground">{hint}</span>
+        </button>
+      ))}
+    </fieldset>
+  ) : null;
+
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
@@ -468,7 +516,13 @@ export default function TrainersPage() {
         </div>
 
         {section === "all" ? (
-          <Button onClick={() => setAddChooserOpen(true)} className="gap-1.5">
+          <Button
+            onClick={() => {
+              startAdd("trainer");
+              setUnifiedAdd(true);
+            }}
+            className="gap-1.5"
+          >
             <UserPlus className="size-4" />
             <span>{t.team.addPerson}</span>
           </Button>
@@ -579,10 +633,14 @@ export default function TrainersPage() {
       {/* Drawer: Vertrag anbieten */}
       <Drawer
         open={formOpen}
-        onClose={closeContractDrawer}
-        title={t.contracts.offerTitle}
+        onClose={() => {
+          setUnifiedAdd(false);
+          closeContractDrawer();
+        }}
+        title={unifiedAdd ? t.team.addPerson : t.contracts.offerTitle}
         description={t.contracts.companyHint}
       >
+        {roleSwitcher}
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           {isFullAdmin && (
             <div className="space-y-1.5">
@@ -773,51 +831,17 @@ export default function TrainersPage() {
         </form>
       </Drawer>
 
-      {/* Drawer: Person hinzufügen (Auswahl der Rolle) */}
-      <Drawer
-        open={addChooserOpen}
-        onClose={() => setAddChooserOpen(false)}
-        title={t.team.addPerson}
-        description={t.team.addPersonHint}
-      >
-        <div className="space-y-2">
-          {(
-            [
-              { kind: "admin", label: t.team.roleAdmin, hint: t.team.addAdminHint, Icon: ShieldCheck, disabled: false },
-              {
-                kind: "coordinator",
-                label: t.team.roleStudioAdmin,
-                hint: !studios || studios.length === 0 ? t.coordinators.noStudiosYet : t.team.addStudioAdminHint,
-                Icon: Building2,
-                disabled: !studios || studios.length === 0,
-              },
-              { kind: "trainer", label: t.team.roleTrainer, hint: t.team.addTrainerHint, Icon: Users, disabled: false },
-            ] as const
-          ).map(({ kind, label, hint, Icon, disabled }) => (
-            <button
-              key={kind}
-              type="button"
-              disabled={disabled}
-              onClick={() => startAdd(kind)}
-              className="flex w-full items-start gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <Icon className="mt-0.5 size-5 shrink-0 text-primary" />
-              <span>
-                <span className="block font-semibold">{label}</span>
-                <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </Drawer>
-
       {/* Drawer: Admin einladen */}
       <Drawer
         open={adminInviteOpen}
-        onClose={() => setAdminInviteOpen(false)}
-        title={t.team.inviteAdmin}
+        onClose={() => {
+          setUnifiedAdd(false);
+          setAdminInviteOpen(false);
+        }}
+        title={unifiedAdd ? t.team.addPerson : t.team.inviteAdmin}
         description={t.team.inviteAdminHint}
       >
+        {roleSwitcher}
         <form onSubmit={handleInviteAdmin} noValidate className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="admin-name">{t.team.fullName}</Label>
@@ -854,10 +878,14 @@ export default function TrainersPage() {
       {/* Drawer: Studio-Admin einladen */}
       <Drawer
         open={coordInviteOpen}
-        onClose={() => setCoordInviteOpen(false)}
-        title={t.coordinators.inviteTitle}
+        onClose={() => {
+          setUnifiedAdd(false);
+          setCoordInviteOpen(false);
+        }}
+        title={unifiedAdd ? t.team.addPerson : t.coordinators.inviteTitle}
         description={t.coordinators.inviteHint}
       >
+        {roleSwitcher}
         <form onSubmit={handleInviteCoordinator} noValidate className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="coord-name">{t.team.fullName}</Label>
