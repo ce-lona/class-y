@@ -190,6 +190,7 @@ export const t = {
     tableStudios: "Studios",
     tableSince: "Seit",
     empty: "Keine Companies für diesen Filter.",
+    open: "Öffnen",
   },
   settingsNav: {
     label: "Einstellungen",
