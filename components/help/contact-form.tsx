@@ -141,7 +141,7 @@ export const ContactForm = forwardRef<HTMLTextAreaElement, { role: HelpRole; ema
             rows={6}
             maxLength={SUPPORT_MESSAGE_MAX_LENGTH}
             aria-invalid={fieldError === t.help.contact.messageRequired || undefined}
-            className="min-h-32 w-full resize-y rounded-lg border border-neutral-300 bg-card px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive md:text-sm dark:border-input dark:bg-input/30"
+            className="min-h-32 w-full resize-y rounded-lg border border-input bg-card px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive md:text-sm"
           />
         </div>
 

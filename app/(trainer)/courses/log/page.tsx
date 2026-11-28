@@ -490,7 +490,7 @@ export default function LogCoursePage() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t.trainer.notesPlaceholder}
-                className="w-full rounded-lg border border-neutral-300 bg-card px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:border-input dark:bg-input/30"
+                className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               />
             </div>
           </div>

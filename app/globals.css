@@ -54,6 +54,8 @@
   --color-course-4: var(--course-4);
   --color-course-5: var(--course-5);
   --color-course-6: var(--course-6);
+  --color-course-7: var(--course-7);
+  --color-course-8: var(--course-8);
   --color-primary-50: var(--primary-50);
   --color-primary-100: var(--primary-100);
   --color-primary-200: var(--primary-200);
@@ -120,20 +122,21 @@
   --link-600: #5450C4;
 
   /* Status */
-  --success: #1D8A5F;
-  --success-bg: #E7F6EE;
-  --warning: #B87503;
+  --success: #3D7A1F;
+  --success-bg: #EAF4E2;
+  --warning: #9A6203;
   --warning-bg: #FCF1DC;
   --destructive-bg: #FDECEC;
 
-  /* Kursarten-Akzente — gedämpft, gleiche Helligkeit, nie Status-Farben.
-     Petrol · Salbei · Taubenblau · Ton · Ocker · Pflaume */
-  --course-1: #2E7672;
-  --course-2: #5E8467;
-  --course-3: #557A92;
-  --course-4: #A0664F;
-  --course-5: #957A3E;
-  --course-6: #84667F;
+  /* Kurstyp-Palette: 8 Töne, bewusst ohne Status-Rot/Grün/Amber */
+  --course-1: #5450C4;
+  --course-2: #8A4FA0;
+  --course-3: #B83A7A;
+  --course-4: #2B6CB0;
+  --course-5: #1F8AA8;
+  --course-6: #5C6B7A;
+  --course-7: #8A5A3C;
+  --course-8: #6D4AC7;
 
   /* Redesign Phase 1: neutraler Hintergrund, weiße Karten, helle Sidebar */
   --background: #F5F4F1;
@@ -147,12 +150,13 @@
   --secondary: var(--neutral-200);
   --secondary-foreground: var(--neutral-900);
   --muted: #F2F1EF;
-  --muted-foreground: #7C7870;
+  --muted-foreground: #6B675F;
   --accent: #E3EFEE;
   --accent-foreground: var(--primary-600);
   --destructive: #C81E1E;
   --border: #E5E3DF;
-  --input: var(--neutral-200);
+  /* Eingabefelder mit 3:1 Kontrast, Karten-/Tabellenränder bleiben dezent */
+  --input: #8D8980;
   --ring: var(--primary-500);
   --chart-1: var(--primary-300);
   --chart-2: var(--primary-500);
@@ -190,20 +194,22 @@
   --link-400: #A3A2F0;
   --link-500: #A3A2F0;
   --link-600: #A3A2F0;
-  --success: #63C99B;
-  --success-bg: rgba(29, 138, 95, 0.2);
+  --success: #7DB35C;
+  --success-bg: rgba(61, 122, 31, 0.25);
   --warning: #F0B44C;
   --warning-bg: rgba(184, 117, 3, 0.22);
   --destructive: #F38A8A;
   --destructive-bg: rgba(220, 38, 38, 0.2);
-  --course-1: #79B0AD;
-  --course-2: #9CBFA3;
-  --course-3: #94B3C8;
-  --course-4: #D29F8A;
-  --course-5: #CDB27A;
-  --course-6: #BB9DB6;
+  --course-1: #A3A2F0;
+  --course-2: #C79BD6;
+  --course-3: #E58AB6;
+  --course-4: #7FB0E8;
+  --course-5: #6CC3DB;
+  --course-6: #A3B0BD;
+  --course-7: #C79A7A;
+  --course-8: #A993EE;
   --border: #4A4741;
-  --input: #4A4741;
+  --input: #86827A;
   --ring: #79B0AD;
   --chart-1: var(--primary-200);
   --chart-2: var(--primary-300);
