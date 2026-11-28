@@ -302,8 +302,8 @@ export const t = {
   },
   settings: {
     title: "Einstellungen",
-    subtitle: "Konfiguration deiner Company. Deine persönlichen Daten findest du im Profil (Avatar oben rechts).",
-    trainerSubtitle: "Persönliche Einstellungen. Deine Stammdaten und Verträge findest du im Profil (Avatar oben rechts).",
+    subtitle: "Konfiguration deiner Company. Deine persönlichen Daten findest du im Profil (Avatar unten links).",
+    trainerSubtitle: "Persönliche Einstellungen. Deine Stammdaten und Verträge findest du im Profil (Avatar unten links).",
     unauthorized: "Bitte melde dich an.",
     tabConfig: "Konfiguration",
     coordinatorReadOnly:
@@ -1249,21 +1249,25 @@ export const t = {
         platform: "für die Plattform",
       },
       steps: {
+        overview: {
+          title: "Übersicht",
+          text: "Deine Startseite: was auf dich wartet, die Kurse von heute und die Woche je Studio.",
+        },
         monitoring: {
-          title: "Monitoring",
-          text: "Hier siehst du, welche Kurse erfasst, offen oder überfällig sind, und wie viele Vertretungen es gab.",
+          title: "Kurse",
+          text: "Hier siehst du, welche Kurse erfasst, offen oder überfällig sind, und wie viele Vertretungen es gab. Der Zeitraum lässt sich beliebig weit zurückblättern.",
         },
         plans: {
           title: "Kurspläne",
           text: "Lege fest, welcher Kurs wann in welchem Studio stattfindet. Änderungen werden als neue Version veröffentlicht.",
         },
         studios: {
-          title: "Studios",
-          text: "Deine Standorte mit Adresse, aktuellem Kursplan und den Trainer:innen vor Ort.",
+          title: "Einstellungen",
+          text: "Company, Studios, Kurstypen, Rechte der Studio-Admins, Abrechnung und Datenschutz findest du hier.",
         },
         trainers: {
-          title: "Trainer:innen einladen",
-          text: "Biete Trainer:innen hier einen Vertrag an. Wer noch kein Konto hat, bekommt automatisch eine Einladung.",
+          title: "Team",
+          text: "Alle Personen deiner Company. Über „Person hinzufügen“ lädst du Admins, Studio-Admins und Trainer:innen ein; ein Klick auf eine Person zeigt Vertrag, Studios und Stammdaten.",
         },
         trainersCoordinator: {
           title: "Trainer:innen",
@@ -1278,7 +1282,7 @@ export const t = {
           text: "Deine Kurse dieser Woche. Nach dem Kurs markierst du ihn als gegeben, vertreten oder ausgefallen.",
         },
         log: {
-          title: "Eintragen",
+          title: "Kurs eintragen",
           text: "Spontane Vertretungen und Kurse außerhalb des Plans trägst du hier ein.",
         },
         trainerBilling: {
@@ -1287,15 +1291,15 @@ export const t = {
         },
         profile: {
           title: "Profil",
-          text: "Klick auf deinen Avatar oben rechts: Dort findest du deine Stammdaten und Verträge. Neue Vertragsangebote nimmst du hier an.",
+          text: "Klick auf deinen Avatar unten links: Dort findest du dein Profil mit Stammdaten und Verträgen, die Darstellung (Hell/Dunkel) und Abmelden.",
         },
         companies: {
-          title: "Companies",
-          text: "Alle Companies, die class-y nutzen. Hier legst du neue an und lädst ihre Admins ein.",
+          title: "Plattform-Übersicht",
+          text: "Alle Companies, die class-y nutzen. Hier suchst, filterst und pinnst du Companies, legst neue an und springst in eine Company.",
         },
         platformSettings: {
-          title: "Einstellungen",
-          text: "Im Reiter „Plattform“ verwaltest du Plattform-Admins und legst fest, an welche E-Mail-Adressen Nachrichten aus dem Kontaktformular gehen.",
+          title: "Plattform-Admins und Support",
+          text: "Unter „Plattform“ verwaltest du Plattform-Admins und siehst Support-Nachrichten samt Empfänger:innen.",
         },
         help: {
           title: "Hilfe, wann immer du sie brauchst",
@@ -1330,7 +1334,7 @@ export const t = {
           summary: "Passwort festlegen, Ansicht wechseln, Hilfe finden",
           steps: [
             "Du bekommst eine Einladungs-E-Mail. Über den Link legst du dein Passwort fest (mindestens 8 Zeichen) und meldest dich danach mit E-Mail-Adresse und Passwort an.",
-            "Bist du in mehreren Companies Admin, wählst du oben rechts die Company, die du gerade bearbeitest.",
+            "Bist du in mehreren Companies Admin, wechselst du die Company oben in der Seitenleiste (oder mit Strg K). Darunter filterst du alle Bereiche nach Studio.",
             "Unter „Hilfe“ findest du dieses Handbuch, den Rundgang und unser Kontaktformular.",
           ],
         },
@@ -1338,7 +1342,7 @@ export const t = {
           title: "Studio anlegen",
           summary: "Standorte mit Adresse",
           steps: [
-            "Öffne „Studios“ und klicke auf „Neues Studio“.",
+            "Öffne „Einstellungen“, dann „Studios“, und klicke auf „Neues Studio“.",
             "Trage Name und Adresse ein und klicke auf „Studio anlegen“. Danach kannst du dem Studio Kurspläne und Trainer:innen zuordnen.",
           ],
         },
@@ -1346,7 +1350,7 @@ export const t = {
           title: "Trainer:innen einladen",
           summary: "Vertrag anbieten, Einladung per E-Mail",
           steps: [
-            "Öffne „Trainer“ und klicke auf „Vertrag anbieten“.",
+            "Öffne „Team“ und klicke auf „Person hinzufügen“, dann „Trainer:in“ (Studio-Admins: „Trainer:innen“, „Vertrag anbieten“).",
             "Gib die E-Mail-Adresse, die Konditionen und das Startdatum ein und klicke auf „Angebot senden“.",
             "Hat die Person noch kein Konto, bekommt sie eine Einladung. Der Vertrag gilt erst, wenn sie ihn annimmt. Den Stand siehst du in der Liste.",
           ],
@@ -1361,11 +1365,11 @@ export const t = {
           ],
         },
         monitoring: {
-          title: "Monitoring nutzen",
+          title: "Kurse im Blick",
           summary: "Erfasste, offene und überfällige Kurse",
           steps: [
-            "„Monitoring“ zeigt dir, welche Kurse erfasst, offen oder überfällig sind.",
-            "Oben wählst du Zeitraum und Studio. Unter „Pro Trainer:in“ siehst du die Summen je Person.",
+            "„Kurse“ zeigt dir, welche Kurse erfasst, geplant oder überfällig sind. Die Status-Chips filtern die Liste.",
+            "Oben rechts wählst du Woche, Monat, Quartal, Jahr oder einen eigenen Zeitraum, das Studio links in der Seitenleiste. Unter „Pro Trainer:in“ siehst du die Summen je Person.",
           ],
         },
         billingCompany: {
@@ -1380,14 +1384,14 @@ export const t = {
           title: "Kurstypen anpassen",
           summary: "Kursarten, Farben und Studios",
           steps: [
-            "Unter „Einstellungen“ legst du Kurstypen an, gibst ihnen eine Farbe und ordnest sie Studios zu.",
+            "Unter „Einstellungen“ › „Kurstypen“ legst du Kurstypen an, gibst ihnen eine Farbe und ordnest sie Studios zu.",
           ],
         },
         privacy: {
           title: "Datenschutz und Datenexport",
           summary: "Datenauskunft und Konten löschen",
           steps: [
-            "Unter „Datenschutz“ lädst du alle Daten deiner Company als JSON oder CSV herunter.",
+            "Unter „Einstellungen“ › „Datenschutz“ lädst du alle Daten deiner Company als JSON oder CSV herunter.",
             "Bei „Personen“ erstellst du für jede Person eine Datenauskunft oder löschst ihr Konto.",
           ],
         },
@@ -1395,7 +1399,7 @@ export const t = {
           title: "Vertrag annehmen",
           summary: "Angebot im Profil bestätigen",
           steps: [
-            "Klicke oben rechts auf deinen Avatar, um dein Profil zu öffnen, und wähle den Reiter „Verträge“.",
+            "Öffne „Profil & Verträge“ (oder klicke auf deinen Avatar) und wähle den Reiter „Verträge“.",
             "Klicke beim Angebot auf „Annehmen“. Erst danach erscheinen deine Kurse und die Company sieht dein Profil.",
           ],
         },
@@ -1405,7 +1409,7 @@ export const t = {
           steps: [
             "Unter „Meine Kurse“ siehst du deine Kurse dieser Woche.",
             "Nach dem Kurs markierst du ihn als gegeben, vertreten oder ausgefallen.",
-            "Spontane Vertretungen oder Kurse außerhalb des Plans trägst du unter „Eintragen“ ein.",
+            "Spontane Vertretungen oder Kurse außerhalb des Plans trägst du über „Kurs eintragen“ ein (mobil: das Plus unten).",
           ],
         },
         substitution: {
