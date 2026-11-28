@@ -64,3 +64,33 @@ Regeln für alle Agenten:
   Trainer:innen), anlegen (mit Vor- und Nachname), filtern, Standard-Sortierung nach Rolle und
   innerhalb nach „zuletzt aktualisiert“. Vertragsbestätigung aus der Trainer-Seite muss erhalten
   bleiben. Startet nach dem Rollen-Umbau.
+
+## Redesign Phase 1 (Branch `redesign/phase-1`, Worktree `../class-y-redesign`)
+
+Plan: `design/prototype/PLAN.md`, Referenz: `design/prototype/index.html`. Nur UI, keine neue Migration
+(die Team-Migration `20261128160000_company_team.sql` stammt aus dem übernommenen Team-Tab-WIP).
+
+- [x] Team-Tab aus dem Arbeitsbaum übernommen (Commit „Team tab (WIP …)“), `t.team` ergänzt.
+- [x] Theme-Tokens (hell `#F5F4F1`/Karten weiß/Sidebar `#FBFAF8`, ein Dark-Modus in warmem Anthrazit)
+  plus Nachschärfung: gedämpfter Text `#6B675F`, Warning `#9A6203`, Success `#3D7A1F`, 8 Kurstyp-Tokens,
+  `--input` mit 3:1 (Doku in `design/corporate-design/README.md`).
+- [x] App-Shell `components/app-shell/`: Sidebar 248/64 px (localStorage, < 900 px eingeklappt), Avatar-Menü
+  (Profil, Hell/Dunkel/System, Abmelden), Kopfleiste `components/nav.tsx` entfernt.
+- [x] Company-Wechsler gestaffelt (1 / 2–5 mit Tasten / 6–19 Suche+Angepinnt+Zuletzt+Strg K / ab 20 für
+  Plattform-Admins Plattform-Übersicht als Start + Kontextleiste). Pins/Zuletzt in `store/companyStore.ts`.
+- [x] Globaler Studio-Filter (`store/studioFilterStore.ts`, `hooks/useStudioFilter.ts`) für Übersicht, Kurse,
+  Kurspläne, Team/Trainer:innen, Abrechnung (je Studio).
+- [x] Bereiche: Übersicht `/overview` (neu, Startseite), Kurse `/monitoring` (Status-Chips, Zeitraum-Steuerung
+  `components/period-control.tsx` + `lib/period.ts`, Kurse | Pro Trainer:in), Kurspläne, Team, Abrechnung;
+  Plattform: Übersicht `/companies`, `/platform-admins`, `/support`.
+- [x] Einstellungen mit Unternavigation (`?section=company|studios|courseTypes|permissions|billing|privacy`);
+  `/studios`, `/privacy`, `?tab=…`, `/platform-settings`, `/courses/settings` leiten um.
+- [x] Team als Tabelle mit Rollen-Chips und Seitenpanel (`components/team-member-panel.tsx`).
+- [x] Trainer:in: Sidebar mit „Kurs eintragen“, Meine Kurse mit Zeitraum (unbegrenzt zurück), mobil Bottom-Bar
+  (Woche, Plan, Plus, Abrechnung, Profil).
+- [x] Rundgang-Ziele, Handbuch-Texte, E2E-Tests angepasst. `playwright.config.ts` kennt `E2E_PORT`.
+- Offen (Phase 1 nicht oder nur teilweise): „Kurs eintragen“ als Drawer/Bottom-Sheet (verlinkt weiter auf
+  `/courses/log`), Woche-Ansicht (Liste/Woche-Umschalter) für Trainer:innen, Company-Filter-Chips bei
+  Meine Kurse im neuen Stil, Plattform-Übersicht ohne Spalten „offene Freigaben/überfällig/letzte Aktivität“
+  (brauchen RPC), „Person hinzufügen“ weiter zweistufig (Rolle wählen → bestehendes Formular),
+  Verlauf (Phase 3).
