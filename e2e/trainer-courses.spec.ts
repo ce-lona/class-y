@@ -97,7 +97,7 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await page.goto("/courses/schedule");
   await expect(page.getByRole("heading", { name: "Mein Stundenplan" })).toBeVisible();
   await expect(page.getByText(courseTypeName).first()).toBeVisible();
-  await expect(page.getByText(studioName).first()).toBeVisible();
+  await expect(page.getByRole("main").getByText(studioName).first()).toBeVisible();
 
   await page.goto("/courses");
   const todayCard = page
