@@ -112,7 +112,7 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   // "Vertreten" ist möglich, "Als gegeben markieren" für zukünftige Termine nicht.
   const periodLabel = page.getByTestId("period-label");
   const thisWeekLabel = await periodLabel.textContent();
-  await page.getByRole("button", { name: "Weiter", exact: true }).click();
+  await page.getByRole("button", { name: "Nächster Zeitraum" }).click();
   await expect(periodLabel).not.toHaveText(thisWeekLabel ?? "");
   const nextWeekCard = page
     .locator("div.rounded-2xl")

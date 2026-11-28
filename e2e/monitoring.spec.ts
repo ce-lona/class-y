@@ -67,9 +67,9 @@ test("Studio-Monitoring: erfasste Ad-hoc-Vertretung erscheint in Kurs- und Train
 
   // 4. Im Monitoring-Dashboard (/monitoring) prüfen: Studio-Filter, KPI, Kurszeile & Trainer-Summen
   await page.goto("/monitoring");
-  await expect(page.getByRole("heading", { name: "Monitoring" })).toBeVisible();
-  await page.getByLabel("Studio").click();
-  await page.getByRole("option", { name: studioName }).click();
+  await expect(page.getByRole("heading", { name: "Kurse", level: 1 })).toBeVisible();
+  // Globaler Studio-Filter in der Sidebar
+  await page.getByLabel("Studio-Filter").selectOption({ label: studioName });
 
   const courseRow = page.getByRole("row").filter({ hasText: courseTypeName });
   await expect(courseRow).toBeVisible();
@@ -80,4 +80,6 @@ test("Studio-Monitoring: erfasste Ad-hoc-Vertretung erscheint in Kurs- und Train
   // Tab "Pro Trainer:in" prüfen
   await page.getByRole("tab", { name: /Pro Trainer:in/ }).click();
   await expect(page.getByRole("row").filter({ hasText: "Gesamt" })).toContainText("1 Std.");
+  // Filter zurücksetzen, damit folgende Tests alle Studios sehen
+  await page.getByLabel("Studio-Filter").selectOption({ label: "Alle Studios" });
 });

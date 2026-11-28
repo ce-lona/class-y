@@ -15,7 +15,7 @@ test("Support: Empfänger pflegen, Nachricht senden, im Posteingang sehen", asyn
   const text = `E2E-Supportnachricht ${Date.now()}`;
 
   await loginAsPlatformAdmin(page);
-  await page.goto("/platform-settings");
+  await page.goto("/support");
   await expect(page.getByRole("heading", { name: "Support-Empfänger" })).toBeVisible();
 
   // Empfänger hinzufügen (ungültige Adresse wird abgelehnt). Eine feste Basisadresse sorgt dafür,
@@ -47,7 +47,7 @@ test("Support: Empfänger pflegen, Nachricht senden, im Posteingang sehen", asyn
   await expect(page.getByText("Danke, deine Nachricht ist angekommen.")).toBeVisible();
 
   // Posteingang zeigt die Nachricht; Testadresse wieder entfernen
-  await page.goto("/platform-settings");
+  await page.goto("/support");
   await expect(page.getByText(text)).toBeVisible();
   await recipients.getByRole("button", { name: `${extra} entfernen` }).click();
   await expect(recipients.getByText(extra)).toHaveCount(0);

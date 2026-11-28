@@ -12,5 +12,9 @@ test("zeigt deutsche Zod-Fehlermeldung statt Browser-Validierung", async ({ page
 
 test("Login führt zur Startseite mit Nutzer-Session", async ({ page }) => {
   await loginAsPlatformAdmin(page);
-  await expect(page.getByRole("button", { name: "Abmelden" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Konto-Menü" })).toBeVisible();
+  // Abmelden und Darstellung liegen im Avatar-Menü
+  await page.getByRole("button", { name: "Konto-Menü" }).click();
+  await expect(page.getByRole("menuitemradio", { name: "Dunkel" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Abmelden" })).toBeVisible();
 });

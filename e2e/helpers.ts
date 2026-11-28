@@ -22,7 +22,13 @@ export async function loginAsPlatformAdmin(page: Page) {
   await page.getByRole("button", { name: "Anmelden" }).click();
   // Platform-Admins werden von "/" direkt weitergeleitet; die E-Mail ist dort nur kurz sichtbar.
   await page.waitForURL((url) => !url.pathname.startsWith("/login"));
-  await expect(page.getByRole("button", { name: "Abmelden" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Konto-Menü" })).toBeVisible();
+}
+
+/** Abmelden über das Avatar-Menü unten in der Sidebar. */
+export async function logout(page: Page) {
+  await page.getByRole("button", { name: "Konto-Menü" }).click();
+  await page.getByRole("menuitem", { name: "Abmelden" }).click();
 }
 
 export function uniqueName(prefix: string) {
