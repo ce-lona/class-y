@@ -48,7 +48,7 @@ export default function HelpPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 pb-24 sm:px-8 sm:py-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-heading text-[28px] font-extrabold tracking-tight">{t.help.title}</h1>
+          <h1 className="font-heading text-2xl font-extrabold tracking-tight">{t.help.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t.help.subtitle}</p>
         </div>
         {role === "platform" && <Badge variant="secondary">{t.help.previewBadge}</Badge>}

@@ -28,7 +28,7 @@ async function logAdHocCourse(page: Page, studioName: string, courseTypeName: st
   await page.goto("/courses/log");
   await page.getByRole("tab", { name: "Ad-hoc" }).click();
   await page.locator("#adhoc-studio").click();
-  await page.getByRole("option", { name: new RegExp(studioName) }).click();
+  await page.getByRole("listbox").getByRole("option", { name: new RegExp(studioName) }).click();
   await page.locator("#adhoc-date").fill(date);
   await page.locator("#adhoc-start").fill("18:00");
   await page.locator("#adhoc-end").fill("19:00");
@@ -53,8 +53,8 @@ test("Gutschriften: Vertrag mit Stammdaten, Bestätigung, Gutschrift, Korrektur 
   await loginAsPlatformAdmin(page);
   await ensureAdminHasCompany(page);
 
-  await page.goto("/settings?tab=billing");
-  await expect(page.getByRole("heading", { name: "Gutschriften & Nachweise" })).toBeVisible();
+  // Rechnungsanschrift liegt in Einstellungen › Company
+  await page.goto("/settings?section=company");
   const address = page.locator("#company-address");
   for (const [label, value] of [
     ["Straße", "Musterstraße"],
@@ -66,6 +66,8 @@ test("Gutschriften: Vertrag mit Stammdaten, Bestätigung, Gutschrift, Korrektur 
   }
   await address.getByRole("button", { name: "Speichern" }).click();
   await expect(page.getByText("Rechnungsanschrift gespeichert.")).toBeVisible();
+  await page.goto("/settings?section=billing");
+  await expect(page.getByRole("heading", { name: "Gutschriften & Nachweise" })).toBeVisible();
   await expect(page.getByText("Die Rechnungsanschrift der Company fehlt noch.")).toHaveCount(0);
 
   await page.goto("/studios");

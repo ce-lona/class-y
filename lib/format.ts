@@ -106,7 +106,7 @@ export function formatShortDayMonth(isoDate: string): string {
   return `${match[3]}.${match[2]}.`;
 }
 
-// Gedämpfte Kursarten-Palette (Tokens `--course-1…6` in app/globals.css).
+// Gedämpfte Kursarten-Palette (Tokens `--course-1…8` in app/globals.css).
 // Klassen ausgeschrieben, damit Tailwind sie findet.
 const COURSE_ACCENTS = [
   {
@@ -150,6 +150,20 @@ const COURSE_ACCENTS = [
     text: "text-course-6",
     tile: "bg-course-6/12 text-course-6 dark:bg-course-6/18",
     pill: "bg-course-6/12 text-course-6 dark:bg-course-6/18",
+  },
+  {
+    border: "border-l-course-7",
+    dot: "bg-course-7",
+    text: "text-course-7",
+    tile: "bg-course-7/12 text-course-7 dark:bg-course-7/18",
+    pill: "bg-course-7/12 text-course-7 dark:bg-course-7/18",
+  },
+  {
+    border: "border-l-course-8",
+    dot: "bg-course-8",
+    text: "text-course-8",
+    tile: "bg-course-8/12 text-course-8 dark:bg-course-8/18",
+    pill: "bg-course-8/12 text-course-8 dark:bg-course-8/18",
   },
 ] as const;
 

@@ -54,6 +54,8 @@
   --color-course-4: var(--course-4);
   --color-course-5: var(--course-5);
   --color-course-6: var(--course-6);
+  --color-course-7: var(--course-7);
+  --color-course-8: var(--course-8);
   --color-primary-50: var(--primary-50);
   --color-primary-100: var(--primary-100);
   --color-primary-200: var(--primary-200);
@@ -120,22 +122,24 @@
   --link-600: #5450C4;
 
   /* Status */
-  --success: #1D8A5F;
-  --success-bg: #E7F6EE;
-  --warning: #B87503;
+  --success: #3D7A1F;
+  --success-bg: #EAF4E2;
+  --warning: #9A6203;
   --warning-bg: #FCF1DC;
   --destructive-bg: #FDECEC;
 
-  /* Kursarten-Akzente — gedämpft, gleiche Helligkeit, nie Status-Farben.
-     Petrol · Salbei · Taubenblau · Ton · Ocker · Pflaume */
-  --course-1: #2E7672;
-  --course-2: #5E8467;
-  --course-3: #557A92;
-  --course-4: #A0664F;
-  --course-5: #957A3E;
-  --course-6: #84667F;
+  /* Kurstyp-Palette: 8 Töne, bewusst ohne Status-Rot/Grün/Amber */
+  --course-1: #5450C4;
+  --course-2: #8A4FA0;
+  --course-3: #B83A7A;
+  --course-4: #2B6CB0;
+  --course-5: #1F8AA8;
+  --course-6: #5C6B7A;
+  --course-7: #8A5A3C;
+  --course-8: #6D4AC7;
 
-  --background: var(--primary-50);
+  /* Redesign Phase 1: neutraler Hintergrund, weiße Karten, helle Sidebar */
+  --background: #F5F4F1;
   --foreground: var(--neutral-900);
   --card: #FFFFFF;
   --card-foreground: var(--neutral-900);
@@ -145,13 +149,14 @@
   --primary-foreground: var(--neutral-50);
   --secondary: var(--neutral-200);
   --secondary-foreground: var(--neutral-900);
-  --muted: var(--neutral-200);
-  --muted-foreground: var(--neutral-500);
-  --accent: var(--primary-100);
-  --accent-foreground: var(--primary-700);
-  --destructive: #DC2626;
-  --border: var(--neutral-200);
-  --input: var(--neutral-200);
+  --muted: #F2F1EF;
+  --muted-foreground: #6B675F;
+  --accent: #E3EFEE;
+  --accent-foreground: var(--primary-600);
+  --destructive: #C81E1E;
+  --border: #E5E3DF;
+  /* Eingabefelder mit 3:1 Kontrast, Karten-/Tabellenränder bleiben dezent */
+  --input: #8D8980;
   --ring: var(--primary-500);
   --chart-1: var(--primary-300);
   --chart-2: var(--primary-500);
@@ -159,59 +164,66 @@
   --chart-4: var(--primary-700);
   --chart-5: var(--warning);
   --radius: 0.5rem;
-  --sidebar: #FFFFFF;
+  --sidebar: #FBFAF8;
   --sidebar-foreground: var(--neutral-900);
   --sidebar-primary: var(--primary-600);
   --sidebar-primary-foreground: var(--neutral-50);
-  --sidebar-accent: var(--primary-100);
-  --sidebar-accent-foreground: var(--primary-700);
-  --sidebar-border: var(--primary-100);
+  --sidebar-accent: #E3EFEE;
+  --sidebar-accent-foreground: var(--primary-600);
+  --sidebar-border: #E5E3DF;
   --sidebar-ring: var(--primary-500);
 }
 
 .dark {
-  --background: var(--neutral-950);
-  --foreground: var(--neutral-50);
-  --card: var(--neutral-900);
-  --card-foreground: var(--neutral-50);
-  --popover: var(--neutral-900);
-  --popover-foreground: var(--neutral-50);
-  --primary: var(--primary-500);
-  --primary-foreground: #FFFFFF;
-  --secondary: var(--neutral-800);
-  --secondary-foreground: var(--neutral-50);
-  --muted: var(--neutral-800);
-  --muted-foreground: var(--neutral-400);
-  --accent: var(--primary-800);
-  --accent-foreground: var(--neutral-50);
-  --success: #34D399;
-  --success-bg: color-mix(in srgb, #1D8A5F 22%, transparent);
-  --warning: #FBBF24;
-  --warning-bg: color-mix(in srgb, #B87503 24%, transparent);
-  --destructive: #F87171;
-  --destructive-bg: color-mix(in srgb, #DC2626 22%, transparent);
-  --course-1: #79B0AD;
-  --course-2: #9CBFA3;
-  --course-3: #94B3C8;
-  --course-4: #D29F8A;
-  --course-5: #CDB27A;
-  --course-6: #BB9DB6;
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: var(--primary-400);
+  /* Nur ein Dark-Modus: warmes Anthrazit statt Schwarz (Redesign Phase 1) */
+  color-scheme: dark;
+  --background: #2B2926;
+  --foreground: #F2F1EF;
+  --card: #35332F;
+  --card-foreground: #F2F1EF;
+  --popover: #35332F;
+  --popover-foreground: #F2F1EF;
+  --primary: #79B0AD;
+  --primary-foreground: #0F2E2D;
+  --secondary: #3E3B37;
+  --secondary-foreground: #F2F1EF;
+  --muted: #3E3B37;
+  --muted-foreground: #ADA99F;
+  --accent: rgba(121, 176, 173, 0.17);
+  --accent-foreground: #A7CDCB;
+  --link-400: #A3A2F0;
+  --link-500: #A3A2F0;
+  --link-600: #A3A2F0;
+  --success: #7DB35C;
+  --success-bg: rgba(61, 122, 31, 0.25);
+  --warning: #F0B44C;
+  --warning-bg: rgba(184, 117, 3, 0.22);
+  --destructive: #F38A8A;
+  --destructive-bg: rgba(220, 38, 38, 0.2);
+  --course-1: #A3A2F0;
+  --course-2: #C79BD6;
+  --course-3: #E58AB6;
+  --course-4: #7FB0E8;
+  --course-5: #6CC3DB;
+  --course-6: #A3B0BD;
+  --course-7: #C79A7A;
+  --course-8: #A993EE;
+  --border: #4A4741;
+  --input: #86827A;
+  --ring: #79B0AD;
   --chart-1: var(--primary-200);
-  --chart-2: var(--primary-400);
-  --chart-3: var(--link-400);
-  --chart-4: var(--primary-600);
+  --chart-2: var(--primary-300);
+  --chart-3: #A3A2F0;
+  --chart-4: var(--primary-500);
   --chart-5: var(--warning);
-  --sidebar: var(--neutral-900);
-  --sidebar-foreground: var(--neutral-50);
-  --sidebar-primary: var(--primary-500);
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: var(--primary-800);
-  --sidebar-accent-foreground: var(--neutral-50);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: var(--primary-400);
+  --sidebar: #302E2A;
+  --sidebar-foreground: #F2F1EF;
+  --sidebar-primary: #79B0AD;
+  --sidebar-primary-foreground: #0F2E2D;
+  --sidebar-accent: rgba(121, 176, 173, 0.17);
+  --sidebar-accent-foreground: #A7CDCB;
+  --sidebar-border: #4A4741;
+  --sidebar-ring: #79B0AD;
 }
 
 @layer base {

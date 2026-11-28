@@ -70,7 +70,7 @@ function CommentDrawer({
             placeholder={C.commentPlaceholder}
             rows={5}
             maxLength={2000}
-            className="min-h-28 w-full resize-y rounded-lg border border-neutral-300 bg-card px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:border-input dark:bg-input/30"
+            className="min-h-28 w-full resize-y rounded-lg border border-input bg-card px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
           />
         </div>
         {errorKey && <p className="text-sm text-destructive">{C.errors[errorKey]}</p>}

@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAuthListener } from "@/hooks/useAuth";
-import { Nav } from "@/components/nav";
+import { AppShell } from "@/components/app-shell/app-shell";
 import { OnboardingHost } from "@/components/help/onboarding-host";
 
 function AuthListener() {
@@ -17,8 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthListener />
-      <Nav />
-      {children}
+      <AppShell>{children}</AppShell>
       <OnboardingHost />
     </QueryClientProvider>
   );

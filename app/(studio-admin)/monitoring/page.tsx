@@ -1,25 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  AlertTriangle,
-  Calendar,
-  CheckCircle2,
-  LayoutGrid,
-  MapPin,
-  Repeat,
-  Users,
-  X,
-} from "lucide-react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { LayoutGrid, List, MapPin, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -29,18 +13,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useMyCompany } from "@/hooks/useCompanyAdmins";
-import { useStudios } from "@/hooks/useStudios";
+import { useStudioFilter } from "@/hooks/useStudioFilter";
+import { PeriodControl } from "@/components/period-control";
+import { DEFAULT_PERIOD, getRange, type Period } from "@/lib/period";
 import { useCompanyMonitoring } from "@/hooks/useMonitoring";
 import {
-  getPeriodRange,
   summarizeByTrainer,
-  type MonitoringPeriod,
   type MonitoringRow,
   type MonitoringStatus,
 } from "@/lib/monitoring";
 import {
-  formatDateDE,
+  fillTemplate,
   formatShortDayMonth,
   formatTimeShort,
   getInitials,
@@ -50,15 +33,8 @@ import { cn } from "@/lib/utils";
 import { SearchInput, matchesSearch } from "@/components/list-toolbar";
 import { t } from "@/i18n/de";
 
-type KpiFilter = "all" | "completed" | "overdue" | "substitutions";
 type MonitoringTab = "courses" | "trainers";
 
-const PERIOD_OPTIONS: MonitoringPeriod[] = [
-  "this_week",
-  "last_week",
-  "this_month",
-  "last_month",
-];
 
 const statusStyles: Record<MonitoringStatus, { badge: string; dot: string }> = {
   completed: {
@@ -107,49 +83,83 @@ function formatCourseDateCell(row: MonitoringRow): string {
   return `${wd} ${formatShortDayMonth(row.course_date)} · ${formatTimeShort(row.start_time)}`;
 }
 
-export default function MonitoringPage() {
-  const { data: company } = useMyCompany();
-  const companyId = company?.id ?? "";
-  const { data: studios } = useStudios(companyId);
+type StatusFilter = "all" | MonitoringStatus | "substitutions";
+const STATUS_FILTERS: StatusFilter[] = ["all", "completed", "overdue", "planned", "cancelled", "substitutions"];
 
-  const [period, setPeriod] = useState<MonitoringPeriod>("this_week");
-  const [studioFilter, setStudioFilter] = useState<string>("all");
-  const [kpiFilter, setKpiFilter] = useState<KpiFilter>("all");
-  const [tab, setTab] = useState<MonitoringTab>("courses");
+function isStatusFilter(value: string | null): value is StatusFilter {
+  return !!value && (STATUS_FILTERS as string[]).includes(value);
+}
+
+const chipLabel: Record<StatusFilter, string> = {
+  all: t.courses.chipAll,
+  completed: t.courses.chipCompleted,
+  overdue: t.courses.chipOverdue,
+  planned: t.courses.chipPlanned,
+  cancelled: t.courses.chipCancelled,
+  substitutions: t.courses.chipSubstitutions,
+};
+
+const chipDot: Partial<Record<StatusFilter, string>> = {
+  completed: "bg-success",
+  overdue: "bg-warning",
+  planned: "bg-muted-foreground",
+  cancelled: "bg-destructive",
+  substitutions: "bg-link-500",
+};
+
+export default function MonitoringPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-muted-foreground">{t.common.loading}</p>}>
+      <CoursesView />
+    </Suspense>
+  );
+}
+
+/** „Kurse“ (bisher Monitoring): Status-Chips mit Zahlen, Zeitraum-Steuerung, Kurse | Pro Trainer:in. */
+function CoursesView() {
+  const searchParams = useSearchParams();
+  const { companyId, queryStudioId, scopeLabel } = useStudioFilter();
+
+  const statusParam = searchParams.get("status");
+  const [period, setPeriod] = useState<Period>(DEFAULT_PERIOD);
+  const [kpiFilter, setKpiFilter] = useState<StatusFilter>(
+    isStatusFilter(statusParam) ? statusParam : "all"
+  );
+  const [tab, setTab] = useState<MonitoringTab>(
+    searchParams.get("view") === "trainers" ? "trainers" : "courses"
+  );
   const [search, setSearch] = useState("");
 
-  const range = useMemo(() => getPeriodRange(period), [period]);
+  const range = useMemo(() => getRange(period), [period]);
   const { data: rows, isLoading, isError } = useCompanyMonitoring({
     companyId,
     from: range.from,
     to: range.to,
-    studioId: studioFilter === "all" ? null : studioFilter,
+    studioId: queryStudioId,
   });
 
   const allRows = useMemo(() => rows ?? [], [rows]);
 
-  const kpis = useMemo(() => {
-    let completed = 0;
-    let overdue = 0;
-    let substitutions = 0;
-    for (const r of allRows) {
-      if (r.status === "completed") completed += 1;
-      if (r.status === "overdue") overdue += 1;
-      if (r.is_substitution) substitutions += 1;
-    }
-    return {
-      total: allRows.length,
-      completed,
-      overdue,
-      substitutions,
+  const counts = useMemo(() => {
+    const c: Record<StatusFilter, number> = {
+      all: allRows.length,
+      completed: 0,
+      overdue: 0,
+      planned: 0,
+      cancelled: 0,
+      substitutions: 0,
     };
+    for (const r of allRows) {
+      c[r.status] += 1;
+      if (r.is_substitution) c.substitutions += 1;
+    }
+    return c;
   }, [allRows]);
 
   const filteredRows = useMemo(() => {
     let result = allRows;
-    if (kpiFilter === "completed") result = result.filter((r) => r.status === "completed");
-    if (kpiFilter === "overdue") result = result.filter((r) => r.status === "overdue");
     if (kpiFilter === "substitutions") result = result.filter((r) => r.is_substitution);
+    else if (kpiFilter !== "all") result = result.filter((r) => r.status === kpiFilter);
     result = result.filter((r) =>
       matchesSearch(
         search,
@@ -198,213 +208,86 @@ export default function MonitoringPage() {
     return { completed, overdue, substitutions, minutes, estimatedTotal, hasAnyEstimate };
   }, [trainerSummaries]);
 
-  const kpiCards: {
-    id: KpiFilter;
-    label: string;
-    value: number;
-    icon: typeof Calendar;
-    valueClass: string;
-    iconClass: string;
-  }[] = [
-    {
-      id: "all",
-      label: t.monitoring.kpiTotal,
-      value: kpis.total,
-      icon: Calendar,
-      valueClass: "text-foreground",
-      iconClass: "bg-primary-50 text-primary dark:bg-primary-900/40",
-    },
-    {
-      id: "completed",
-      label: t.monitoring.kpiCompleted,
-      value: kpis.completed,
-      icon: CheckCircle2,
-      valueClass: "text-success",
-      iconClass: "bg-success-bg text-success",
-    },
-    {
-      id: "overdue",
-      label: t.monitoring.kpiOverdue,
-      value: kpis.overdue,
-      icon: AlertTriangle,
-      valueClass: kpis.overdue > 0 ? "text-warning" : "text-foreground",
-      iconClass: "bg-warning-bg text-warning",
-    },
-    {
-      id: "substitutions",
-      label: t.monitoring.kpiSubstitutions,
-      value: kpis.substitutions,
-      icon: Repeat,
-      valueClass: kpis.substitutions > 0 ? "text-link-600 dark:text-link-400" : "text-foreground",
-      iconClass: "bg-link-500/10 text-link-600 dark:bg-link-400/15 dark:text-link-400",
-    },
-  ];
-
-  function toggleKpi(id: KpiFilter) {
-    setTab("courses");
-    setKpiFilter((prev) => (prev === id ? "all" : id));
-  }
-
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      {/* Header + Filter Controls */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
-            {t.monitoring.title}
-          </h1>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-x-5 gap-y-3">
+        <div className="min-w-64 flex-1">
+          <h1 className="font-heading text-2xl font-extrabold tracking-tight">{t.courses.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {formatDateDE(range.from)} – {formatDateDE(range.to)} · {t.monitoring.subtitle}
+            {fillTemplate(t.courses.subtitle, { scope: scopeLabel })}
           </p>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Select value={studioFilter} onValueChange={(v) => v && setStudioFilter(v)}>
-            <SelectTrigger aria-label={t.monitoring.colStudio} className="min-w-44">
-              <SelectValue>
-                {(value: string) =>
-                  value === "all"
-                    ? t.monitoring.allStudios
-                    : studios?.find((s) => s.id === value)?.name ?? t.monitoring.allStudios
-                }
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t.monitoring.allStudios}</SelectItem>
-              {(studios ?? []).map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={period} onValueChange={(v) => v && setPeriod(v as MonitoringPeriod)}>
-            <SelectTrigger aria-label={t.monitoring.periods.this_week} className="min-w-40">
-              <SelectValue>
-                {(value: string) =>
-                  t.monitoring.periods[value as MonitoringPeriod] ?? t.monitoring.periods.this_week
-                }
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {PERIOD_OPTIONS.map((opt) => (
-                <SelectItem key={opt} value={opt}>
-                  {t.monitoring.periods[opt]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <PeriodControl value={period} onChange={setPeriod} />
       </div>
 
-      {/* 4 Interactive KPI Cards */}
-      <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-        {kpiCards.map((card) => {
-          const Icon = card.icon;
-          const active = tab === "courses" && kpiFilter === card.id && card.id !== "all";
-          return (
-            <button
-              key={card.id}
-              type="button"
-              onClick={() => toggleKpi(card.id)}
-              className={cn(
-                "flex flex-col justify-between rounded-xl border bg-card p-4 text-left transition-all hover:border-primary-300 dark:hover:border-primary-700",
-                active
-                  ? "border-primary ring-2 ring-primary/20"
-                  : "border-border"
-              )}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-muted-foreground">{card.label}</span>
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
+        <div role="group" aria-label={t.monitoring.colStatus} className="flex flex-wrap gap-1.5">
+          {STATUS_FILTERS.map((id) => {
+            const active = kpiFilter === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => {
+                  setTab("courses");
+                  setKpiFilter(id);
+                }}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[13.5px] font-semibold whitespace-nowrap transition-colors",
+                  active
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-card text-foreground/80 hover:border-muted-foreground"
+                )}
+              >
+                {chipDot[id] && (
+                  <span className={cn("size-2 rounded-full", chipDot[id])} aria-hidden="true" />
+                )}
+                <span>{chipLabel[id]}</span>
                 <span
                   className={cn(
-                    "flex size-7 shrink-0 items-center justify-center rounded-lg",
-                    card.iconClass
+                    "font-bold tabular-nums",
+                    active ? "text-background/75" : "text-muted-foreground"
                   )}
                 >
-                  <Icon className="size-3.5" />
+                  {counts[id]}
                 </span>
-              </div>
-              <span
-                className={cn(
-                  "mt-2 font-heading text-3xl font-extrabold tabular-nums",
-                  card.valueClass
-                )}
-              >
-                {card.value}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* View Switcher (Kurse | Pro Trainer:in) + Active KPI filter badge */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="tablist" className="inline-flex rounded-xl border border-border bg-card p-1">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === "courses"}
-            onClick={() => setTab("courses")}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
-              tab === "courses"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <LayoutGrid className="size-4" />
-            <span>{t.monitoring.tabCourses}</span>
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === "trainers"}
-            onClick={() => setTab("trainers")}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
-              tab === "trainers"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Users className="size-4" />
-            <span>{t.monitoring.tabTrainers}</span>
-            {trainerSummaries.length > 0 && (
-              <span
-                className={cn(
-                  "rounded-full px-1.5 py-0.5 text-[11px] leading-none font-bold",
-                  tab === "trainers"
-                    ? "bg-primary-foreground/20 text-primary-foreground"
-                    : "bg-muted text-foreground"
-                )}
-              >
-                {trainerSummaries.length}
-              </span>
-            )}
-          </button>
+              </button>
+            );
+          })}
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder={t.monitoring.searchPlaceholder}
-        />
-        {tab === "courses" && kpiFilter !== "all" && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setKpiFilter("all")}
-            className="gap-1.5"
-          >
-            <X className="size-3.5" />
-            <span>{t.monitoring.resetFilter}</span>
-          </Button>
-        )}
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={t.monitoring.searchPlaceholder}
+          />
+          <div role="tablist" className="inline-flex rounded-[9px] border border-border bg-card p-0.5">
+            {(
+              [
+                { key: "courses", label: t.courses.viewCourses, Icon: List },
+                { key: "trainers", label: t.courses.viewTrainers, Icon: Users },
+              ] as const
+            ).map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={tab === key}
+                onClick={() => setTab(key)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-[7px] px-3 py-1.5 text-[13.5px] font-semibold whitespace-nowrap transition-colors",
+                  tab === key
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon className="size-4" />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

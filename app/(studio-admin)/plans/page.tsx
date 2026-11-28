@@ -11,6 +11,7 @@ import { CourseTypeIcon } from "@/components/course-type-icon";
 import { SearchInput, matchesSearch } from "@/components/list-toolbar";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useStudios } from "@/hooks/useStudios";
+import { useStudioFilter } from "@/hooks/useStudioFilter";
 import { useCompanyActiveSlots } from "@/hooks/useCoursePlans";
 import type { Studio } from "@/lib/studios";
 import { cn } from "@/lib/utils";
@@ -138,9 +139,13 @@ function PlansContent() {
   const searchParams = useSearchParams();
   const { data: company } = useMyCompany();
   const companyId = company?.id ?? "";
-  const { data: studios, isLoading: studiosLoading } = useStudios(companyId);
+  const { isLoading: studiosLoading } = useStudios(companyId);
+  // Globaler Studio-Filter (Sidebar): ohne ?studio= gilt das dort gewählte Studio.
+  const studioFilter = useStudioFilter();
+  const studios = studioFilter.studios;
 
-  const studioParam = searchParams.get("studio");
+  const studioParam =
+    searchParams.get("studio") ?? (studioFilter.isAll ? null : studioFilter.studioId);
   const editSlotParam = searchParams.get("editSlot");
 
   const showAllStudiosOption = (studios?.length ?? 0) > 1;
@@ -150,13 +155,14 @@ function PlansContent() {
     : (studioParam ? studios?.find((s) => s.id === studioParam) : null) ?? studios?.[0] ?? null;
 
   function selectStudio(studioId: string) {
+    studioFilter.setStudioId(studioId);
     router.replace(`/plans?studio=${studioId}`, { scroll: false });
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="font-heading text-[28px] font-extrabold tracking-tight">{t.plans.title}</h1>
+        <h1 className="font-heading text-2xl font-extrabold tracking-tight">{t.plans.title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t.plans.subtitle}</p>
       </div>
 
@@ -168,7 +174,7 @@ function PlansContent() {
             <Building2 className="size-5" />
           </div>
           <p className="text-sm text-muted-foreground">{t.plans.noStudios}</p>
-          <Link href="/studios" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          <Link href="/settings?section=studios" className={buttonVariants({ variant: "outline", size: "sm" })}>
             {t.plans.goToStudios}
           </Link>
         </div>

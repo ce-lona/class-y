@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   Building2,
@@ -10,6 +12,7 @@ import {
   ShieldCheck,
   UserPlus,
   Users,
+  UsersRound,
 } from "lucide-react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,10 +44,13 @@ import {
 import {
   NoSearchResults,
   SearchInput,
-  StudioFilterChips,
   matchesSearch,
 } from "@/components/list-toolbar";
-import { useMyCompany } from "@/hooks/useCompanyAdmins";
+import { useAddCompanyAdmin, useMyCompany } from "@/hooks/useCompanyAdmins";
+import { TeamOverview } from "@/components/team-overview";
+import { useStudioFilter } from "@/hooks/useStudioFilter";
+import { CompanyAdminsPanel } from "@/components/company-admins-panel";
+import { setTeamMemberName, type TeamMember } from "@/lib/team";
 import {
   useCompanyContracts,
   useEndContract,
@@ -74,7 +80,8 @@ import {
 import { t } from "@/i18n/de";
 
 type ContractFilter = "activeOpen" | "active" | "pending" | "archived" | "all";
-type TeamSection = "contracts" | "coordinators";
+type TeamSection = "all" | "admins" | "contracts" | "coordinators";
+type AddKind = "admin" | "coordinator" | "trainer";
 
 export default function TrainersPage() {
   const { data: company } = useMyCompany();
@@ -101,11 +108,30 @@ export default function TrainersPage() {
   const inviteCoordinator = useInviteStudioCoordinator(companyId);
   const updateCoordinatorStudios = useUpdateCoordinatorStudios(companyId);
 
-  const [section, setSection] = useState<TeamSection>("contracts");
+  const queryClient = useQueryClient();
+  const addAdmin = useAddCompanyAdmin(companyId);
+  // Team-Tab: Company-Admins starten bei „Alle“, Studio-Admins sehen nur die Verträge.
+  // /team zeigt zuerst alle Personen, /trainers (Studio-Admins, alte Links) die Verträge.
+  const pathname = usePathname();
+  const [sectionChoice, setSection] = useState<TeamSection | null>(null);
+  const section: TeamSection = !isFullAdmin
+    ? "contracts"
+    : (sectionChoice ?? (pathname?.startsWith("/team") ? "all" : "contracts"));
+  // „Person hinzufügen“ in einem Schritt: Rollenwahl oben im jeweiligen Formular-Drawer.
+  const [unifiedAdd, setUnifiedAdd] = useState(false);
+  const [addRole, setAddRole] = useState<AddKind>("trainer");
+  const [adminInviteOpen, setAdminInviteOpen] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminName, setAdminName] = useState("");
+  const [adminError, setAdminError] = useState<string | null>(null);
+  const [coordName, setCoordName] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [filter, setFilter] = useState<ContractFilter>("activeOpen");
-  const [studioFilter, setStudioFilter] = useState<string>("all");
+  // Globaler Studio-Filter aus der Sidebar.
+  const globalStudio = useStudioFilter();
+  const studioFilter = globalStudio.studioId;
+  const setStudioFilter = globalStudio.setStudioId;
   const [search, setSearch] = useState("");
 
   // Studio scope for new contract
@@ -146,7 +172,89 @@ export default function TrainersPage() {
 
   const studioNameMap = new Map((studios ?? []).map((s) => [s.id, s.name]));
 
+  // Name beim Anlegen ins Profil übernehmen (nur wenn die Person noch keinen eingetragen hat).
+  async function saveMemberName(email: string, fullName: string | undefined) {
+    if (!company || !isFullAdmin || !fullName?.trim()) return;
+    try {
+      await setTeamMemberName({ companyId: company.id, email, fullName });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function refreshTeam() {
+    queryClient.invalidateQueries({ queryKey: ["company-team", companyId] });
+    queryClient.invalidateQueries({ queryKey: ["company-contracts", companyId] });
+    queryClient.invalidateQueries({ queryKey: ["company-coordinators", companyId] });
+  }
+
+  function openCoordinatorDrawer() {
+    setUnifiedAdd(false);
+    setSuccess(null);
+    setCoordError(null);
+    setCoordEmail("");
+    setCoordName("");
+    setCoordStudioIds(studios && studios.length === 1 ? [studios[0].id] : []);
+    setCoordInviteOpen(true);
+  }
+
+  function openAdminDrawer() {
+    setUnifiedAdd(false);
+    setSuccess(null);
+    setAdminError(null);
+    setAdminEmail("");
+    setAdminName("");
+    setAdminInviteOpen(true);
+  }
+
+  function startAdd(kind: AddKind) {
+    setFormOpen(false);
+    setAdminInviteOpen(false);
+    setCoordInviteOpen(false);
+    setAddRole(kind);
+    if (kind === "admin") openAdminDrawer();
+    else if (kind === "coordinator") openCoordinatorDrawer();
+    else openContractDrawer();
+  }
+
+  function openMember(member: TeamMember) {
+    if (member.role === "company_admin") {
+      setSection("admins");
+      return;
+    }
+    setSearch(member.email);
+    setStudioFilter("all");
+    if (member.role === "coordinator") {
+      setSection("coordinators");
+    } else {
+      setFilter("all");
+      setSection("contracts");
+    }
+  }
+
+  async function handleInviteAdmin(e: React.FormEvent) {
+    e.preventDefault();
+    setAdminError(null);
+    setSuccess(null);
+    const email = adminEmail.trim();
+    if (!email) {
+      setAdminError(t.auth.emailRequired);
+      return;
+    }
+    try {
+      const result = await addAdmin.mutateAsync(email);
+      await saveMemberName(email, adminName);
+      refreshTeam();
+      setSuccess(result.invited ? t.team.adminInvited : t.team.adminAdded);
+      setAdminInviteOpen(false);
+    } catch (error) {
+      console.error(error);
+      setAdminError(t.team.adminError);
+    }
+  }
+
   function openContractDrawer() {
+    setUnifiedAdd(false);
     setSuccess(null);
     setContractScopeError(null);
     // Verträge gelten company-weit; nur Company-Admins beschränken sie auf Studios.
@@ -185,6 +293,8 @@ export default function TrainersPage() {
         validTo: values.validTo || null,
         studioIds: needsStudios ? contractStudioIds : undefined,
       });
+      await saveMemberName(values.email, values.fullName);
+      refreshTeam();
       setSuccess(
         contractPermission === "approval"
           ? t.roleModel.offerNeedsApproval
@@ -234,6 +344,8 @@ export default function TrainersPage() {
         email: coordEmail.trim(),
         studioIds: coordStudioIds,
       });
+      await saveMemberName(coordEmail.trim(), coordName);
+      refreshTeam();
       setSuccess(result.invited ? t.coordinators.invitedSuccess : t.coordinators.assignedSuccess);
       setCoordEmail("");
       setCoordStudioIds([]);
@@ -339,13 +451,53 @@ export default function TrainersPage() {
     { id: "all", label: t.contracts.filters.all, count: counts.all },
   ];
 
+  const noStudios = !studios || studios.length === 0;
+  const roleSwitcher = unifiedAdd ? (
+    <fieldset className="mb-5 space-y-2 border-b border-border pb-5">
+      <legend className="mb-2 text-sm font-semibold">{t.team.colRole}</legend>
+      {(
+        [
+          { kind: "trainer", label: t.team.roleTrainer, hint: t.team.addTrainerHint, disabled: false },
+          {
+            kind: "coordinator",
+            label: t.team.roleStudioAdmin,
+            hint: noStudios ? t.coordinators.noStudiosYet : t.team.addStudioAdminHint,
+            disabled: noStudios,
+          },
+          { kind: "admin", label: t.team.roleAdmin, hint: t.team.addAdminHint, disabled: false },
+        ] as const
+      ).map(({ kind, label, hint, disabled }) => (
+        <button
+          key={kind}
+          type="button"
+          role="radio"
+          aria-checked={addRole === kind}
+          disabled={disabled}
+          onClick={() => {
+            startAdd(kind);
+            setUnifiedAdd(true);
+          }}
+          className={cn(
+            "flex w-full flex-col items-start rounded-[10px] border px-3 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+            addRole === kind
+              ? "border-primary bg-accent ring-1 ring-primary ring-inset"
+              : "border-border bg-card hover:bg-muted/50"
+          )}
+        >
+          <span className="font-bold">{label}</span>
+          <span className="text-[13px] text-muted-foreground">{hint}</span>
+        </button>
+      ))}
+    </fieldset>
+  ) : null;
+
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
-              {t.trainers.title}
+            <h1 className="font-heading text-2xl font-extrabold tracking-tight">
+              {isFullAdmin ? t.team.title : t.trainers.title}
             </h1>
             {contracts && section === "contracts" && (
               <Badge variant="secondary" className="font-semibold">
@@ -358,10 +510,28 @@ export default function TrainersPage() {
               </Badge>
             )}
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">{t.trainers.subtitle}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {isFullAdmin ? t.team.subtitle : t.trainers.subtitle}
+          </p>
         </div>
 
-        {section === "contracts" ? (
+        {section === "all" ? (
+          <Button
+            onClick={() => {
+              startAdd("trainer");
+              setUnifiedAdd(true);
+            }}
+            className="gap-1.5"
+          >
+            <UserPlus className="size-4" />
+            <span>{t.team.addPerson}</span>
+          </Button>
+        ) : section === "admins" ? (
+          <Button onClick={openAdminDrawer} className="gap-1.5">
+            <UserPlus className="size-4" />
+            <span>{t.team.inviteAdmin}</span>
+          </Button>
+        ) : section === "contracts" ? (
           canOffer && (
             <Button onClick={openContractDrawer} className="gap-1.5">
               <Plus className="size-4" />
@@ -370,13 +540,7 @@ export default function TrainersPage() {
           )
         ) : (
           <Button
-            onClick={() => {
-              setSuccess(null);
-              setCoordError(null);
-              setCoordEmail("");
-              setCoordStudioIds(studios && studios.length === 1 ? [studios[0].id] : []);
-              setCoordInviteOpen(true);
-            }}
+            onClick={openCoordinatorDrawer}
             disabled={!studios || studios.length === 0}
             className="gap-1.5"
           >
@@ -387,14 +551,40 @@ export default function TrainersPage() {
       </div>
 
       {isFullAdmin && (
-        <div role="tablist" className="inline-flex rounded-xl border border-border bg-card p-1">
+        <div
+          role="tablist"
+          className="flex max-w-full overflow-x-auto rounded-xl border border-border bg-card p-1 sm:inline-flex"
+        >
+          {(
+            [
+              { key: "all", label: t.team.tabAll, Icon: UsersRound },
+              { key: "admins", label: t.team.tabAdmins, Icon: ShieldCheck },
+            ] as const
+          ).map(({ key, label, Icon }) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={section === key}
+              onClick={() => setSection(key)}
+              className={cn(
+                "inline-flex shrink-0 items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
+                section === key
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Icon className="size-4" />
+              <span>{label}</span>
+            </button>
+          ))}
           <button
             type="button"
             role="tab"
             aria-selected={section === "contracts"}
             onClick={() => setSection("contracts")}
             className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
+              "inline-flex shrink-0 items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
               section === "contracts"
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
@@ -409,7 +599,7 @@ export default function TrainersPage() {
             aria-selected={section === "coordinators"}
             onClick={() => setSection("coordinators")}
             className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
+              "inline-flex shrink-0 items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
               section === "coordinators"
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
@@ -443,11 +633,22 @@ export default function TrainersPage() {
       {/* Drawer: Vertrag anbieten */}
       <Drawer
         open={formOpen}
-        onClose={closeContractDrawer}
-        title={t.contracts.offerTitle}
+        onClose={() => {
+          setUnifiedAdd(false);
+          closeContractDrawer();
+        }}
+        title={unifiedAdd ? t.team.addPerson : t.contracts.offerTitle}
         description={t.contracts.companyHint}
       >
+        {roleSwitcher}
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+          {isFullAdmin && (
+            <div className="space-y-1.5">
+              <Label htmlFor="contract-name">{t.team.fullName}</Label>
+              <Input id="contract-name" autoComplete="off" {...register("fullName")} />
+              <p className="text-xs text-muted-foreground">{t.team.fullNameHint}</p>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="contract-email">{t.contracts.email}</Label>
             <Input id="contract-email" type="email" {...register("email")} />
@@ -630,14 +831,72 @@ export default function TrainersPage() {
         </form>
       </Drawer>
 
+      {/* Drawer: Admin einladen */}
+      <Drawer
+        open={adminInviteOpen}
+        onClose={() => {
+          setUnifiedAdd(false);
+          setAdminInviteOpen(false);
+        }}
+        title={unifiedAdd ? t.team.addPerson : t.team.inviteAdmin}
+        description={t.team.inviteAdminHint}
+      >
+        {roleSwitcher}
+        <form onSubmit={handleInviteAdmin} noValidate className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="admin-name">{t.team.fullName}</Label>
+            <Input
+              id="admin-name"
+              autoComplete="off"
+              value={adminName}
+              onChange={(e) => setAdminName(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">{t.team.fullNameHint}</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="admin-email">{t.contracts.email}</Label>
+            <Input
+              id="admin-email"
+              type="email"
+              value={adminEmail}
+              onChange={(e) => setAdminEmail(e.target.value)}
+            />
+          </div>
+          {adminError && <p className="text-sm text-destructive">{adminError}</p>}
+          <div className="flex items-center gap-2 border-t border-border pt-4">
+            <Button type="submit" disabled={addAdmin.isPending} className="flex-1 gap-1.5">
+              <Send className="size-4" />
+              <span>{t.team.inviteAdminButton}</span>
+            </Button>
+            <Button type="button" variant="outline" onClick={() => setAdminInviteOpen(false)}>
+              {t.common.cancel}
+            </Button>
+          </div>
+        </form>
+      </Drawer>
+
       {/* Drawer: Studio-Admin einladen */}
       <Drawer
         open={coordInviteOpen}
-        onClose={() => setCoordInviteOpen(false)}
-        title={t.coordinators.inviteTitle}
+        onClose={() => {
+          setUnifiedAdd(false);
+          setCoordInviteOpen(false);
+        }}
+        title={unifiedAdd ? t.team.addPerson : t.coordinators.inviteTitle}
         description={t.coordinators.inviteHint}
       >
+        {roleSwitcher}
         <form onSubmit={handleInviteCoordinator} noValidate className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="coord-name">{t.team.fullName}</Label>
+            <Input
+              id="coord-name"
+              autoComplete="off"
+              value={coordName}
+              onChange={(e) => setCoordName(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">{t.team.fullNameHint}</p>
+          </div>
           <div className="space-y-1.5">
             <Label htmlFor="coord-email">{t.contracts.email}</Label>
             <Input
@@ -829,11 +1088,6 @@ export default function TrainersPage() {
       {((section === "contracts" && contracts && contracts.length > 0) ||
         (section === "coordinators" && coordinators && coordinators.length > 0)) && (
         <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
-          <StudioFilterChips
-            studios={studios ?? []}
-            value={studioFilter}
-            onChange={setStudioFilter}
-          />
           <SearchInput
             value={search}
             onChange={setSearch}
@@ -843,7 +1097,11 @@ export default function TrainersPage() {
         </div>
       )}
 
-      {section === "coordinators" && isFullAdmin ? (
+      {section === "all" ? (
+        <TeamOverview companyId={companyId} companyName={company?.name ?? ""} onOpen={openMember} />
+      ) : section === "admins" ? (
+        <CompanyAdminsPanel companyId={companyId} />
+      ) : section === "coordinators" && isFullAdmin ? (
         !studios || studios.length === 0 ? (
           <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card p-10 text-center">
             <Building2 className="size-8 text-muted-foreground/40" />

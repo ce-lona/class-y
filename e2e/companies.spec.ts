@@ -22,7 +22,7 @@ test("Company anlegen, Studio anlegen, Admin hinzufügen", async ({ page }) => {
   // Studio anlegen
   await page.getByLabel("Name").fill(studioName);
   await page.getByRole("button", { name: "Studio anlegen" }).click();
-  await expect(page.getByText(studioName)).toBeVisible();
+  await expect(page.getByRole("main").getByText(studioName)).toBeVisible();
 
   // Admin hinzufügen (eigener Account, da einziger bekannter existierender Nutzer)
   await page.locator("#admin-email").fill(adminEmail);

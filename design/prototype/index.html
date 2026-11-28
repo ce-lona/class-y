@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>class-y Neustart Prototyp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Newsreader:opsz,wght@6..72,500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE  work: ein ausgeliefertes Produkt, ruhig, dicht, präzise
+   IDEA   Studio-Schaltzentrale: Sidebar wie ein Kursbuch-Register, Inhalt wie ein sauber linierter Stundenplan
+   PICTURE die App selbst, jede Rolle mit echten Beispieldaten
+   COLOUR class-y Petrol #1F5F5C führt, Warmgrau trägt, Indigo nur für Links, Status grün/amber/rot; Nacht = warmes Anthrazit statt Schwarz
+   TYPE   Manrope für Überschriften, Source Sans 3 für Text, Newsreader nur für die Wortmarke
+   LAYOUT Desktop: Sidebar 248px + volle Breite, Details im Seitenpanel. Trainer mobil: Telefon mit Bottom-Bar */
+:root{
+  --bg:#F5F4F1;--panel:#FFFFFF;--side:#FBFAF8;--ink:#201F1C;--ink2:#45423D;--mute:#7C7870;--line:#E5E3DF;--line2:#EFEDEA;--hover:#F2F1EF;
+  --pri:#1F5F5C;--prifg:#FFFFFF;--pritx:#1F5F5C;--prisoft:#E3EFEE;--link:#5450C4;--linksoft:#ECEBFB;
+  --ok:#1D8A5F;--oksoft:#E7F6EE;--warn:#9A6203;--warnsoft:#FCF1DC;--err:#C81E1E;--errsoft:#FDECEC;
+  --shadow:0 12px 32px rgba(32,31,28,.14),0 2px 6px rgba(32,31,28,.06);
+  --chrome:#201F1C;--chromeink:#F2F1EF;--chromemute:#A9A59C;
+}
+:root[data-theme=dark]{
+  --bg:#2B2926;--panel:#35332F;--side:#302E2A;--ink:#F2F1EF;--ink2:#D8D5CE;--mute:#ADA99F;--line:#4A4741;--line2:#413E39;--hover:#3E3B37;
+  --pri:#79B0AD;--prifg:#0F2E2D;--pritx:#A7CDCB;--prisoft:rgba(121,176,173,.17);--link:#A3A2F0;--linksoft:rgba(139,138,232,.18);
+  --ok:#63C99B;--oksoft:rgba(29,138,95,.2);--warn:#F0B44C;--warnsoft:rgba(184,117,3,.22);--err:#F38A8A;--errsoft:rgba(220,38,38,.2);
+  --shadow:0 12px 32px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.25);
+  --chrome:#151412;
+  color-scheme:dark;
+}
+:root{color-scheme:light}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 "Source Sans 3",system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:Manrope,system-ui,sans-serif;letter-spacing:-.015em;margin:0;line-height:1.15}
+h1{font-size:24px;font-weight:800}
+h2{font-size:16px;font-weight:700}
+h3{font-size:14px;font-weight:700}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--link)}
+svg.i{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+svg.i.s{width:15px;height:15px}
+:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+#root{height:100%;display:flex;flex-direction:column}
+
+/* Prototyp-Leiste (nicht Teil der App) */
+.proto{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:7px 16px;background:var(--chrome);color:var(--chromeink);font-size:13px}
+.proto b{font-family:Manrope;font-weight:800;letter-spacing:-.01em}
+.proto .grp{display:flex;align-items:center;gap:6px}
+.proto .lbl{color:var(--chromemute)}
+.seg{display:inline-flex;background:rgba(255,255,255,.08);border-radius:8px;padding:2px}
+.seg button{border:0;background:none;color:var(--chromemute);padding:4px 10px;border-radius:6px;font-weight:600;font-size:13px;white-space:nowrap}
+.seg button.on{background:#F2F1EF;color:#201F1C}
+.seg button:disabled{opacity:.4;cursor:not-allowed}
+.proto .concept{margin-left:auto;border:1px solid rgba(255,255,255,.25);background:none;color:var(--chromeink);border-radius:8px;padding:4px 12px;font-weight:600}
+.stage{flex:1;min-height:0;position:relative}
+
+/* App-Rahmen */
+.app{height:100%;display:grid;position:relative;overflow:hidden}
+.side-layout{grid-template-columns:248px minmax(0,1fr)}
+.bars-layout{grid-template-rows:auto auto minmax(0,1fr)}
+.main{overflow:auto;min-height:0;position:relative}
+.wrap{padding:22px 32px 48px;max-width:1480px}
+.side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:auto;padding:14px 12px}
+.logo{display:flex;align-items:center;gap:9px;padding:4px 8px 14px;font-family:Newsreader,Georgia,serif;font-size:22px;font-weight:500;letter-spacing:-.01em;color:var(--ink)}
+.logo svg{width:26px;height:26px}
+.sec{font-size:12px;font-weight:700;color:var(--mute);padding:14px 10px 6px}
+.nv{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:8px 10px;border-radius:8px;color:var(--ink2);font-weight:600;text-align:left;font-size:14.5px}
+.nv:hover{background:var(--hover);color:var(--ink)}
+.nv.on{background:var(--prisoft);color:var(--pritx)}
+.nv .cnt{margin-left:auto;font-size:12px;font-weight:700;background:var(--errsoft);color:var(--err);border-radius:99px;padding:0 7px;line-height:19px}
+.nv.on .cnt{background:var(--panel)}
+.spacer{flex:1;min-height:12px}
+.switch{position:relative;margin:2px 0 4px}
+.swbtn{display:flex;align-items:center;gap:10px;width:100%;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px;text-align:left}
+.swbtn:hover{border-color:var(--mute)}
+.swbtn .nm{font-weight:700;font-size:14.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swbtn .mt{font-size:12.5px;color:var(--mute);line-height:1.2}
+.swbtn.static{cursor:default}
+.sq{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font:800 12px Manrope;color:#fff;flex:none}
+.scope{display:flex;align-items:center;gap:8px;margin:6px 0 2px;padding:0 4px}
+.scope select{flex:1}
+select.sel,input.inp,textarea.inp{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 10px;font-size:14.5px;min-height:36px}
+select.sel{padding-right:28px;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+input.inp:focus,select.sel:focus,textarea.inp:focus{border-color:var(--pri);outline:none;box-shadow:0 0 0 3px var(--prisoft)}
+.user{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:8px;border-radius:10px;text-align:left;margin-top:4px;border-top:1px solid var(--line)}
+.user:hover{background:var(--hover)}
+.av{width:30px;height:30px;border-radius:99px;display:grid;place-items:center;font:800 12px Manrope;flex:none;background:var(--pri);color:var(--prifg)}
+.av.t{background:var(--hover);color:var(--ink);border:1px solid var(--line)}
+.av.s{background:var(--link);color:#fff}
+.user .nm{font-weight:700;font-size:14px;line-height:1.2}
+.user .mt{font-size:12.5px;color:var(--mute);line-height:1.2}
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:2px 0 8px;padding:10px;border:0;border-radius:10px;background:var(--pri);color:var(--prifg);font-weight:700}
+
+/* Zwei-Leisten-Variante */
+.bar1{display:flex;align-items:center;gap:6px;padding:0 16px;height:50px;background:var(--side);border-bottom:1px solid var(--line)}
+.bar1 .logo{padding:0 14px 0 0}
+.ctab{display:flex;align-items:center;gap:8px;border:0;background:none;padding:6px 10px;border-radius:8px;font-weight:700;font-size:14px;color:var(--ink2);white-space:nowrap}
+.ctab .sq{width:22px;height:22px;font-size:10px;border-radius:6px}
+.ctab.on{background:var(--prisoft);color:var(--pritx)}
+.ctab:hover{background:var(--hover)}
+.bar1 .rt{margin-left:auto;display:flex;gap:8px;align-items:center}
+.vline{width:1px;height:22px;background:var(--line);margin:0 6px}
+.bar2{display:flex;align-items:center;gap:2px;padding:0 16px;height:46px;border-bottom:1px solid var(--line);background:var(--panel);overflow:hidden}
+.ptab{display:flex;align-items:center;gap:7px;border:0;background:none;height:46px;padding:0 12px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;white-space:nowrap;font-size:14.5px}
+.ptab.on{color:var(--pritx);border-bottom-color:var(--pri)}
+.ptab .cnt{font-size:12px;font-weight:700;background:var(--errsoft);color:var(--err);border-radius:99px;padding:0 7px;line-height:19px}
+.bar2 .rt{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* Seitenkopf, Buttons, Chips */
+.ph{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px;margin-bottom:16px}
+.ph .tt{flex:1 1 260px}
+.ph .sub{color:var(--mute);margin:4px 0 0;font-size:14.5px}
+.ph .act{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;font-weight:600;font-size:14px;white-space:nowrap;min-height:36px}
+.btn:hover{border-color:var(--mute)}
+.btn.p{background:var(--pri);border-color:var(--pri);color:var(--prifg)}
+.btn.p:hover{filter:brightness(1.08)}
+.btn.g{border-color:transparent;background:none}
+.btn.g:hover{background:var(--hover)}
+.btn.d{color:var(--err);border-color:color-mix(in srgb,var(--err) 40%,transparent)}
+.btn.sm{min-height:30px;padding:4px 10px;font-size:13.5px}
+.btn.ok{background:var(--oksoft);border-color:transparent;color:var(--ok)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:99px;padding:4px 12px;font-weight:600;font-size:13.5px;color:var(--ink2);white-space:nowrap}
+.chip .n{font-variant-numeric:tabular-nums;color:var(--mute);font-weight:700}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip.on .n{color:var(--bg);opacity:.75}
+.chip .dot{width:8px;height:8px;border-radius:99px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.search{position:relative;display:flex;align-items:center}
+.search svg{position:absolute;left:10px;color:var(--mute)}
+.search input{padding-left:34px;width:260px}
+.tog{display:inline-flex;border:1px solid var(--line);border-radius:9px;padding:2px;background:var(--panel)}
+.tog button{border:0;background:none;padding:5px 12px;border-radius:7px;font-weight:600;font-size:13.5px;color:var(--mute);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.tog button.on{background:var(--prisoft);color:var(--pritx)}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:1px 8px;font-size:12.5px;font-weight:700;white-space:nowrap;background:var(--hover);color:var(--ink2)}
+.b-ok{background:var(--oksoft);color:var(--ok)}
+.b-warn{background:var(--warnsoft);color:var(--warn)}
+.b-err{background:var(--errsoft);color:var(--err)}
+.b-link{background:var(--linksoft);color:var(--link)}
+.b-pri{background:var(--prisoft);color:var(--pritx)}
+.b-off{background:none;color:var(--mute);text-decoration:line-through;padding-left:0}
+
+/* Flächen und Tabellen */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.panel>.hd{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line2)}
+.panel>.bd{padding:14px 16px}
+.tblw{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font-size:12.5px;font-weight:700;color:var(--mute);padding:9px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--panel);position:sticky;top:0}
+td{padding:9px 14px;border-bottom:1px solid var(--line2);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr.cl{cursor:pointer}
+tbody tr.cl:hover td{background:var(--hover)}
+tr.sel td{background:var(--prisoft)!important}
+tr.pend td{background:color-mix(in srgb,var(--warnsoft) 55%,transparent)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.nw{white-space:nowrap}
+.muted{color:var(--mute)}
+.sm{font-size:13px}
+.who{display:flex;align-items:center;gap:10px}
+.who .av{width:28px;height:28px;font-size:11px}
+.who .nm{font-weight:600;line-height:1.2}
+.who .mt{font-size:12.5px;color:var(--mute);line-height:1.2}
+tfoot td{font-weight:700;border-top:1px solid var(--line);border-bottom:0}
+.tdot{display:inline-block;width:8px;height:8px;border-radius:99px;margin-right:7px;vertical-align:1px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:18px;align-items:start}
+.grid-rail{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:18px}
+.statline{display:flex;flex-wrap:wrap;gap:4px 18px;color:var(--mute);font-size:14px;margin:-6px 0 16px}
+.statline b{color:var(--ink);font-variant-numeric:tabular-nums}
+.statline button{border:0;background:none;padding:0;color:inherit}
+.statline button:hover b{color:var(--pritx);text-decoration:underline}
+
+/* Übersicht */
+.task{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line2);align-items:flex-start}
+.task:last-child{border-bottom:0}
+.task .ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none}
+.task .tx{flex:1}
+.task .t1{font-weight:700}
+.task .t2{color:var(--mute);font-size:13.5px}
+.task .ac{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tl{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:2px 12px;padding:9px 16px;border-bottom:1px solid var(--line2);align-items:center}
+.tl:last-child{border-bottom:0}
+.tl .tm{font:700 15px Manrope;font-variant-numeric:tabular-nums}
+.tl .c{font-weight:600;line-height:1.25}
+.tl .m{font-size:13px;color:var(--mute);line-height:1.25}
+.heat{display:grid;grid-template-columns:130px repeat(7,minmax(0,1fr));gap:4px;align-items:center;font-size:13px}
+.heat .hd{color:var(--mute);font-weight:700;text-align:center;font-size:12px}
+.heat .cell{height:26px;border-radius:6px;display:grid;place-items:center;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
+.heat .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Kurspläne */
+.week{display:grid;grid-template-columns:repeat(7,minmax(130px,1fr));gap:10px;overflow-x:auto;padding-bottom:4px}
+.day{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-height:280px;display:flex;flex-direction:column}
+.day.today{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri) inset}
+.day .dh{padding:9px 12px;border-bottom:1px solid var(--line2);display:flex;justify-content:space-between;align-items:baseline}
+.day .dh b{font-family:Manrope}
+.day .dh span{font-size:12.5px;color:var(--mute)}
+.slot{margin:8px 8px 0;padding:8px 10px;border-radius:8px;background:var(--bg);border-left:3px solid var(--c);position:relative}
+.slot .tm{font:700 14px Manrope;font-variant-numeric:tabular-nums}
+.slot .ty{font-weight:600;font-size:14px;line-height:1.2}
+.slot .tr{font-size:12.5px;color:var(--mute);line-height:1.3}
+.slot .x{position:absolute;right:4px;top:4px;border:0;background:none;color:var(--mute);padding:2px;border-radius:4px}
+.addslot{margin:8px;border:1px dashed var(--line);background:none;border-radius:8px;padding:6px;color:var(--mute);font-weight:600;font-size:13px}
+.banner{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--warnsoft);color:var(--ink);margin-bottom:12px;font-size:14px}
+.banner .sp{flex:1 1 280px}
+.banner.info{background:var(--prisoft)}
+
+/* Drawer und Popover */
+.scrim{position:absolute;inset:0;background:rgba(20,19,17,.28);z-index:40}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--panel);border-left:1px solid var(--line);box-shadow:var(--shadow);z-index:41;display:flex;flex-direction:column;animation:slide .18s ease-out}
+@keyframes slide{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.drawer{animation:none}}
+.drawer .dhd{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.drawer .dbd{flex:1;overflow:auto;padding:4px 20px 20px}
+.drawer .dft{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+.dsec{padding:14px 0;border-bottom:1px solid var(--line2)}
+.dsec:last-child{border-bottom:0}
+.dsec h3{margin-bottom:8px}
+.kv{display:grid;grid-template-columns:140px minmax(0,1fr);gap:6px 12px;font-size:14px}
+.kv dt{color:var(--mute)}
+.kv dd{margin:0;font-weight:600}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label,.flbl{font-weight:600;font-size:13.5px}
+.field .hint{font-size:12.5px;color:var(--mute)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;background:var(--panel);width:100%;text-align:left}
+.opt.on{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri) inset;background:var(--prisoft)}
+.opt .t1{font-weight:700}
+.opt .t2{font-size:13px;color:var(--mute)}
+.pop{position:absolute;z-index:50;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;width:300px}
+.pop .pi{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:7px 8px;border-radius:8px;text-align:left}
+.pop .pi:hover{background:var(--hover)}
+.pop .pi.on{background:var(--prisoft)}
+.pop .pi .nm{font-weight:600;line-height:1.2}
+.pop .pi .mt{font-size:12.5px;color:var(--mute);line-height:1.2}
+.pop .ps{padding:6px 8px 4px;font-size:12px;font-weight:700;color:var(--mute)}
+.pop input{width:100%;margin-bottom:4px}
+.pop .kbd{margin-left:auto;font-size:11.5px;color:var(--mute);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;z-index:60;box-shadow:var(--shadow);display:flex;gap:8px;align-items:center;max-width:90%}
+.seg2{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg2 button{border:0;background:var(--panel);padding:6px 12px;font-weight:600;font-size:13.5px;color:var(--ink2);border-right:1px solid var(--line);white-space:nowrap}
+.seg2 button:last-child{border-right:0}
+.seg2 button.on{background:var(--pri);color:var(--prifg)}
+.switchrow{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line2)}
+.switchrow:last-child{border-bottom:0}
+.switchrow .t1{font-weight:700}
+.switchrow .t2{font-size:13.5px;color:var(--mute);max-width:560px}
+.tg{width:40px;height:23px;border-radius:99px;border:0;background:var(--line);position:relative;flex:none}
+.tg::after{content:"";position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:99px;background:#fff;transition:left .15s}
+.tg.on{background:var(--pri)}
+.tg.on::after{left:20px}
+.setgrid{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;align-items:start}
+.subnav{display:flex;flex-direction:column;gap:2px;position:sticky;top:0}
+.empty{padding:28px;text-align:center;color:var(--mute)}
+.msg{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:460px}
+.msg .lst{border-right:1px solid var(--line)}
+.mi{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line2);background:none;padding:11px 16px}
+.mi.on{background:var(--prisoft)}
+.mi .r1{display:flex;justify-content:space-between;gap:8px;font-weight:700}
+.mi .r2{font-size:13.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi .r3{font-size:12.5px;color:var(--mute)}
+.unread{width:8px;height:8px;border-radius:99px;background:var(--link);display:inline-block;margin-right:6px}
+
+/* Trainer */
+.sess{display:grid;grid-template-columns:60px minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--line2)}
+.sess:last-child{border-bottom:0}
+.sess .tm{font:800 16px Manrope;font-variant-numeric:tabular-nums;line-height:1.1}
+.sess .dt{font-size:12.5px;color:var(--mute)}
+.sess .c{font-weight:700;line-height:1.25}
+.sess .m{font-size:13.5px;color:var(--mute);line-height:1.3}
+.sess .ac{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.next{background:var(--pri);color:var(--prifg);border-radius:14px;padding:18px}
+.next .k{font-size:13px;opacity:.8;font-weight:600}
+.next .tm{font:800 34px/1 Manrope;margin:6px 0 4px;letter-spacing:-.02em}
+.next .c{font:700 18px Manrope}
+.next .m{opacity:.85;font-size:14px}
+.next .btn{background:rgba(255,255,255,.14);border-color:transparent;color:inherit}
+:root[data-theme=dark] .next .btn{background:rgba(0,0,0,.12)}
+.doc{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line2)}
+.doc:last-child{border-bottom:0}
+.doc .ic{width:40px;height:40px;border-radius:10px;background:var(--prisoft);color:var(--pritx);display:grid;place-items:center}
+
+/* Telefon */
+.phonestage{height:100%;overflow:auto;display:flex;gap:40px;justify-content:center;align-items:flex-start;padding:28px 20px;background:color-mix(in srgb,var(--bg) 70%,var(--line))}
+.phone{width:390px;height:812px;flex:none;border-radius:46px;background:#141311;padding:11px;box-shadow:0 30px 60px rgba(0,0,0,.25)}
+.screen{width:100%;height:100%;border-radius:36px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;position:relative}
+.sbar{height:44px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font:700 14px Manrope}
+.mhd{padding:4px 18px 10px;display:flex;justify-content:space-between;align-items:center}
+.mhd h1{font-size:26px}
+.mbody{flex:1;overflow:auto;padding:0 14px 18px}
+.mnav{flex:none;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:6px 6px 24px;background:var(--panel);border-top:1px solid var(--line)}
+.mnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--mute);padding:4px 0}
+.mnav button.on{color:var(--pritx)}
+.mnav .fab{width:52px;height:52px;border-radius:16px;background:var(--pri);color:var(--prifg);display:grid;place-items:center;margin:-22px auto 0;box-shadow:0 6px 16px rgba(31,95,92,.35)}
+.mcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.mcard .sess{grid-template-columns:52px minmax(0,1fr);padding:12px 14px}
+.mcard .sess .ac{grid-column:1/-1;justify-content:stretch}
+.mcard .sess .ac .btn{flex:1;justify-content:center;min-height:42px}
+.mtitle{font:700 14px Manrope;margin:16px 4px 8px;display:flex;justify-content:space-between}
+.daystrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}
+.daystrip button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 0;display:flex;flex-direction:column;align-items:center;font-size:12px;color:var(--mute);font-weight:600}
+.daystrip button b{font:800 16px Manrope;color:var(--ink)}
+.daystrip button.on{background:var(--pri);border-color:var(--pri);color:var(--prifg)}
+.daystrip button.on b{color:var(--prifg)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--panel);border-radius:22px 22px 0 0;box-shadow:var(--shadow);z-index:41;max-height:88%;display:flex;flex-direction:column;animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:8px auto 4px}
+.notes{max-width:380px;padding-top:30px}
+.notes h2{font-size:22px;margin-bottom:10px}
+.notes li{margin-bottom:8px;color:var(--ink2)}
+.list{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.li{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line2);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left}
+.li:last-child{border-bottom:0}
+.li .tx{flex:1}
+
+/* Konzept */
+.concept-pane{position:absolute;inset:0;z-index:70;background:var(--bg);overflow:auto}
+.cwrap{max-width:1180px;margin:0 auto;padding:32px max(24px,4vw) 64px}
+.cwrap h1{font-size:36px;line-height:1.05;max-width:22ch;text-wrap:balance}
+.cwrap .lead{font-size:17px;color:var(--ink2);max-width:72ch;margin:12px 0 26px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:28px}
+.cgrid .panel .bd p{margin:0 0 8px}
+.cgrid ul{margin:6px 0 0;padding-left:18px}
+.cgrid li{margin-bottom:5px}
+.mini{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-top:6px}
+.mini .fr{border:1px solid var(--line);border-radius:10px;height:150px;overflow:hidden;display:grid;background:var(--bg)}
+.mini .cap{font-size:13px;color:var(--mute);margin-top:4px}
+.matrix td,.matrix th{font-size:14px}
+.matrix td:not(:first-child){font-size:13.5px}
+.y{color:var(--ok);font-weight:700}
+.n{color:var(--mute)}
+.cc{color:var(--warn);font-weight:600}
+
+.side-layout.col{grid-template-columns:64px minmax(0,1fr)}
+.col .side .sec,.col .side .swbtn .tx,.col .side .swbtn>svg,.col .side .scope,.col .side .nv span,.col .side .user .tx,.col .side .user>svg,.col .side .logo span,.col .side .cta span{display:none}
+.col .side .nv,.col .side .swbtn,.col .side .user,.col .side .cta{justify-content:center;padding-inline:0}
+.col .side .nv .cnt{display:none}
+.col .side .logo{flex-direction:column;padding:4px 0 12px}
+.collbtn{margin-left:auto;border:0;background:none;color:var(--mute);border-radius:6px;padding:4px;display:grid;place-items:center}
+.collbtn:hover{background:var(--hover);color:var(--ink)}
+.ctxbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 32px;background:var(--prisoft);border-bottom:1px solid var(--line);font-size:14px;position:sticky;top:0;z-index:5}
+.ctxbar .sq{width:22px;height:22px;font-size:10px;border-radius:6px}
+.ctxbar .sp{flex:1}
+.bulk{position:sticky;bottom:12px;z-index:6;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--ink);color:var(--bg);border-radius:12px;padding:8px 10px 8px 16px;margin-top:12px;box-shadow:var(--shadow)}
+.bulk b{margin-right:auto}
+.bulk .btn{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 35%,transparent)}
+.bulk .btn.p{background:var(--bg);color:var(--ink);border-color:var(--bg)}
+.cb{width:18px;height:18px;accent-color:var(--pri);cursor:pointer;margin:0}
+.slot.new{border-left-style:dashed;background:var(--oksoft)}
+.slot.gone{opacity:.55;text-decoration:line-through}
+.slot.chg .tr b{color:var(--link)}
+.slot .warn{display:flex;gap:4px;align-items:flex-start;font-size:12px;color:var(--err);font-weight:600;margin-top:4px;line-height:1.25}
+.diff{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:14px}
+.diff:last-child{border-bottom:0}
+.diff .k{font:800 15px Manrope;text-align:center}
+.prog{height:8px;border-radius:99px;background:var(--hover);overflow:hidden;margin:8px 0 4px}
+.prog i{display:block;height:100%;background:var(--pri);border-radius:99px}
+.step{display:flex;gap:12px;align-items:center;padding:10px 16px;border-top:1px solid var(--line2)}
+.step .ck{width:24px;height:24px;border-radius:99px;display:grid;place-items:center;flex:none;border:2px solid var(--line)}
+.step.ok .ck{background:var(--ok);border-color:var(--ok);color:#fff}
+.step.ok .t1{color:var(--mute);text-decoration:line-through}
+.step .tx{flex:1}
+.step .t1{font-weight:700}
+.step .t2{font-size:13px;color:var(--mute)}
+.impbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 32px;background:var(--warnsoft);border-bottom:1px solid var(--line);font-size:14px;position:sticky;top:0;z-index:5}
+.ro .btn.p,.ro .btn.ok,.ro .btn.d,.ro .tg,.ro .seg2 button,.ro .cb{opacity:.45;pointer-events:none}
+.push{position:absolute;left:10px;right:10px;top:48px;z-index:45;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:12px 14px;animation:up .25s ease-out}
+.push .r1{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mute)}
+.push .r1 svg{width:18px;height:18px}
+.push .t{font-weight:700;margin-top:4px}
+.push .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.push .acts .btn{justify-content:center;min-height:40px}
+.per{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:9px;background:var(--panel);padding:2px;gap:2px}
+.per>button{border:0;background:none;border-radius:7px;padding:5px 8px;color:var(--ink2);display:grid;place-items:center;font-weight:600;font-size:13.5px}
+.per>button:hover{background:var(--hover)}
+.per select{border:0;background:var(--hover);border-radius:7px;padding:5px 8px;font-weight:600;font-size:13.5px}
+.per .lbl{font-weight:700;padding:0 8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.per input{border:1px solid var(--line);border-radius:7px;padding:3px 6px;font-size:13.5px;background:var(--panel);width:128px}
+.pinb{border:0;background:none;color:var(--mute);padding:4px;border-radius:6px;display:grid;place-items:center}
+.pinb:hover{background:var(--hover);color:var(--ink)}
+.pinb.on{color:#C98A12}
+.pinb.on svg{fill:#C98A12}
+.pop .pi .pinb{margin-left:auto}
+.pop .foot{border-top:1px solid var(--line);margin-top:4px;padding:6px 8px 2px;font-size:12px;color:var(--mute)}
+@media (max-width:1100px){.grid2,.grid-rail{grid-template-columns:minmax(0,1fr)}.wrap{padding:18px 20px 40px}.notes{display:none}}
+@media (max-width:900px){
+  .ctxbar{padding:8px 20px}
+  .collbtn{display:none}
+  .side-layout{grid-template-columns:64px minmax(0,1fr)}
+  .side .lbl,.side .sec,.side .swbtn .tx,.side .scope,.side .nv span,.side .user .tx,.side .logo span,.side .cta span{display:none}
+  .side .nv{justify-content:center}
+  .side .nv .cnt{display:none}
+  .setgrid,.msg{grid-template-columns:minmax(0,1fr)}
+  .subnav{flex-direction:row;flex-wrap:wrap;position:static}
+  .search input{width:100%}
+}
+@media (max-width:600px){.proto .lbl{display:none}.row2{grid-template-columns:1fr}.kv{grid-template-columns:1fr}.phone{transform:scale(.86);transform-origin:top center}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+{
+/* ---------- Icons ---------- */
+const P={
+home:'M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z',
+list:'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01',
+cal:'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4',
+users:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+receipt:'M5 3v18l2-1.5L9 21l2-1.5L13 21l2-1.5L17 21l2-1.5V3l-2 1.5L15 3l-2 1.5L11 3 9 4.5 7 3zM9 8h6M9 12h6M9 16h4',
+sliders:'M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4',
+help:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01',
+building:'M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M2 21h20M8 7h4M8 11h4M8 15h4',
+shield:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+inbox:'M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z',
+down:'m6 9 6 6 6-6',left:'m15 18-6-6 6-6',right:'m9 18 6-6-6-6',updown:'m7 15 5 5 5-5M7 9l5-5 5 5',
+plus:'M12 5v14M5 12h14',search:'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',
+check:'M20 6 9 17l-5-5',x:'M18 6 6 18M6 6l12 12',
+alert:'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+clock:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
+pin:'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0zM12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6',
+repeat:'m17 2 4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3',
+file:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h4',
+user:'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8',
+logout:'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+moon:'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z',
+sun:'M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+download:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3',
+layers:'m12 2 10 5-10 5L2 7zM2 17l10 5 10-5M2 12l10 5 10-5',
+mail:'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 6l-10 7L2 6',
+lock:'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4',
+week:'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4M9 15l2 2 4-4',
+tag:'M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01',
+euro:'M18 7a6 6 0 1 0 0 10M4 10h10M4 14h10',
+dots:'M5 12h.01M12 12h.01M19 12h.01',
+trash:'M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15',
+userplus:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6',
+send:'M22 2 11 13M22 2l-7 20-4-9-9-4z',
+star:'M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z',
+panel:'M3 3h18v18H3zM9 3v18M15 9l-3 3 3 3',
+back:'M19 12H5M12 19l-7-7 7-7'
+};
+const ic=(n,c='')=>`<svg class="i ${c}" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n]}"/></svg>`;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur=n=>n.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+const ini=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('');
+const hash=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))%2147483647;return h};
+const rng=seed=>{let s=seed%2147483647;if(s<=0)s+=2147483646;return()=>(s=s*16807%2147483647)/2147483647};
+const LOGO='<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#1F5F5C"/><circle cx="120" cy="387" r="28" fill="#FAFAF9"/><circle cx="236" cy="277" r="46" fill="#FAFAF9"/><circle cx="371" cy="151" r="69" fill="#FAFAF9"/></svg>';
+
+/* ---------- Beispieldaten ---------- */
+const WD=['Mo','Di','Mi','Do','Fr','Sa','So'];
+const WDL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+const TODAY=6, NOW='16:10';
+const dateOf=d=>`${WD[d-1]} ${22+d}.11.`;
+const SQC=['#1F5F5C','#5450C4','#9A6203','#B23A63','#1D8A5F','#56677A','#7D4A96','#B2531C'];
+const TYC=['#2E7672','#6C6ADD','#C98A12','#C2416B','#1D8A5F','#6B7C8F','#8A4FA0','#C25A1E'];
+const POOL=['Lena Vogt','Jonas Brandt','Aylin Demir','Marco Pohl','Sophie Krüger','Ben Hartmann','Nils Weber','Hanna Schulz','Emre Yilmaz','Mara Busch','Felix Lorenz','Ida Sommer','Paul Winter','Nora Haas','Tim Berger','Jule Franke'];
+const COS=[
+ {id:'c1',name:'Kraftwerk Fitness',studios:['Mitte','Kreuzberg','Prenzlauer Berg'],since:'02.09.2026'},
+ {id:'c2',name:'Yogaloft',studios:['Friedrichshain','Schöneberg'],since:'14.09.2026',types:['Vinyasa','Yin Yoga','Hatha','Pilates','Meditation']},
+ {id:'c3',name:'Move & More',studios:['Altona','Eimsbüttel','Ottensen','Winterhude'],since:'21.09.2026'},
+ {id:'c4',name:'RheinFit',studios:['Deutz','Ehrenfeld','Südstadt','Nippes','Lindenthal'],since:'30.09.2026'},
+ {id:'c5',name:'Boxwerk',studios:['Plagwitz','Connewitz'],since:'03.10.2026'},
+ {id:'c6',name:'Aquafit Nord',studios:['Kiel','Lübeck','Flensburg'],since:'08.10.2026'},
+ {id:'c7',name:'Barre & Co',studios:['Schwabing'],since:'12.10.2026'},
+ {id:'c8',name:'Kletterhalle Ost',studios:['Neustadt','Pieschen'],since:'19.10.2026'},
+ {id:'c9',name:'Pilates Atelier',studios:['Westend'],since:'24.10.2026'},
+ {id:'c10',name:'Sportpark Süd',studios:['Degerloch','Vaihingen','Möhringen'],since:'01.11.2026'},
+ {id:'c11',name:'Tanzraum',studios:['St. Pauli','Barmbek'],since:'05.11.2026'},
+ {id:'c12',name:'Urban Gym',studios:['Mitte','Wedding','Neukölln','Pankow','Spandau','Steglitz'],since:'11.11.2026',del:true},
+ {id:'c13',name:'Studio Puls',studios:['Linden'],since:'17.11.2026'},
+ {id:'c14',name:'Zirkeltraining Nord',studios:['Vegesack'],since:'25.11.2026'}
+];
+{const brands=['Fitbox','Corefit','Studio Atem','Kraftraum','Yogahaus','Vital','PowerPlay','Balance','Spinwerk','Aktivhaus','Body & Soul','Fitlab','Pulsschlag','Bewegungsraum','Athletik','Flow'];
+ const cities=['Hamburg','München','Köln','Frankfurt','Stuttgart','Düsseldorf','Leipzig','Dresden','Hannover','Nürnberg','Bremen','Bonn','Münster','Mainz','Kiel','Potsdam','Freiburg','Augsburg','Rostock','Erfurt'];
+ const dd=['01.12.2025','15.01.2026','03.03.2026','22.04.2026','10.06.2026','28.07.2026','05.08.2026','19.08.2026'];
+ for(let i=0;COS.length<64;i++){const n=brands[i%brands.length]+' '+cities[(i*7)%cities.length];if(COS.some(c=>c.name===n))continue;const k=1+(i*5)%4;COS.push({id:'c'+(COS.length+1),name:n,studios:['Mitte','Nord','Süd','West','Ost'].slice(0,k),since:dd[i%dd.length]})}
+ COS.sort((a,b)=>+a.id.slice(1)-+b.id.slice(1));}
+COS.forEach((c,i)=>{const r=rng(hash(c.id)+3);c.appr=r()<.35?1+Math.floor(r()*3):0;c.over=r()<.5?Math.floor(r()*9):0;c.act=['vor 5 Min.','vor 1 Std.','vor 3 Std.','heute','gestern','vor 3 Tagen','vor 1 Woche','vor 3 Wochen'][Math.floor(r()*8)];c.tr=5+Math.floor(r()*30);
+c.color=SQC[i%SQC.length];c.st=c.studios.map((n,j)=>({id:c.id+'s'+j,name:n}))});
+const coById=id=>COS.find(c=>c.id===id);
+const TIMES=['07:00','08:15','09:30','10:45','12:15','17:00','18:15','19:30','20:30'];
+const DEF_TYPES=['Yoga Flow','HIIT','Pilates','Spinning','Rücken Fit','Bodypump','Zumba','Mobility'];
+const EMP=[['Freiberuflich','32,00 € / Kurs',32],['Freiberuflich','0,55 € / Min.',30],['Minijob','14,00 € / Std.',14],['Freiberuflich','28,00 € / Kurs',28],['Festangestellt','Festgehalt',0]];
+
+function data(c){
+  if(c.cache)return c.cache;
+  const r=rng(hash(c.id)+11);
+  const types=(c.types||DEF_TYPES).map((n,i)=>({id:c.id+'t'+i,name:n,color:TYC[i%TYC.length],dur:i%3?60:45}));
+  let names=c.id==='c1'?POOL.slice(0,9):c.id==='c2'?['Lena Vogt','Mara Busch','Felix Lorenz','Ida Sommer','Paul Winter','Nora Haas']:POOL.slice(hash(c.id)%7,hash(c.id)%7+7);
+  const trainers=names.map((n,i)=>{const e=EMP[(i+(c.id==='c1'?0:2))%EMP.length];
+    return {name:n,role:'trainer',emp:e[0],rate:e[1],rv:e[2],studios:i%4===2?[c.st[0].id]:'all',klein:i%3===0,
+    upd:['vor 2 Std.','gestern','vor 3 Tagen','24.11.','19.11.','12.11.','05.11.','30.10.','28.10.'][i%9],
+    issue:c.id==='c1'?({6:'IBAN fehlt',8:'Steuernummer fehlt'})[i]||'':''}});
+  const slots=[];
+  c.st.forEach(s=>{for(let d=1;d<=7;d++){const n=d<=5?2+(r()<.5?1:0):1+(r()<.6?1:0);
+    const ts=[...TIMES].sort(()=>r()-.5).slice(0,n).sort();
+    ts.forEach(t=>{const ty=types[Math.floor(r()*types.length)];slots.push({id:'sl'+slots.length,studio:s.id,d,start:t,type:ty,trainer:trainers[Math.floor(r()*trainers.length)].name})})}});
+  if(c.id==='c1'||c.id==='c2')slots.forEach((s,i)=>{if(i%6===0)s.trainer='Lena Vogt'});
+  const sess=slots.map(s=>{let st,sub=null,tr=s.trainer;const x=r();
+    if(s.d<TODAY){st=x<.8?'done':x<.88?'overdue':x<.94?'cancelled':'done';if(x>=.94){sub=tr;tr=trainers.filter(t=>t.name!==sub)[Math.floor(r()*(trainers.length-1))].name}}
+    else if(s.d===TODAY){st=s.start<NOW?(x<.7?'done':'open'):'planned'}else st='planned';
+    return {...s,st,trainer:tr,sub}});
+  sess.push({id:'adhoc',studio:c.st[0].id,d:3,start:'13:00',type:types[0],trainer:trainers[1].name,st:'done',adhoc:true});
+  sess.sort((a,b)=>a.d-b.d||a.start.localeCompare(b.start));
+  const team=[
+    {name:c.id==='c1'?'Miriam Albers':'Sven Roth',role:'admin',upd:'heute',email:'m.albers'},
+    {name:c.id==='c1'?'Daniel Fuchs':'Katrin Ost',role:'admin',upd:'03.11.'},
+    {name:'Tobias Reiter',role:'studio',studios:[c.st[0].id,(c.st[1]||c.st[0]).id],upd:'gestern'},
+    ...(c.st[2]?[{name:'Paula Lenz',role:'studio',studios:[c.st[2].id],upd:'20.11.'}]:[]),
+    ...trainers,
+    {name:'Clara Neumann',role:'trainer',emp:'Freiberuflich',rate:'30,00 € / Kurs',rv:30,studios:'all',pending:'Tobias Reiter',upd:'vor 40 Min.'},
+    ...(c.st[2]?[{name:'Jule Franke',role:'trainer',emp:'Minijob',rate:'14,00 € / Std.',rv:14,studios:'all',pending:'Paula Lenz',upd:'vor 2 Std.'}]:[])
+  ];
+  const bill=trainers.map((t,i)=>{const n=8+Math.floor(r()*14);const free=t.emp==='Freiberuflich';const net=free?n*(t.rv||30):0;const vat=free&&!t.klein?net*.19:0;
+    let st=['approved','auto','approved','open','approved','open','skip','approved','skip'][i%9];if(t.name==='Jonas Brandt')st='corr';if(!free&&st!=='skip')st='issued';
+    return {...t,n,free,net,vat,st}});
+  return c.cache={types,trainers,slots,sess,team,bill};
+}
+
+const PERSONA={
+ platform:{name:'Alex Kern',label:'Plattform-Admin',cos:COS.map(c=>c.id),role:'admin'},
+ company:{name:'Miriam Albers',label:'Company-Admin',get cos(){return COS.slice(0,S.ncos).map(c=>c.id)},role:'admin'},
+ studio:{name:'Tobias Reiter',label:'Studio-Admin',cos:['c1'],role:'studio',studios:['c1s0','c1s1']},
+ trainer:{name:'Lena Vogt',label:'Trainer:in',cos:['c1','c2'],role:'trainer'}
+};
+
+/* ---------- Zustand ---------- */
+const root=document.documentElement;
+const S={role:'company',nav:'sidebar',device:'desktop',theme:root.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),
+ ctx:'c1',page:'overview',studio:'all',kst:'all',kview:'list',team:'all',plan:null,edit:false,bill:'docs',set:'company',
+ drawer:null,pop:null,toast:null,done:{},concept:false,tview:'list',tco:'all',mpage:'week',mday:TODAY,sheet:false,msg:0,perm:{ct:'approval',co:'approval',bi:'denied'},
+ tg:{split:false,stm:true,auto:true,n1:true,n2:true,n3:false},logMode:'plan',addRole:'trainer',expand:null,ncos:2,pins:['c1','c4','c9'],recent:['c1','c2','c3','c6'],cof:'all',col:false,per:{u:'week',o:0},tper:{u:'week',o:0},tsel:[],ksel:[],push:false,imp:false,logf:'all',open:{}};
+try{const th=localStorage.getItem('cy-theme');if(th)S.theme=th}catch(e){}
+try{const v=JSON.parse(sessionStorage.getItem('cy-proto')||'{}');['role','nav','device','col','ncos'].forEach(k=>{if(v[k])S[k]=v[k]})}catch(e){}
+const P0=()=>PERSONA[S.role];
+const tier=()=>{const n=P0().cos.length;return n<=5?1:n<20?2:3};
+const quick=()=>{const c=P0().cos;if(tier()===1)return c;return [...new Set([...S.pins,...S.recent])].filter(id=>c.includes(id)).slice(0,9)};
+const isAdmin=()=>S.role==='platform'||S.role==='company';
+const co=()=>coById(S.ctx)||coById(P0().cos[0]);
+const myStudios=()=>{const c=co();return S.role==='studio'?c.st.filter(s=>P0().studios.includes(s.id)):c.st};
+const inScope=sid=>S.studio==='all'?myStudios().some(s=>s.id===sid):sid===S.studio;
+const stName=id=>{for(const c of COS){const s=c.st.find(x=>x.id===id);if(s)return s.name}return''};
+const pendList=()=>data(co()).team.filter(p=>p.pending&&!S.done['pend:'+p.name]);
+const pendCount=()=>isAdmin()?pendList().length:0;
+
+function set(p){Object.assign(S,p);try{sessionStorage.setItem('cy-proto',JSON.stringify({role:S.role,nav:S.nav,device:S.device,col:S.col,ncos:S.ncos}))}catch(e){}render()}
+let tt;function toast(m){S.toast=m;render();clearTimeout(tt);tt=setTimeout(()=>{S.toast=null;render()},2600)}
+
+/* ---------- Prototyp-Leiste ---------- */
+function proto(){
+  const r=[['platform','Plattform-Admin'],['company','Company-Admin'],['studio','Studio-Admin'],['trainer','Trainer:in']];
+  return `<div class="proto"><b>Prototyp</b>
+  <div class="grp"><span class="lbl">Rolle</span><div class="seg">${r.map(([k,l])=>`<button data-a="role" data-v="${k}" class="${S.role===k?'on':''}">${l}</button>`).join('')}</div></div>
+  ${S.role==='company'?`<div class="grp"><span class="lbl">Companies</span><div class="seg">${[2,8,24].map(n=>`<button data-a="ncos" data-v="${n}" class="${S.ncos===n?'on':''}">${n}</button>`).join('')}</div></div>`:''}
+  <div class="grp"><span class="lbl">Navigation</span><div class="seg"><button data-a="nav" data-v="sidebar" class="${S.nav==='sidebar'?'on':''}">Sidebar (Empfehlung)</button><button data-a="nav" data-v="bars" class="${S.nav==='bars'?'on':''}">Zwei Leisten</button></div></div>
+  <div class="grp"><span class="lbl">Gerät</span><div class="seg"><button data-a="device" data-v="desktop" class="${S.device==='desktop'?'on':''}">Desktop</button><button data-a="device" data-v="mobile" class="${S.device==='mobile'?'on':''}" ${S.role!=='trainer'?'disabled title="Mobil nur für Trainer:innen"':''}>Mobil</button></div></div>
+  <div class="grp"><div class="seg"><button data-a="theme" data-v="light" class="${S.theme==='light'?'on':''}">Hell</button><button data-a="theme" data-v="dark" class="${S.theme==='dark'?'on':''}">Dunkel</button></div></div>
+  <button class="concept" data-a="concept">Konzept &amp; Rollen</button></div>`;
+}
+
+/* ---------- Navigation ---------- */
+function items(){
+  if(S.role==='trainer')return [['t-courses','Meine Kurse','week'],['t-bill','Abrechnung','receipt',1],['t-profile','Profil & Verträge','user',S.done.offer?0:1]];
+  return [['overview','Übersicht','home'],['courses','Kurse','list'],['plans','Kurspläne','cal'],['team',S.role==='studio'?'Trainer:innen':'Team','users',pendCount()],['billing','Abrechnung','receipt']];
+}
+const platItems=[['companies','Übersicht','layers'],['admins','Plattform-Admins','shield'],['support','Support','inbox',S.done.inbox?0:2]];
+const nv=(k,l,i,n)=>`<button class="nv ${S.page===k?'on':''}" data-a="page" data-v="${k}" title="${l}">${ic(i)}<span>${l}</span>${n?`<span class="cnt">${n}</span>`:''}</button>`;
+
+function switcher(){
+  const p=P0();
+  if(S.role==='platform'&&S.ctx==='platform')return `<div class="switch"><button class="swbtn" data-a="pop" data-v="co"><span class="sq" style="background:var(--mute)">${ic('search','s')}</span><span class="tx"><div class="nm">Company öffnen …</div><div class="mt">${COS.length} Companies · Strg K</div></span></button></div>`;
+  const c=co();const multi=p.cos.length>1;
+  return `<div class="switch"><button class="swbtn ${multi?'':'static'}" ${multi?'data-a="pop" data-v="co"':''} title="${esc(c.name)}${multi?' · Strg K':''}"><span class="sq" style="background:${c.color}">${ini(c.name)}</span><span class="tx" style="flex:1"><div class="nm">${esc(c.name)}</div><div class="mt">${c.st.length} Studios · ${S.role==='studio'?'Studio-Admin':S.role==='platform'?'als Plattform-Admin':'Admin'}</div></span>${multi?ic('updown','s'):''}</button></div>
+  <div class="scope"><select class="sel" data-a="studio" aria-label="Studio-Filter" style="width:100%"><option value="all">${S.role==='studio'?'Meine Studios':'Alle Studios'}</option>${myStudios().map(s=>`<option value="${s.id}" ${S.studio===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>`;
+}
+function userBtn(){const p=P0();return `<button class="user" data-a="pop" data-v="user"><span class="av ${S.role==='trainer'?'t':S.role==='studio'?'s':''}">${ini(p.name)}</span><span class="tx" style="flex:1"><div class="nm">${p.name}</div><div class="mt">${p.label}</div></span>${ic('updown','s')}</button>`}
+
+function sidebar(){
+  let h=`<aside class="side"><div class="logo">${LOGO}<span>class-y</span><button class="collbtn" data-a="col" title="${S.col?'Ausklappen':'Einklappen'}" aria-label="Sidebar ein- oder ausklappen">${ic('panel','s')}</button></div>`;
+  if(S.role==='trainer'){h+=`<button class="cta" data-a="log">${ic('plus')}<span>Kurs eintragen</span></button>`+items().map(x=>nv(...x)).join('')}
+  else{
+    if(S.role==='platform')h+=`<div class="sec">Plattform</div>`+platItems.map(x=>nv(...x)).join('')+`<div class="sec">Company</div>`;
+    if(S.role==='company'&&tier()===3)h+=nv('companies','Alle Companies','layers')+`<div class="sec">Company</div>`;
+    h+=switcher();
+    if(!(S.role==='platform'&&S.ctx==='platform'))h+=`<div style="height:6px"></div>`+items().map(x=>nv(...x)).join('');
+  }
+  h+=`<div class="spacer"></div>`;
+  if(S.role!=='trainer'&&!(S.role==='platform'&&S.ctx==='platform'))h+=nv('settings','Einstellungen','sliders');
+  h+=nv('help','Hilfe','help')+userBtn()+`</aside>`;
+  return h;
+}
+function bars(){
+  const p=P0();const multi=p.cos.length>1||S.role==='platform';
+  const vis=tier()===1?[...p.cos]:quick().slice(0,4);
+  if(S.ctx!=='platform'&&!vis.includes(S.ctx))vis.push(S.ctx);
+  const tabs=vis.map(id=>{const c=coById(id);return `<button class="ctab ${S.ctx===id?'on':''}" data-a="ctx" data-v="${id}"><span class="sq" style="background:${c.color}">${ini(c.name)}</span>${esc(c.name)}</button>`}).join('');
+  const more=tier()>1?`<button class="ctab" data-a="pop" data-v="co">Weitere ${p.cos.length-vis.length} ${ic('down','s')}</button>`:'';
+  const right=`<div class="rt"><button class="btn g sm" data-a="page" data-v="help">${ic('help','s')}Hilfe</button><button class="av ${S.role==='trainer'?'t':S.role==='studio'?'s':''}" style="border:0" data-a="pop" data-v="user">${ini(p.name)}</button></div>`;
+  let b1,b2;
+  const pageTabs=(arr)=>arr.map(([k,l,i,n])=>`<button class="ptab ${S.page===k?'on':''}" data-a="page" data-v="${k}">${ic(i,'s')}${l}${n?`<span class="cnt">${n}</span>`:''}</button>`).join('');
+  if(S.role==='trainer'||!multi){
+    const c=co();
+    b1=`<div class="bar1"><div class="logo">${LOGO}<span>class-y</span></div>${S.role!=='trainer'?`<span class="ctab on"><span class="sq" style="background:${c.color}">${ini(c.name)}</span>${esc(c.name)}</span>`:''}${right}</div>`;
+    b2=`<div class="bar2">${pageTabs(items())}${S.role!=='trainer'?pageTabs([['settings','Einstellungen','sliders']]):''}<div class="rt">${S.role==='trainer'?`<button class="btn p sm" data-a="log">${ic('plus','s')}Kurs eintragen</button>`:scopeSel()}</div></div>`;
+  }else{
+    b1=`<div class="bar1"><div class="logo">${LOGO}<span>class-y</span></div>${S.role==='platform'?`<button class="ctab ${S.ctx==='platform'?'on':''}" data-a="ctx" data-v="platform">${ic('shield','s')}Plattform</button><span class="vline"></span>`:tier()===3?`<button class="ctab ${S.page==='companies'?'on':''}" data-a="page" data-v="companies">${ic('layers','s')}Alle</button><span class="vline"></span>`:''}${tabs}${more}${right}</div>`;
+    b2=S.ctx==='platform'?`<div class="bar2">${pageTabs(platItems)}</div>`:`<div class="bar2">${pageTabs(items())}${pageTabs([['settings','Einstellungen','sliders']])}<div class="rt">${scopeSel()}</div></div>`;
+  }
+  return b1+b2;
+}
+const scopeSel=()=>`<select class="sel" data-a="studio" aria-label="Studio-Filter" style="min-height:32px;padding-block:4px"><option value="all">${S.role==='studio'?'Meine Studios':'Alle Studios'}</option>${myStudios().map(s=>`<option value="${s.id}" ${S.studio===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>`;
+
+function pop(){
+  if(!S.pop)return'';
+  if(S.pop==='co'){
+    const p=P0();const ids=p.cos;const t=tier();
+    const top=S.role==='platform'?236:S.role==='company'&&t===3?118:74;
+    const pos=S.nav==='sidebar'?`left:${S.col?60:12}px;top:${top}px`:'left:200px;top:46px';
+    const item=(id,k)=>{const c=coById(id);const pin=S.pins.includes(id);return `<div class="pi ${S.ctx===id?'on':''}" data-a="ctx" data-v="${id}" data-n="${esc(c.name.toLowerCase())}" role="button" tabindex="0"><span class="sq" style="background:${c.color}">${ini(c.name)}</span><span style="flex:1;min-width:0"><div class="nm">${esc(c.name)}</div><div class="mt">${c.st.length} Studios${c.appr?` · ${c.appr} offen`:''}${c.del?' · Löschung geplant':''}</div></span>${k?`<span class="kbd">${k}</span>`:''}${t>1?`<button class="pinb ${pin?'on':''}" data-a="pin" data-v="${id}" title="${pin?'Lösen':'Anheften'}" aria-label="Anheften">${ic('star','s')}</button>`:''}</div>`};
+    let h='';
+    if(t===1){h=`<div class="ps">Deine Companies</div>`+ids.map((id,i)=>item(id,i+1)).join('')}
+    else{
+      const q=quick();const pins=q.filter(id=>S.pins.includes(id)),rec=q.filter(id=>!S.pins.includes(id));
+      h=`<input class="inp" id="cosearch" placeholder="${ids.length} Companies durchsuchen …" autocomplete="off">
+      <div class="fixed">${pins.length?`<div class="ps">Angepinnt</div>`+pins.map(id=>item(id,q.indexOf(id)+1)).join(''):''}${rec.length?`<div class="ps">Zuletzt geöffnet</div>`+rec.map(id=>item(id,q.indexOf(id)+1)).join(''):''}</div>
+      <div class="all" style="display:none"><div class="ps">Treffer</div>${[...ids].sort((x,y)=>coById(x).name.localeCompare(coById(y).name)).map(id=>item(id,0)).join('')}<div class="empty sm nohit" style="display:none;padding:12px">Keine Company gefunden.</div></div>
+      ${t===3?`<button class="pi" data-a="page" data-v="companies" style="border-top:1px solid var(--line);margin-top:4px">${ic('layers')}<span class="nm">Alle ${ids.length} Companies in der Übersicht</span></button>`:''}`;
+    }
+    return `<div class="scrim" style="background:transparent" data-a="close"></div><div class="pop" style="${pos};width:320px"><div id="colist" style="max-height:420px;overflow:auto">${h}</div><div class="foot">${t===1?'Tasten 1 bis '+ids.length+' wechseln direkt':t===2?'Strg K öffnet die Suche · Stern heftet an':'Strg K sucht · Stern heftet an · Übersicht für alles Weitere'}</div></div>`;
+  }
+  if(S.pop==='user'){
+    const pos=S.nav==='sidebar'?'left:12px;bottom:64px':'right:12px;top:46px';
+    return `<div class="scrim" style="background:transparent" data-a="close"></div><div class="pop" style="${pos};width:240px">
+    <button class="pi" data-a="page" data-v="${S.role==='trainer'?'t-profile':'profile'}">${ic('user')}<span class="nm">Profil</span></button>
+    <div class="ps">Darstellung</div>
+    <button class="pi ${S.theme==='light'?'on':''}" data-a="theme" data-v="light">${ic('sun')}<span class="nm">Hell</span></button>
+    <button class="pi ${S.theme==='dark'?'on':''}" data-a="theme" data-v="dark">${ic('moon')}<span class="nm">Dunkel</span></button>
+    <div style="border-top:1px solid var(--line);margin:4px 0"></div>
+    <button class="pi" data-a="toast" data-v="Abmelden ist im Prototyp ohne Funktion.">${ic('logout')}<span class="nm">Abmelden</span></button></div>`;
+  }
+  return '';
+}
+
+/* ---------- Seiten: Company-Kontext ---------- */
+const ST={done:['Erfasst','b-ok'],overdue:['Überfällig','b-err'],open:['Offen','b-warn'],planned:['Geplant',''],cancelled:['Abgesagt','b-off']};
+const sbadge=s=>`<span class="badge ${ST[s.st][1]}">${ST[s.st][0]}</span>`;
+const ph=(t,sub,act='')=>`<div class="ph"><div class="tt"><h1>${t}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div><div class="act">${act}</div></div>`;
+const MON=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const isoW=d=>{const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const n=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-n);const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil(((t-y)/864e5+1)/7)};
+const f2=d=>`${d.getDate()}.${d.getMonth()+1}.`;
+function perLabel(p){
+  if(p.u==='week'){const a=new Date(2026,10,23+7*p.o),b=new Date(2026,10,29+7*p.o);return `KW ${isoW(a)} · ${f2(a)}–${f2(b)}${a.getFullYear()!==2026?a.getFullYear():''}`}
+  if(p.u==='month'){const d=new Date(2026,10+p.o,1);return `${MON[d.getMonth()]} ${d.getFullYear()}`}
+  if(p.u==='quarter'){const q=3+p.o;const y=2026+Math.floor(q/4);return `Q${((q%4)+4)%4+1} ${y}`}
+  if(p.u==='year')return `${2026+p.o}`;
+  return '';
+}
+function perCtl(k){
+  const p=S[k];const u=[['week','Woche'],['month','Monat'],['quarter','Quartal'],['year','Jahr'],['custom','Eigener Zeitraum']];
+  return `<div class="per"><select data-a="perunit" data-k="${k}" aria-label="Zeitraum">${u.map(([v,l])=>`<option value="${v}" ${p.u===v?'selected':''}>${l}</option>`).join('')}</select>${p.u==='custom'?`<input value="01.06.2026" aria-label="Von"><span class="muted">bis</span><input value="28.11.2026" aria-label="Bis">`:`<button data-a="per" data-k="${k}" data-v="-1" aria-label="Zurück">${ic('left','s')}</button><span class="lbl">${perLabel(p)}</span><button data-a="per" data-k="${k}" data-v="1" aria-label="Weiter">${ic('right','s')}</button>${p.o?`<button data-a="per" data-k="${k}" data-v="0">Heute</button>`:''}`}</div>`;
+}
+const perNote=k=>S[k].o||S[k].u!=='week'?`<div class="banner info"><span class="sp">${S[k].u==='custom'?'Eigener Zeitraum':perLabel(S[k])}: Im Prototyp zeigen alle Zeiträume dieselben Beispielkurse.</span></div>`:'';
+const scopeLabel=()=>S.studio==='all'?(S.role==='studio'?'Meine Studios':'Alle Studios'):stName(S.studio);
+
+const isNew=c=>c.id==='c13'||c.id==='c14';
+function setupCard(c){
+  if(!isNew(c)||S.done['setup'+c.id])return'';
+  const st=[['Rechnungsanschrift','Pflicht für Gutschriften','settings:company',1],['Studios anlegen',c.st.length+' Studio angelegt','settings:studios',1],['Kurstypen festlegen','Mindestens einen Kurstyp, z. B. Yoga oder HIIT','settings:types',S.done['st3'+c.id]],['Ersten Kursplan anlegen','Wochenplan für ein Studio','plans:',S.done['st4'+c.id]],['Trainer:innen einladen','Mit Vertragsangebot','team:',S.done['st5'+c.id]]];
+  const n=st.filter(x=>x[3]).length;
+  return `<div class="panel" style="margin-bottom:18px"><div class="hd"><div><h2>Einrichtung von ${esc(c.name)}</h2><div class="muted sm">${n} von 5 erledigt · danach verschwindet diese Liste</div></div><button class="btn sm g" data-a="setupdone" data-v="${c.id}">Ausblenden</button></div><div style="padding:0 16px 8px"><div class="prog"><i style="width:${n*20}%"></i></div></div>${st.map((x,i)=>`<div class="step ${x[3]?'ok':''}"><span class="ck">${x[3]?ic('check','s'):''}</span><div class="tx"><div class="t1">${x[0]}</div><div class="t2">${x[1]}</div></div>${x[3]?'':`<button class="btn sm ${i===n?'p':''}" data-a="setupgo" data-v="${x[2]}|st${i+1}${c.id}">${i===n?'Jetzt erledigen':'Öffnen'}</button>`}</div>`).join('')}</div>`;
+}
+function pOverview(){
+  const c=co(),D=data(c);const ss=D.sess.filter(s=>inScope(s.studio));
+  const cnt=k=>ss.filter(s=>s.st===k).length;const subs=ss.filter(s=>s.sub).length;
+  const tasks=[];
+  if(S.role!=='studio'){
+    const pl=pendList();
+    if(pl.length===1)tasks.push(['pend','b-warn','file','Vertragsangebot für '+pl[0].name,`Von ${pl[0].pending} (Studio-Admin) · ${pl[0].emp}, ${pl[0].rate}`,`<button class="btn sm ok" data-a="approve" data-v="pend:${esc(pl[0].name)}">${ic('check','s')}Bestätigen</button><button class="btn sm" data-a="person" data-v="${esc(pl[0].name)}">Ansehen</button>`]);
+    if(pl.length>1)tasks.push(['pend','b-warn','file',`${pl.length} Vertragsangebote warten auf dich`,pl.map(p=>`${p.name} (von ${p.pending})`).join(' · '),`<button class="btn sm ok" data-a="approveall">${ic('check','s')}Alle bestätigen</button><button class="btn sm" data-a="goto2" data-v="team:pending">Einzeln prüfen</button>`]);
+    if(!S.done.aerial)tasks.push(['aerial','b-warn','tag','Kurstyp-Vorschlag „Aerial Yoga“','Von Tobias Reiter · 60 Min. · nur Studio '+c.st[0].name,`<button class="btn sm ok" data-a="approve" data-v="aerial">${ic('check','s')}Bestätigen</button><button class="btn sm" data-a="reject" data-v="aerial">Ablehnen</button>`]);
+  }else{
+    tasks.push(['wait','b-link','clock','Dein Angebot an Clara Neumann wartet','Der Company-Admin bestätigt es, danach sieht es Clara.','']);
+  }
+  if(!S.done.open1)tasks.push(['subs','b-link','repeat','2 Vertretungen ausgeschrieben','Noch niemand hat zugesagt · Pilates Mi 02.12. in '+c.st[0].name+', HIIT Fr 04.12.',`<button class="btn sm" data-a="goto" data-v="courses:sub">Ansehen</button>`]);
+  tasks.push(['over','b-err','alert',`${cnt('overdue')} Kurse überfällig`,'Vergangene Plan-Termine, die noch niemand erfasst hat',`<button class="btn sm" data-a="goto" data-v="courses:overdue">Ansehen</button>`]);
+  if(S.role!=='studio')tasks.push(['corr','b-link','receipt','Korrekturwunsch von Jonas Brandt','Gutschrift Oktober: „Spinning am 14.10. fehlt“',`<button class="btn sm" data-a="page" data-v="billing">Zur Abrechnung</button>`]);
+  tasks.push(['bill','b-pri','euro','Gutschriften November ab 1.12. möglich','Automatische Erstellung am 3.12. · 2 Personen haben unvollständige Daten',`<button class="btn sm" data-a="page" data-v="billing">Prüfliste</button>`]);
+  const today=ss.filter(s=>s.d===TODAY);
+  const heat=myStudios().filter(s=>S.studio==='all'||s.id===S.studio).map(st=>{
+    const cells=[1,2,3,4,5,6,7].map(d=>{const x=D.sess.filter(s=>s.studio===st.id&&s.d===d);const ok=x.filter(s=>s.st==='done').length;const bad=x.filter(s=>s.st==='overdue').length;
+      const bg=d>TODAY?'var(--hover)':bad?'var(--errsoft)':d===TODAY?'var(--warnsoft)':'var(--oksoft)';const fg=d>TODAY?'var(--mute)':bad?'var(--err)':d===TODAY?'var(--warn)':'var(--ok)';
+      return `<div class="cell" style="background:${bg};color:${fg}" title="${ok} von ${x.length} erfasst">${d>TODAY?x.length:ok+'/'+x.length}</div>`}).join('');
+    return `<div class="nm">${esc(st.name)}</div>${cells}`}).join('');
+  return ph('Übersicht',`KW 48 · 23.–29. November · ${scopeLabel()}`)+setupCard(c)+
+  `<div class="statline"><button data-a="goto" data-v="courses:all"><b>${ss.length}</b> Kurse diese Woche</button><button data-a="goto" data-v="courses:done"><b>${cnt('done')}</b> erfasst</button><button data-a="goto" data-v="courses:overdue"><b>${cnt('overdue')}</b> überfällig</button><button data-a="goto" data-v="courses:sub"><b>${subs}</b> Vertretungen</button><button data-a="goto" data-v="courses:planned"><b>${cnt('planned')+cnt('open')}</b> noch offen</button></div>
+  <div class="grid2"><div class="stack"><div class="panel"><div class="hd"><h2>Wartet auf dich</h2><span class="muted sm">${tasks.length} Punkte</span></div>${tasks.map(([id,b,i,t1,t2,ac])=>`<div class="task"><div class="ic badge ${b}" style="padding:0">${ic(i)}</div><div class="tx"><div class="t1">${t1}</div><div class="t2">${t2}</div></div><div class="ac">${ac}</div></div>`).join('')}</div>
+  <div class="panel"><div class="hd"><h2>Woche je Studio</h2><span class="muted sm">erfasst / geplant</span></div><div class="bd"><div class="heat"><div></div>${WD.map((w,i)=>`<div class="hd">${w} ${23+i}.</div>`).join('')}${heat}</div></div></div></div>
+  <div class="panel"><div class="hd"><h2>Heute, Samstag 28.11.</h2><span class="muted sm">${today.length} Kurse</span></div>${today.map(s=>`<div class="tl"><div class="tm">${s.start}</div><div><div class="c"><span class="tdot" style="background:${s.type.color}"></span>${esc(s.type.name)}</div><div class="m">${esc(stName(s.studio))} · ${esc(s.trainer)}</div></div>${sbadge(s)}</div>`).join('')||'<div class="empty">Heute keine Kurse.</div>'}</div></div>`;
+}
+
+function pCourses(){
+  const c=co(),D=data(c);const ss=D.sess.filter(s=>inScope(s.studio));
+  const f={all:['Alle',()=>1],done:['Erfasst',s=>s.st==='done'],overdue:['Überfällig',s=>s.st==='overdue'],open:['Offen heute',s=>s.st==='open'],planned:['Geplant',s=>s.st==='planned'],cancelled:['Abgesagt',s=>s.st==='cancelled'],sub:['Vertretungen',s=>s.sub]};
+  const dots={done:'var(--ok)',overdue:'var(--err)',open:'var(--warn)',planned:'var(--mute)',cancelled:'var(--line)',sub:'var(--link)'};
+  const chips=Object.entries(f).map(([k,[l,fn]])=>`<button class="chip ${S.kst===k?'on':''}" data-a="kst" data-v="${k}">${dots[k]?`<span class="dot" style="background:${dots[k]}"></span>`:''}${l} <span class="n">${ss.filter(fn).length}</span></button>`).join('');
+  const rows=ss.filter(f[S.kst][1]);
+  let body;
+  if(S.kview==='list'){
+    const kb=S.ksel.length?`<div class="bulk"><b>${S.ksel.length} ausgewählt</b><button class="btn sm p" data-a="kbulk" data-v="Erinnerung an die Trainer:innen gesendet">${ic('mail','s')}Trainer:innen erinnern</button><button class="btn sm" data-a="kbulk" data-v="Als abgesagt markiert">Als abgesagt markieren</button><button class="btn sm" data-a="kbulk" data-v="Vertretung ausgeschrieben">Vertretung ausschreiben</button><button class="btn sm" data-a="kclear">Aufheben</button></div>`:'';
+    body=`<div class="tblw"><table><thead><tr><th style="width:36px"><input type="checkbox" class="cb" data-a="kall" ${rows.length&&rows.every(s=>S.ksel.includes(s.id))?'checked':''} aria-label="Alle auswählen"></th><th>Datum</th><th>Zeit</th><th>Kurs</th><th>Studio</th><th>Trainer:in</th><th>Status</th></tr></thead><tbody id="filt">${rows.map(s=>`<tr data-q="${esc((s.type.name+' '+s.trainer).toLowerCase())}" class="${S.ksel.includes(s.id)?'sel':''}"><td><input type="checkbox" class="cb" data-a="ksel" data-v="${s.id}" ${S.ksel.includes(s.id)?'checked':''} aria-label="Auswählen"></td><td class="nw">${dateOf(s.d)}</td><td class="nw num" style="text-align:left">${s.start}</td><td><span class="tdot" style="background:${s.type.color}"></span>${esc(s.type.name)}${s.adhoc?' <span class="badge b-link">Ad-hoc</span>':''}</td><td>${esc(stName(s.studio))}</td><td>${esc(s.trainer)}${s.sub?`<div class="muted sm">${ic('repeat','s')} Vertretung für ${esc(s.sub)}</div>`:''}</td><td>${sbadge(s)}</td></tr>`).join('')}</tbody></table>${rows.length?'':'<div class="empty">Keine Kurse für diesen Filter.</div>'}</div>${kb}`;
+  }else{
+    const by={};ss.forEach(s=>{const t=by[s.trainer]||(by[s.trainer]={n:s.trainer,done:0,over:0,sub:0,min:0});if(s.st==='done'){t.done++;t.min+=s.type.dur}if(s.st==='overdue')t.over++;if(s.sub)t.sub++});
+    const arr=Object.values(by).sort((a,b)=>b.done-a.done);const tm=D.team;
+    body=`<div class="tblw"><table><thead><tr><th>Trainer:in</th><th class="num">Erfasst</th><th class="num">Überfällig</th><th class="num">Vertretungen</th><th class="num">Stunden</th><th class="num">Vorläufige Summe</th></tr></thead><tbody id="filt">${arr.map(t=>{const m=tm.find(x=>x.name===t.n)||{};const sum=m.emp==='Freiberuflich'?t.done*(m.rv||30):null;return `<tr data-q="${esc(t.n.toLowerCase())}"><td><div class="who"><span class="av t">${ini(t.n)}</span><div><div class="nm">${esc(t.n)}</div><div class="mt">${esc(m.emp||'')}</div></div></div></td><td class="num">${t.done}</td><td class="num" style="color:${t.over?'var(--err)':''}">${t.over}</td><td class="num">${t.sub}</td><td class="num">${(t.min/60).toLocaleString('de-DE',{maximumFractionDigits:1})}</td><td class="num">${sum===null?'<span class="muted">—</span>':eur(sum)}</td></tr>`}).join('')}</tbody></table></div><p class="muted sm">Vorläufig: erfasste Kurse × aktiver Vertragssatz. Verbindlich ist die Abrechnung.</p>`;
+  }
+  return ph('Kurse',`Was stattgefunden hat und was noch fehlt · ${scopeLabel()}`,perCtl('per'))+perNote('per')+
+  `<div class="toolbar"><div class="chips">${chips}</div><div class="chips"><label class="search">${ic('search','s')}<input class="inp" data-f="filt" placeholder="Kurs oder Trainer:in suchen"></label><div class="tog"><button class="${S.kview==='list'?'on':''}" data-a="kview" data-v="list">${ic('list','s')}Kurse</button><button class="${S.kview==='trainer'?'on':''}" data-a="kview" data-v="trainer">${ic('users','s')}Pro Trainer:in</button></div></div></div>`+body;
+}
+
+function planChanges(c,sid){
+  const D=data(c);const sl=D.slots.filter(s=>s.studio===sid);const t=D.trainers;
+  const a=sl.find(s=>s.d===2)||sl[0],b=sl.find(s=>s.d===4)||sl[1]||sl[0];
+  const busy=D.slots.find(s=>s.studio!==sid&&s.d===3)||{start:'18:15',trainer:t[3].name,studio:sid};
+  const add=[{id:'n1',studio:sid,d:3,start:busy.start,type:D.types[1],trainer:busy.trainer,isNew:true,warn:`${busy.trainer} ist zur selben Zeit in ${stName(busy.studio)} eingeplant`},{id:'n2',studio:sid,d:6,start:'11:00',type:D.types[2],trainer:t[2].name,isNew:true,warn:''}];
+  const restricted=D.trainers.find(x=>Array.isArray(x.studios)&&!x.studios.includes(sid));
+  return {add,gone:a.id,goneS:a,chg:{id:b.id,s:b,to:restricted?restricted.name:t[5].name,warn:restricted?`${restricted.name} ist für dieses Studio nicht freigegeben`:''}};
+}
+function pPlans(){
+  const c=co(),D=data(c);const studios=myStudios();
+  const sid=studios.some(s=>s.id===S.plan)?S.plan:(S.studio!=='all'?S.studio:studios[0].id);
+  const slots=D.slots.filter(s=>s.studio===sid);
+  const ch=planChanges(c,sid);
+  const days=[1,2,3,4,5,6,7].map(d=>{let x=slots.filter(s=>s.d===d);if(S.edit)x=[...x,...ch.add.filter(a=>a.d===d)].sort((a,b)=>a.start.localeCompare(b.start));
+    return `<div class="day ${d===TODAY?'today':''}"><div class="dh"><b>${WD[d-1]}</b><span>${x.length} Kurse</span></div>${x.map(s=>{const gone=S.edit&&ch.gone===s.id,chg=S.edit&&ch.chg.id===s.id,nw=!!s.isNew;const w=S.edit&&(s.warn||(chg?ch.chg.warn:''));return `<div class="slot ${gone?'gone':''} ${chg?'chg':''} ${nw?'new':''}" style="--c:${s.type.color}">${S.edit&&!gone?`<button class="x" aria-label="Entfernen">${ic('x','s')}</button>`:''}<div class="tm">${s.start}${nw?' <span class="badge b-ok">neu</span>':''}</div><div class="ty">${esc(s.type.name)}</div><div class="tr">${chg?`<s>${esc(s.trainer)}</s> → <b>${esc(ch.chg.to)}</b>`:esc(s.trainer)} · ${s.type.dur} Min.</div>${w?`<div class="warn">${ic('alert','s')}${w}</div>`:''}</div>`}).join('')}${S.edit?`<button class="addslot">+ Kurs</button>`:''}${d===2&&sid===c.st[0].id&&!S.done.aerial&&S.role!=='studio'?'':''}</div>`}).join('');
+  const canEdit=true;
+  return ph('Kurspläne',`Wochenplan je Studio. Jede Änderung erzeugt eine neue Version, vergangene Kurse bleiben unverändert.`,
+   `<div class="tog">${studios.map(s=>`<button class="${s.id===sid?'on':''}" data-a="plan" data-v="${s.id}">${esc(s.name)}</button>`).join('')}</div>`)+
+  (S.edit?`<div class="banner"><span class="sp"><b>Neue Planversion.</b> Gilt ab dem gewählten Datum, der aktuelle Plan wird archiviert. Trainer:innen ohne Freigabe für dieses Studio sind nicht wählbar.</span><select class="sel"><option>ab Mo 30.11.</option><option>ab Mo 07.12.</option><option>ab Fr 01.01.</option></select><button class="btn" data-a="edit" data-v="0">Verwerfen</button><button class="btn p" data-a="diff">Vorschau &amp; veröffentlichen</button></div>`:
+  `<div class="toolbar"><div class="chips"><span class="badge b-ok">Aktiv seit 02.11.2026</span><span class="muted sm">Version 4 · ${slots.length} Kurse pro Woche</span><select class="sel" aria-label="Version" style="min-height:30px;padding-block:3px"><option>Version 4 (aktuell)</option><option>Version 3 · 05.10.–01.11.</option><option>Version 2 · 07.09.–04.10.</option></select></div>${canEdit?`<button class="btn p" data-a="edit" data-v="1">${ic('cal','s')}Plan ändern</button>`:''}</div>`)+
+  `<div class="week">${days}</div>`;
+}
+
+function pTeam(){
+  const c=co(),D=data(c);
+  let ppl=D.team.filter(p=>!(p.pending&&S.done['pend:'+p.name]));
+  if(S.role==='studio')ppl=ppl.filter(p=>p.role==='trainer');
+  ppl=ppl.filter(p=>S.studio==='all'?(S.role!=='studio'||p.studios==='all'||p.studios?.some(x=>P0().studios.includes(x))):(p.role==='admin'||p.studios==='all'||p.studios?.includes(S.studio)));
+  const roles={admin:['Admin','b-pri'],studio:['Studio-Admin','b-link'],trainer:['Trainer:in','']};
+  const f={all:['Alle',()=>1],admin:['Admins',p=>p.role==='admin'],studio:['Studio-Admins',p=>p.role==='studio'],trainer:['Trainer:innen',p=>p.role==='trainer'],pending:['Wartet auf Bestätigung',p=>p.pending]};
+  const keys=S.role==='studio'?['all','pending']:Object.keys(f);
+  const chips=keys.map(k=>`<button class="chip ${S.team===k?'on':''}" data-a="team" data-v="${k}">${f[k][0]} <span class="n">${ppl.filter(f[k][1]).length}</span></button>`).join('');
+  const rows=ppl.filter((f[S.team]||f.all)[1]);
+  const stl=p=>p.role==='admin'?'<span class="muted">ganze Company</span>':p.studios==='all'?'Alle Studios':p.studios.map(stName).join(', ');
+  const status=p=>p.pending?`<span class="badge b-warn">Wartet auf Bestätigung</span>`:p.issue?`<span class="badge b-err">${p.issue}</span>`:p.role==='trainer'?'<span class="badge b-ok">Aktiv</span>':'<span class="badge b-ok">Aktiv</span>';
+  return ph(S.role==='studio'?'Trainer:innen':'Team',S.role==='studio'?'Trainer:innen in deinen Studios. Neue Angebote bestätigt der Company-Admin.':'Alle Personen der Company: Admins, Studio-Admins und Trainer:innen mit ihren Verträgen.',`<button class="btn p" data-a="add">${ic('userplus','s')}${S.role==='studio'?'Trainer:in einladen':'Person hinzufügen'}</button>`)+
+  `<div class="toolbar"><div class="chips">${chips}</div><label class="search">${ic('search','s')}<input class="inp" data-f="filt" placeholder="Name suchen"></label></div>
+  <div class="tblw"><table><thead><tr>${S.role!=='studio'?`<th style="width:36px"><input type="checkbox" class="cb" data-a="selall" ${rows.length&&rows.every(p=>S.tsel.includes(p.name))?'checked':''} aria-label="Alle auswählen"></th>`:''}<th>Person</th><th>Rolle</th><th>Studios</th><th>Vertrag</th><th>Status</th><th>Aktualisiert</th>${S.role!=='studio'?'<th></th>':''}</tr></thead><tbody id="filt">${rows.map(p=>`<tr class="cl ${p.pending?'pend':''} ${S.drawer?.v===p.name?'sel':''}" data-a="person" data-v="${esc(p.name)}" data-q="${esc(p.name.toLowerCase())}">${S.role!=='studio'?`<td><input type="checkbox" class="cb" data-a="tsel" data-v="${esc(p.name)}" ${S.tsel.includes(p.name)?'checked':''} aria-label="Auswählen"></td>`:''}<td><div class="who"><span class="av ${p.role==='trainer'?'t':p.role==='studio'?'s':''}">${ini(p.name)}</span><div><div class="nm">${esc(p.name)}</div><div class="mt">${esc(p.name.toLowerCase().replace(' ','.').replace(/ü/g,'ue').replace(/ö/g,'oe').replace(/ä/g,'ae'))}@beispiel.de</div></div></div></td><td><span class="badge ${roles[p.role][1]}">${roles[p.role][0]}</span></td><td class="sm">${stl(p)}</td><td class="sm">${p.emp?`${p.emp}<div class="muted">${p.rate}</div>`:'<span class="muted">—</span>'}</td><td>${status(p)}${p.pending?`<div class="muted sm">angeboten von ${p.pending}</div>`:''}</td><td class="muted sm nw">${p.upd}</td>${S.role!=='studio'?`<td class="nw">${p.pending?`<button class="btn sm ok" data-a="approve" data-v="pend:${esc(p.name)}">Bestätigen</button>`:''}</td>`:''}</tr>`).join('')}</tbody></table></div>${teamBulk(D)}`;
+}
+
+function teamBulk(D){
+  if(!S.tsel.length)return'';const sel=D.team.filter(p=>S.tsel.includes(p.name));const pend=sel.filter(p=>p.pending&&!S.done['pend:'+p.name]).length;const tr=sel.filter(p=>p.role==='trainer').length;
+  return `<div class="bulk"><b>${S.tsel.length} ausgewählt</b>${pend?`<button class="btn sm p" data-a="bulkapprove">${ic('check','s')}${pend} Angebot${pend>1?'e':''} bestätigen</button>`:''}${tr?`<button class="btn sm" data-a="toast" data-v="Studio-Freigabe für ${tr} Trainer:innen geändert">Studios freigeben</button><button class="btn sm" data-a="toast" data-v="Erinnerung an ${tr} Trainer:innen gesendet">Daten-Erinnerung senden</button>`:''}<button class="btn sm" data-a="toast" data-v="Export erstellt">${ic('download','s')}Exportieren</button><button class="btn sm" data-a="tclear">Aufheben</button></div>`;
+}
+function pBilling(){
+  const c=co(),D=data(c);const isS=S.role==='studio';
+  const stl={approved:['Freigegeben','b-ok'],auto:['Automatisch freigegeben','b-ok'],open:['Offen bis 05.12.','b-warn'],corr:['Korrektur angefordert','b-err'],skip:['Übersprungen','b-err'],issued:['Ausgestellt','b-pri']};
+  const rows=D.bill;const tot=rows.reduce((a,b)=>a+b.net+b.vat,0);
+  const tog=`<div class="tog"><button class="${S.bill==='docs'?'on':''}" data-a="bill" data-v="docs">${ic('receipt','s')}Gutschriften &amp; Nachweise</button><button class="${S.bill==='export'?'on':''}" data-a="bill" data-v="export">${ic('download','s')}Monats-Export</button></div>`;
+  const head=ph('Abrechnung',isS?'Abgerechnet wird je Company. Du siehst den Status für deine Studios.':'Gutschriften für Freiberufler:innen, Tätigkeitsnachweise für Angestellte.',`<select class="sel" aria-label="Monat"><option>Oktober 2026</option><option>September 2026</option></select>${tog}`);
+  if(S.bill==='export'){
+    const D2=rows.map(r=>({...r,given:r.n,sub:Math.floor(r.n/7),canc:r.n%3}));
+    return head+`<div class="toolbar"><div class="chips"><select class="sel"><option>${scopeLabel()}</option></select><select class="sel"><option>Alle Trainer:innen</option></select></div><div class="chips"><button class="btn" data-a="toast" data-v="CSV (Einzelkurse) erstellt">${ic('download','s')}CSV Einzelkurse</button><button class="btn" data-a="toast" data-v="CSV (Summen) erstellt">${ic('download','s')}CSV Summen</button><button class="btn p" data-a="toast" data-v="PDF erstellt">${ic('download','s')}PDF</button></div></div>
+    <div class="banner info"><span class="sp">3 vergangene Plan-Termine sind nicht erfasst und fließen nicht ins Honorar ein.</span><button class="btn sm" data-a="goto" data-v="courses:overdue">Ansehen</button></div>
+    <div class="tblw"><table><thead><tr><th>Trainer:in</th><th>Beschäftigung</th><th class="num">Gegeben</th><th class="num">Vertretungen</th><th class="num">Ausgefallen</th><th class="num">Stunden</th><th class="num">Honorar</th></tr></thead><tbody>${D2.map(r=>`<tr><td>${esc(r.name)}</td><td class="sm">${r.emp}<div class="muted">${r.rate}</div></td><td class="num">${r.given}</td><td class="num">${r.sub}</td><td class="num">${r.canc}</td><td class="num">${(r.given*.9).toLocaleString('de-DE',{maximumFractionDigits:1})}</td><td class="num">${r.free?eur(r.net):'<span class="muted">Festgehalt</span>'}</td></tr>`).join('')}</tbody><tfoot><tr><td>Gesamt</td><td></td><td class="num">${D2.reduce((a,b)=>a+b.given,0)}</td><td class="num">${D2.reduce((a,b)=>a+b.sub,0)}</td><td class="num">${D2.reduce((a,b)=>a+b.canc,0)}</td><td></td><td class="num">${eur(D2.reduce((a,b)=>a+b.net,0))}</td></tr></tfoot></table></div>`;
+  }
+  const table=`<div class="tblw"><table><thead><tr><th>Person</th><th>Beleg</th><th class="num">Kurse</th><th class="num">Netto</th><th class="num">MwSt</th><th class="num">Betrag</th><th>Status</th></tr></thead><tbody>${rows.map(r=>`<tr><td><div class="who"><span class="av t">${ini(r.name)}</span><div><div class="nm">${esc(r.name)}</div><div class="mt">${r.free?(r.klein?'Kleinunternehmer:in':'regelbesteuert'):r.emp}</div></div></div></td><td class="sm">${r.st==='skip'?'<span class="muted">—</span>':r.free?'Gutschrift':'Tätigkeitsnachweis'}${r.st!=='skip'?`<div class="muted">${r.free?'GS':'TN'}-2026-10-0${10+rows.indexOf(r)}</div>`:''}</td><td class="num">${r.n}</td><td class="num">${isS||!r.free?'<span class="muted">—</span>':eur(r.net)}</td><td class="num">${isS||!r.free?'<span class="muted">—</span>':eur(r.vat)}</td><td class="num"><b>${isS||!r.free?'<span class="muted">—</span>':eur(r.net+r.vat)}</b></td><td><span class="badge ${stl[r.st][1]}">${stl[r.st][0]}</span>${r.st==='skip'?`<div class="muted sm">${r.issue||'Daten unvollständig'}</div>`:''}</td></tr>`).join('')}</tbody>${isS?'':`<tfoot><tr><td colspan="5">Gesamt Oktober</td><td class="num">${eur(tot)}</td><td></td></tr></tfoot>`}</table></div>`;
+  const rail=isS?`<div class="panel"><div class="hd"><h2>Status</h2></div><div class="bd sm"><p style="margin-top:0">Gutschriften erstellt am 03.11. von Miriam Albers.</p><p class="muted">Beträge sieht nur der Company-Admin. Korrekturwünsche zu deinen Studios erscheinen hier.</p></div></div>`:
+  `<div class="stack"><div class="panel"><div class="hd"><h2>Oktober erstellen</h2><span class="badge">je Company</span></div><div class="bd"><div class="sm">Erstellt am 03.11. · <b>2 Änderungen seither</b></div><div class="sm muted" style="margin:6px 0 12px">Beim nächsten Klick: 1 × Storno + neue Gutschrift, 2 übersprungen.</div><button class="btn p" style="width:100%;justify-content:center" data-a="toast" data-v="Erstellt: 1 Gutschrift, 1 Storno. 2 übersprungen.">${ic('receipt','s')}Gutschriften erstellen</button><div class="muted sm" style="margin-top:8px">Automatisch am 3. des Folgemonats · Prüffrist 7 Tage</div></div></div>
+  <div class="panel"><div class="hd"><h2>Prüfliste</h2></div><div class="bd sm"><div style="display:flex;gap:8px;margin-bottom:8px"><span style="color:var(--ok)">${ic('check','s')}</span>Rechnungsanschrift der Company vollständig</div><div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:var(--err)">${ic('alert','s')}</span>2 Personen bekommen noch nichts:</div><div style="padding-left:24px">${rows.filter(r=>r.st==='skip').map(r=>`<div>${esc(r.name)} · <span class="muted">${r.issue||'Daten unvollständig'}</span></div>`).join('')}</div><button class="btn sm g" style="margin-top:8px" data-a="page" data-v="team">Im Team ansehen ${ic('right','s')}</button></div></div></div>`;
+  return head+`<div class="grid-rail">${table}${rail}</div>`;
+}
+
+function pSettings(){
+  const c=co(),D=data(c);const isS=S.role==='studio';
+  const subs=isS?[['studios','Studios','building'],['types','Kurstypen','tag'],['perm','Rechte','lock']]:[['company','Company','building'],['studios','Studios','layers'],['types','Kurstypen','tag'],['perm','Rechte der Studio-Admins','lock'],['billing','Abrechnung','receipt'],['privacy','Datenschutz','shield'],['log','Verlauf','clock']];
+  const cur=subs.some(s=>s[0]===S.set)?S.set:subs[0][0];
+  let body='';
+  if(cur==='company')body=`<div class="panel"><div class="hd"><h2>Company</h2></div><div class="bd" style="max-width:620px"><div class="field"><label for="cn">Name</label><input class="inp" id="cn" value="${esc(c.name)}"></div><div class="flbl" style="margin-bottom:6px">Rechnungsanschrift</div><div class="field"><input class="inp" id="cs" value="Torstraße 112"></div><div class="row2"><div class="field"><input class="inp" id="cz" value="10119"></div><div class="field"><input class="inp" id="cc" value="Berlin"></div></div><div class="field"><label for="cu">USt-IdNr.</label><input class="inp" id="cu" value="DE 123 456 789"><span class="hint">Erscheint auf allen Gutschriften.</span></div><button class="btn p" data-a="toast" data-v="Gespeichert">Speichern</button></div></div>`+
+   (S.role==='platform'?`<div class="panel" style="margin-top:16px;border-style:dashed"><div class="hd"><h2>${ic('shield','s')} Nur für Plattform-Admins</h2></div><div class="bd"><div class="switchrow"><div><div class="t1">Test-Admin anlegen</div><div class="t2">Legt ein Admin-Konto mit Passwort an, ohne Einladung. Nur für Tests.</div></div><button class="btn sm">Anlegen</button></div><div class="switchrow"><div><div class="t1">Company löschen</div><div class="t2">Offboarding nach Kündigung, 30 Tage Frist.</div></div><button class="btn sm d" data-a="setsub" data-v="privacy">Zum Datenschutz</button></div></div></div>`:'');
+  if(cur==='studios')body=`<div class="toolbar"><h2>Studios</h2>${isS?'':`<button class="btn p">${ic('plus','s')}Studio anlegen</button>`}</div><div class="tblw"><table><thead><tr><th>Studio</th><th>Adresse</th><th>Aktiver Plan</th><th class="num">Kurse / Woche</th><th class="num">Trainer:innen</th></tr></thead><tbody>${myStudios().map((s,i)=>`<tr class="cl" data-a="plan-go" data-v="${s.id}"><td><b>${esc(s.name)}</b></td><td class="muted sm">${['Torstraße 112','Oranienstraße 45','Kastanienallee 7','Hauptstraße 3'][i%4]}</td><td><span class="badge b-ok">seit 02.11.</span></td><td class="num">${D.slots.filter(x=>x.studio===s.id).length}</td><td class="num">${new Set(D.slots.filter(x=>x.studio===s.id).map(x=>x.trainer)).size}</td></tr>`).join('')}</tbody></table></div>${isS?'<p class="muted sm">Studios legt der Company-Admin an.</p>':''}`;
+  if(cur==='types'){
+    const own=isS?S.perm.ct!=='denied':true;
+    body=`<div class="toolbar"><h2>Kurstypen</h2>${own?`<button class="btn p">${ic('plus','s')}${isS&&S.perm.ct==='approval'?'Kurstyp vorschlagen':'Kurstyp anlegen'}</button>`:''}</div>${isS?`<div class="banner info"><span class="sp">Company-weite Kurstypen siehst du lesend. Kurstypen deiner Studios ${S.perm.ct==='allowed'?'pflegst du selbst':S.perm.ct==='approval'?'schlägst du vor, der Company-Admin bestätigt':'pflegt der Company-Admin'}.</span></div>`:''}
+    <div class="tblw"><table><thead><tr><th>Kurstyp</th><th class="num">Dauer</th><th>Studios</th><th>Status</th><th></th></tr></thead><tbody>${D.types.map((t,i)=>`<tr><td><span class="tdot" style="background:${t.color}"></span><b>${esc(t.name)}</b></td><td class="num">${t.dur} Min.</td><td class="sm">${i%4===3?esc(c.st[0].name):'Alle Studios'}</td><td><span class="badge b-ok">Bestätigt</span></td><td class="muted sm">${isS&&i%4!==3?'company-weit':''}</td></tr>`).join('')}${S.done.aerial?'':`<tr class="pend"><td><span class="tdot" style="background:#C2416B"></span><b>Aerial Yoga</b></td><td class="num">60 Min.</td><td class="sm">${esc(c.st[0].name)}</td><td><span class="badge b-warn">Vorschlag von Tobias Reiter</span></td><td class="nw">${isS?'<span class="muted sm">wartet</span>':`<button class="btn sm ok" data-a="approve" data-v="aerial">Bestätigen</button> <button class="btn sm" data-a="reject" data-v="aerial">Ablehnen</button>`}</td></tr>`}</tbody></table></div>`;
+  }
+  if(cur==='perm'){
+    const row=(k,t,h,opts)=>`<div class="switchrow"><div><div class="t1">${t}</div><div class="t2">${h}</div></div><div class="seg2">${opts.map(([v,l])=>`<button class="${S.perm[k]===v?'on':''}" ${isS?'disabled':''} data-a="perm" data-v="${k}:${v}">${l}</button>`).join('')}</div></div>`;
+    const lv=[['allowed','Darf'],['approval','Mit Bestätigung'],['denied','Darf nicht']];
+    body=`<div class="panel"><div class="hd"><h2>${isS?'Deine Rechte als Studio-Admin':'Rechte der Studio-Admins'}</h2></div><div class="bd"><p class="muted sm" style="margin-top:0">${isS?'Diese Rechte hat dir der Company-Admin gegeben.':'Studio-Admins regeln alles Studioweite für ihre Studios. Hier legst du fest, was sie darüber hinaus dürfen. Gilt für alle Studio-Admins dieser Company.'}</p>
+    ${row('ct','Kurstypen anlegen und ändern','Nur Kurstypen, die ausschließlich den eigenen Studios zugeordnet sind.',lv)}
+    ${row('co','Verträge anbieten','Verträge gelten für die ganze Company. Auf Studios beschränken kann nur der Company-Admin.',lv)}
+    ${row('bi','Abrechnungen ausstellen','Nur relevant, wenn nicht je Studio abgerechnet wird. Bei getrennter Abrechnung stellen Studio-Admins für ihre Studios immer selbst aus.',[lv[0],lv[2]])}</div></div>`;
+  }
+  if(cur==='billing'){
+    const t=(k,a,b)=>`<div class="switchrow"><div><div class="t1">${a}</div><div class="t2">${b}</div></div><button class="tg ${S.tg[k]?'on':''}" data-a="tg" data-v="${k}" aria-label="${a}"></button></div>`;
+    body=`<div class="panel"><div class="hd"><h2>Abrechnung</h2></div><div class="bd">${t('split','Gutschriften je Studio getrennt','Jedes Studio stellt eigene Gutschriften aus. Studio-Admins rechnen dann ihre Studios selbst ab.')}${t('stm','Tätigkeitsnachweis für Angestellte','Minijob und Festanstellung bekommen einen Nachweis ihrer Kurse.')}${t('auto','Automatisch am 3. des Folgemonats','Zusätzlich zum manuellen Erstellen.')}<div class="switchrow"><div><div class="t1">Prüffrist für Trainer:innen</div><div class="t2">Danach gilt eine Gutschrift ohne Rückmeldung als freigegeben.</div></div><select class="sel"><option>7 Tage</option><option>14 Tage</option></select></div>
+    <h3 style="margin:16px 0 0">E-Mails an Admins</h3>${t('n1','Beleg erstellt','Zusammenfassung nach jedem Lauf.')}${t('n2','Korrekturwunsch','Sofort, wenn eine Trainer:in eine Korrektur anfordert.')}${t('n3','Erinnerung Prüffrist','Zwei Tage vor Ablauf.')}</div></div>`;
+  }
+  if(cur==='log'){
+    const L=[['heute 16:02','Miriam Albers','Vertrag','Vertragsangebot von Clara Neumann bestätigt'],['heute 15:20','Tobias Reiter','Vertrag','Vertragsangebot an Clara Neumann erstellt (wartet auf Bestätigung)'],['heute 11:48','Tobias Reiter','Kurstyp','Kurstyp „Aerial Yoga“ für Mitte vorgeschlagen'],['gestern 18:05','Miriam Albers','Kursplan','Kursplan Kreuzberg Version 4 veröffentlicht, gilt ab 02.11.'],['gestern 09:12','System','Abrechnung','Erinnerung Prüffrist an 3 Trainer:innen gesendet'],['26.11. 14:30','Daniel Fuchs','Rechte','Recht „Verträge anbieten“ von Darf nicht auf Mit Bestätigung geändert'],['25.11. 10:02','Miriam Albers','Team','Paula Lenz als Studio-Admin für Prenzlauer Berg eingeladen'],['24.11. 16:44','Jonas Brandt','Abrechnung','Korrektur zur Gutschrift GS-2026-10-011 angefordert'],['03.11. 05:05','System','Abrechnung','Gutschriften Oktober erstellt: 6 Gutschriften, 3 Nachweise, 2 übersprungen'],['02.11. 08:00','Miriam Albers','Studio','Studio „Prenzlauer Berg“: Adresse geändert'],['30.10. 12:15','Alex Kern','Plattform','Als Plattform-Admin angesehen (nur lesend), Support-Anfrage']];
+    const cats=['all','Vertrag','Kursplan','Kurstyp','Abrechnung','Rechte','Team'];
+    const rows=L.filter(x=>S.logf==='all'||x[2]===S.logf);
+    body=`<div class="toolbar"><h2>Verlauf</h2><button class="btn sm">${ic('download','s')}CSV</button></div><div class="chips" style="margin-bottom:12px">${cats.map(k=>`<button class="chip ${S.logf===k?'on':''}" data-a="logf" data-v="${k}">${k==='all'?'Alle':k} <span class="n">${k==='all'?L.length:L.filter(x=>x[2]===k).length}</span></button>`).join('')}</div><div class="tblw"><table><thead><tr><th>Zeit</th><th>Person</th><th>Bereich</th><th>Änderung</th></tr></thead><tbody>${rows.map(x=>`<tr><td class="nw muted sm">${x[0]}</td><td class="nw">${x[1]==='System'?'<span class="muted">System</span>':esc(x[1])}</td><td><span class="badge">${x[2]}</span></td><td>${x[3]}</td></tr>`).join('')}</tbody></table></div><p class="muted sm">Wird 24 Monate aufbewahrt. Zugriffe von Plattform-Admins erscheinen hier ebenfalls.</p>`;
+  }
+  if(cur==='privacy')body=`<div class="stack"><div class="panel"><div class="hd"><h2>Datenexport der Company</h2></div><div class="bd"><p class="muted sm" style="margin-top:0">Studios, Personen, Verträge, Kurspläne, erfasste Kurse und Vertretungen (DSGVO Art. 15).</p><button class="btn">${ic('download','s')}JSON</button> <button class="btn">${ic('download','s')}CSV</button></div></div>
+  <div class="banner info"><span class="sp">Datenauskunft und Löschung einzelner Personen findest du jetzt direkt bei der Person im Team.</span><button class="btn sm" data-a="page" data-v="team">Zum Team</button></div>
+  <div class="panel" style="border-color:color-mix(in srgb,var(--err) 40%,var(--line))"><div class="hd"><h2>Offboarding nach Kündigung</h2></div><div class="bd"><p class="muted sm" style="margin-top:0">Nach dem Einplanen bleiben die Daten noch 30 Tage erhalten, danach werden die Company und alle zugehörigen Daten gelöscht.</p><button class="btn d">Löschung in 30 Tagen einplanen</button></div></div></div>`;
+  return ph('Einstellungen',`${esc(c.name)} · gilt für die ganze Company`)+`<div class="setgrid"><nav class="subnav">${subs.map(([k,l,i])=>`<button class="nv ${cur===k?'on':''}" data-a="setsub" data-v="${k}">${ic(i)}<span>${l}</span></button>`).join('')}</nav><div>${body}</div></div>`;
+}
+
+/* ---------- Plattform ---------- */
+function pCompanies(){
+  const plat=S.role==='platform';const ids=P0().cos;const all=ids.map(coById);
+  const f={all:['Alle',()=>1],open:['Mit offenen Punkten',c=>c.appr||c.over>4],pin:['Angepinnt',c=>S.pins.includes(c.id)],neu:['Neu, letzte 30 Tage',c=>/\.(10|11)\.2026$/.test(c.since)&&+c.since.slice(3,5)>=11||c.since.endsWith('.11.2026')],del:['Löschung geplant',c=>c.del]};
+  const keys=plat?Object.keys(f):['all','open','pin'];
+  const rows=all.filter((f[S.cof]||f.all)[1]).sort((x,y)=>(S.pins.includes(y.id)-S.pins.includes(x.id))||(y.appr-x.appr)||x.name.localeCompare(y.name));
+  const appr=all.reduce((a,c)=>a+c.appr,0),over=all.reduce((a,c)=>a+c.over,0);
+  const tasks=plat?[['b-link','inbox','2 neue Support-Nachrichten','Kraftwerk Fitness, Yogaloft',`<button class="btn sm" data-a="page" data-v="support">Öffnen</button>`],['b-warn','mail','Admin-Einladung noch nicht angenommen','Zirkeltraining Nord · seit 3 Tagen',`<button class="btn sm" data-a="toast" data-v="Einladung erneut gesendet">Erneut senden</button>`],['b-err','trash','Löschung geplant','Urban Gym · endgültig am 18.12.',`<button class="btn sm" data-a="ctx" data-v="c12">Ansehen</button>`]]:[];
+  return ph(plat?'Plattform-Übersicht':'Alle Companies',plat?`${ids.length} Companies. Suchen, filtern und von hier in eine Company springen.`:`Du bist Admin in ${ids.length} Companies.`,plat?`<button class="btn p">${ic('plus','s')}Company anlegen</button>`:'')+
+  `<div class="statline"><span><b>${ids.length}</b> Companies</span><span><b>${all.reduce((a,c)=>a+c.st.length,0)}</b> Studios</span><button data-a="cof" data-v="open"><b>${appr}</b> offene Freigaben</button><button data-a="cof" data-v="open"><b>${over}</b> überfällige Kurse</button></div>`+
+  (tasks.length?`<div class="panel" style="margin-bottom:16px"><div class="hd"><h2>Wartet auf die Plattform</h2><span class="muted sm">${tasks.length} Punkte</span></div>${tasks.map(([b,i,t1,t2,ac])=>`<div class="task"><div class="ic badge ${b}" style="padding:0">${ic(i)}</div><div class="tx"><div class="t1">${t1}</div><div class="t2">${t2}</div></div><div class="ac">${ac}</div></div>`).join('')}</div>`:'')+
+  `<div class="toolbar"><div class="chips">${keys.map(k=>`<button class="chip ${S.cof===k?'on':''}" data-a="cof" data-v="${k}">${f[k][0]} <span class="n">${all.filter(f[k][1]).length}</span></button>`).join('')}</div><label class="search">${ic('search','s')}<input class="inp" data-f="filt" placeholder="Company suchen"></label></div>
+  <div class="tblw"><table><thead><tr><th style="width:40px"></th><th>Company</th><th class="num">Studios</th><th class="num">Trainer:innen</th><th class="num">Offene Freigaben</th><th class="num">Überfällig</th><th>Letzte Aktivität</th><th>Status</th><th></th></tr></thead><tbody id="filt">${rows.map(c=>`<tr class="cl" data-a="ctx" data-v="${c.id}" data-q="${esc(c.name.toLowerCase())}"><td><button class="pinb ${S.pins.includes(c.id)?'on':''}" data-a="pin" data-v="${c.id}" aria-label="Anheften">${ic('star','s')}</button></td><td><div class="who"><span class="sq" style="background:${c.color};width:28px;height:28px">${ini(c.name)}</span><div><b>${esc(c.name)}</b><div class="muted sm">seit ${c.since}</div></div></div></td><td class="num">${c.st.length}</td><td class="num">${c.tr}</td><td class="num">${c.appr?`<span class="badge b-warn">${c.appr}</span>`:'<span class="muted">0</span>'}</td><td class="num" style="color:${c.over>4?'var(--err)':''}">${c.over}</td><td class="muted sm nw">${c.act}</td><td>${c.del?'<span class="badge b-err">Löschung 18.12.</span>':c.id==='c14'?'<span class="badge b-warn">Admin eingeladen</span>':c.id==='c13'?'<span class="badge b-link">Einrichtung 2/5</span>':'<span class="badge b-ok">Aktiv</span>'}</td><td class="muted">${ic('right','s')}</td></tr>`).join('')}</tbody></table>${rows.length?'':'<div class="empty">Keine Companies für diesen Filter.</div>'}</div>`;
+}
+function pAdmins(){
+  const a=[['Alex Kern','Du','seit 23.08.2026'],['Sam Okafor','','seit 28.11.2026']];
+  return ph('Plattform-Admins','Haben alle Rechte auf der ganzen Plattform. Der letzte Plattform-Admin bleibt immer bestehen.')+
+  `<div class="grid-rail"><div class="tblw"><table><thead><tr><th>Person</th><th>Seit</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td><div class="who"><span class="av">${ini(x[0])}</span><div><div class="nm">${x[0]} ${x[1]?'<span class="badge">Du</span>':''}</div></div></div></td><td class="muted sm">${x[2]}</td><td class="num">${x[1]?'':'<button class="btn sm g">Entfernen</button>'}</td></tr>`).join('')}</tbody></table></div>
+  <div class="panel"><div class="hd"><h2>Hinzufügen</h2></div><div class="bd"><div class="field"><label for="pae">E-Mail-Adresse</label><input class="inp" id="pae" placeholder="name@beispiel.de"><span class="hint">Ohne Konto geht eine Einladung raus.</span></div><button class="btn p" data-a="toast" data-v="Einladung gesendet">Hinzufügen</button></div></div></div>`;
+}
+const MSGS=[['Miriam Albers','Kraftwerk Fitness','Gutschrift doppelt erstellt?','vor 25 Min.','Hallo, bei Jonas Brandt sehe ich für Oktober zwei Gutschriften. Ist die erste storniert oder müssen wir etwas tun?',1],['Sven Roth','Yogaloft','Studio umbenennen','vor 2 Std.','Wir haben das Studio Schöneberg in „Yogaloft West“ umbenannt. Kann ich das selbst ändern, ohne dass alte Pläne verloren gehen?',1],['Ida Sommer','Yogaloft','Login-Link abgelaufen','gestern','Der Link aus der Einladung funktioniert nicht mehr. Können Sie ihn neu schicken?',0],['Paula Lenz','Kraftwerk Fitness','Kurstyp löschen','24.11.','Ich kann den Kurstyp „Zumba Gold“ nicht löschen, obwohl er nur in meinem Studio läuft.',0]];
+function pSupport(){
+  const m=MSGS[S.msg];
+  return ph('Support','Nachrichten aus dem Kontaktformular aller Rollen.',`<span class="muted sm">Empfänger: support@beispiel.de</span><button class="btn sm">Empfänger ändern</button>`)+
+  `<div class="panel msg"><div class="lst">${MSGS.map((x,i)=>`<button class="mi ${S.msg===i?'on':''}" data-a="msg" data-v="${i}"><div class="r1"><span>${x[5]&&!S.done.inbox?'<span class="unread"></span>':''}${x[0]}</span><span class="muted sm" style="font-weight:400">${x[3]}</span></div><div class="r2">${x[2]}</div><div class="r3">${x[1]}</div></button>`).join('')}</div>
+  <div style="padding:20px 24px"><div class="muted sm">${m[1]} · ${m[3]}</div><h2 style="font-size:20px;margin:6px 0 12px">${m[2]}</h2><div class="who" style="margin-bottom:12px"><span class="av s">${ini(m[0])}</span><div class="nm">${m[0]}</div></div><p style="max-width:62ch">${m[4]}</p><div style="display:flex;gap:8px;margin-top:18px"><button class="btn p" data-a="toast" data-v="Antwort öffnet sich im Mailprogramm">${ic('mail','s')}Per E-Mail antworten</button><button class="btn" data-a="ctx" data-v="${COS.find(c=>c.name===m[1]).id}">Company öffnen</button><button class="btn g" data-a="markread">Als erledigt markieren</button></div></div></div>`;
+}
+function pHelp(){
+  return ph('Hilfe','Handbuch, Rundgang und Kontakt.')+`<div class="grid2"><div class="panel"><div class="hd"><h2>Handbuch</h2><label class="search">${ic('search','s')}<input class="inp" placeholder="Im Handbuch suchen" style="width:220px"></label></div>${['Kurse erfassen und Vertretungen','Kurspläne und Versionen','Verträge und Freigaben','Gutschriften prüfen und freigeben','Rollen und Rechte'].map(t=>`<div class="task"><div class="ic badge b-pri" style="padding:0">${ic('file')}</div><div class="tx"><div class="t1">${t}</div><div class="t2">3 Min. Lesezeit</div></div></div>`).join('')}</div><div class="stack"><div class="panel"><div class="hd"><h2>Rundgang</h2></div><div class="bd"><p class="muted sm" style="margin-top:0">Zeigt dir in 2 Minuten die wichtigsten Bereiche für deine Rolle.</p><button class="btn p">Rundgang starten</button></div></div><div class="panel"><div class="hd"><h2>Schreib uns</h2></div><div class="bd"><textarea class="inp" rows="4" style="width:100%" placeholder="Worum geht es?"></textarea><button class="btn" style="margin-top:8px">${ic('send','s')}Senden</button></div></div></div></div>`;
+}
+
+/* ---------- Trainer ---------- */
+function tSess(){
+  const out=[];['c1','c2'].forEach(id=>{const c=coById(id);data(c).sess.forEach(s=>{if(s.trainer==='Lena Vogt'||s.sub==='Lena Vogt')out.push({...s,co:c})})});
+  return out.filter(s=>S.tco==='all'||s.co.id===S.tco).sort((a,b)=>a.d-b.d||a.start.localeCompare(b.start));
+}
+const OPEN=[{id:'x1',d:3,date:'Mi 02.12.',start:'09:30',type:'Pilates',studio:'Mitte',co:'Kraftwerk Fitness',from:'Marco Pohl',n:6},{id:'x2',d:5,date:'Fr 04.12.',start:'18:15',type:'HIIT',studio:'Kreuzberg',co:'Kraftwerk Fitness',from:'Aylin Demir',n:6}];
+function openSubs(m){
+  const l=OPEN.filter(o=>!S.done[o.id]);if(!l.length)return'';
+  const it=o=>`<div class="sess"><div><div class="tm">${o.start}</div><div class="dt">${m?o.date.slice(0,6):o.date}</div></div><div><div class="c">${o.type} · ${o.studio}</div><div class="m">ausgeschrieben von ${o.from} · an ${o.n} Kolleg:innen</div></div><div class="ac"><button class="btn ${m?'':'sm'} ok" data-a="take" data-v="${o.id}">${ic('check','s')}Übernehmen</button></div></div>`;
+  return m?`<div class="mtitle"><span>Offene Vertretungen</span><span class="badge b-link">${l.length}</span></div><div class="mcard">${l.map(it).join('')}</div>`:`<div class="panel"><div class="hd"><h2>Offene Vertretungen in deinen Studios</h2><span class="badge b-link">${l.length}</span></div>${l.map(it).join('')}<div class="muted sm" style="padding:8px 16px 12px">Wer zuerst übernimmt, bekommt den Kurs. Du siehst nur Studios, für die du freigegeben bist.</div></div>`;
+}
+const REQ={d:7,start:'10:00',type:'Spinning',studio:'Kreuzberg',from:'Jonas Brandt'};
+function tCourses(){
+  const ss=tSess();const conf=ss.filter(s=>(s.st==='overdue'||s.st==='open')&&!S.done['s'+s.id+s.co.id]);
+  const up=ss.filter(s=>s.st==='planned');const done=ss.filter(s=>s.st==='done'||s.st==='cancelled'||S.done['s'+s.id+s.co.id]);
+  const nx=up[0];
+  const row=(s,act)=>`<div class="sess"><div><div class="tm">${s.start}</div><div class="dt">${dateOf(s.d)}</div></div><div><div class="c"><span class="tdot" style="background:${s.type.color}"></span>${esc(s.type.name)}${s.sub==='Lena Vogt'?' <span class="badge b-link">Vertretung</span>':''}</div><div class="m">${esc(s.co.name)} · ${esc(stName(s.studio))}</div></div><div class="ac">${act}</div></div>`;
+  const chips=`<div class="chips">${[['all','Alle'],['c1','Kraftwerk Fitness'],['c2','Yogaloft']].map(([k,l])=>`<button class="chip ${S.tco===k?'on':''}" data-a="tco" data-v="${k}">${l}</button>`).join('')}</div>`;
+  const head=ph('Meine Kurse','Blättere beliebig weit zurück oder wähle Monat, Quartal oder Jahr.',`${perCtl('tper')}<div class="tog"><button class="${S.tview==='list'?'on':''}" data-a="tview" data-v="list">${ic('list','s')}Liste</button><button class="${S.tview==='week'?'on':''}" data-a="tview" data-v="week">${ic('cal','s')}Woche</button></div>`);
+  if(S.tview==='week'){
+    return head+perNote('tper')+`<div class="toolbar">${chips}</div><div class="week">${[1,2,3,4,5,6,7].map(d=>`<div class="day ${d===TODAY?'today':''}"><div class="dh"><b>${WD[d-1]} ${22+d}.</b><span>${ss.filter(s=>s.d===d).length}</span></div>${ss.filter(s=>s.d===d).map(s=>`<div class="slot" style="--c:${s.type.color}"><div class="tm">${s.start}</div><div class="ty">${esc(s.type.name)}</div><div class="tr">${esc(stName(s.studio))}</div><div style="margin-top:4px">${sbadge(s)}</div></div>`).join('')}</div>`).join('')}</div>`;
+  }
+  return head+perNote('tper')+`<div class="toolbar">${chips}<span class="muted sm">${done.length} gegeben · ${conf.length} zu bestätigen · ${up.length} kommend</span></div>
+  <div class="grid-rail"><div class="stack">
+   <div class="panel"><div class="hd"><h2>Zu bestätigen</h2><div style="display:flex;gap:8px;align-items:center">${conf.length>1?`<button class="btn sm ok" data-a="tall">${ic('check','s')}Alle ${conf.length} als gegeben</button>`:''}<span class="badge ${conf.length?'b-warn':'b-ok'}">${conf.length||'alles erledigt'}</span></div></div>${conf.map(s=>row(s,`<button class="btn sm ok" data-a="tdone" data-v="s${s.id}${s.co.id}">${ic('check','s')}Gegeben</button><button class="btn sm" data-a="tdone" data-v="s${s.id}${s.co.id}">Ausgefallen</button><button class="btn sm g" aria-label="Mehr">${ic('dots','s')}</button>`)).join('')||'<div class="empty">Alle vergangenen Kurse sind bestätigt.</div>'}</div>
+   ${S.done.req?'':`<div class="panel"><div class="hd"><h2>Vertretungsanfrage</h2></div><div class="sess"><div><div class="tm">${REQ.start}</div><div class="dt">So 29.11.</div></div><div><div class="c">${REQ.type} für ${REQ.from}</div><div class="m">Kraftwerk Fitness · ${REQ.studio}</div></div><div class="ac"><button class="btn sm ok" data-a="req">Annehmen</button><button class="btn sm" data-a="req">Ablehnen</button></div></div></div>`}
+   ${openSubs(false)}
+   <div class="panel"><div class="hd"><h2>Kommende Kurse</h2></div>${up.map(s=>row(s,S.open['o'+s.id+s.co.id]?`<span class="badge b-link">${ic('repeat','s')}Ausgeschrieben</span>`:`<button class="btn sm g" data-a="subreq" data-v="o${s.id}${s.co.id}">${ic('repeat','s')}Vertretung finden</button>`)).join('')||'<div class="empty">Keine kommenden Kurse diese Woche.</div>'}</div>
+   <div class="panel"><div class="hd"><h2>Erledigt</h2><span class="muted sm">${done.length}</span></div>${done.slice(-5).map(s=>row(s,sbadge(s.st==='cancelled'?s:{st:'done'}))).join('')}</div>
+  </div><div class="stack">${nx?`<div class="next"><div class="k">Nächster Kurs · ${nx.d===TODAY?'heute':WDL[nx.d-1]}</div><div class="tm">${nx.start}</div><div class="c">${esc(nx.type.name)}</div><div class="m">${esc(nx.co.name)} · ${esc(stName(nx.studio))}</div><div style="display:flex;gap:8px;margin-top:14px"><button class="btn sm" data-a="subreq" data-v="o${nx.id}${nx.co.id}">${ic('repeat','s')}Vertretung finden</button></div></div>`:''}
+   <div class="panel"><div class="hd"><h2>Ad-hoc oder Vertretung?</h2></div><div class="bd sm"><p class="muted" style="margin-top:0">Kurse außerhalb deines Plans oder spontane Vertretungen trägst du selbst ein.</p><button class="btn p" data-a="log">${ic('plus','s')}Kurs eintragen</button></div></div></div></div>`;
+}
+const TDOCS=[['Gutschrift Oktober','Kraftwerk Fitness','GS-2026-10-010',486.4,'open'],['Tätigkeitsnachweis Oktober','Yogaloft','TN-2026-10-003',null,'issued'],['Gutschrift September','Kraftwerk Fitness','GS-2026-09-007',422.4,'approved'],['Gutschrift August','Kraftwerk Fitness','GS-2026-08-004',390.0,'auto']];
+function tBilling(){
+  const sl={open:['Offen bis 05.12.','b-warn'],issued:['Ausgestellt','b-pri'],approved:['Freigegeben','b-ok'],auto:['Automatisch freigegeben','b-ok'],corr:['Korrektur angefordert','b-err']};
+  return ph('Abrechnung','Deine Gutschriften und Nachweise. Prüfe neue Gutschriften und gib sie frei.',`<select class="sel"><option>Alle Companies</option><option>Kraftwerk Fitness</option><option>Yogaloft</option></select>`)+
+  `<div class="grid-rail"><div class="panel">${TDOCS.map((d,i)=>{const st=i===0&&S.done.doc?S.done.doc:d[4];return `<div class="doc"><div class="ic">${ic(d[3]?'receipt':'file')}</div><div><div style="font-weight:700">${d[0]} <span class="badge ${sl[st][1]}">${sl[st][0]}</span></div><div class="muted sm">${d[1]} · ${d[2]}${d[3]?' · '+eur(d[3]):''}</div>${i===0&&S.expand==='doc'&&st==='open'?`<div class="sm" style="margin-top:10px;border-top:1px solid var(--line2);padding-top:10px">16 Kurse · 14 gegeben, 2 Vertretungen · Kleinunternehmer:in, ohne MwSt.<div style="display:flex;gap:8px;margin-top:10px"><button class="btn sm p" data-a="docst" data-v="approved">${ic('check','s')}Freigeben</button><button class="btn sm" data-a="docst" data-v="corr">Korrektur anfordern</button><button class="btn sm g">${ic('download','s')}PDF</button></div></div>`:''}</div><div>${st==='open'&&S.expand!=='doc'?`<button class="btn sm p" data-a="expand" data-v="doc">Prüfen</button>`:`<button class="btn sm g">${ic('download','s')}PDF</button>`}</div></div>`}).join('')}</div>
+  <div class="panel"><div class="hd"><h2>Monats-Export</h2></div><div class="bd"><div class="field"><label for="em">Monat</label><select class="sel" id="em"><option>November 2026 (läuft)</option><option>Oktober 2026</option></select></div><div class="field"><label for="ec">Company</label><select class="sel" id="ec"><option>Kraftwerk Fitness</option><option>Yogaloft</option></select></div><div style="display:flex;gap:8px"><button class="btn">${ic('download','s')}CSV</button><button class="btn">${ic('download','s')}PDF</button></div></div></div></div>`;
+}
+function tProfile(){
+  return ph('Profil & Verträge','Deine Stammdaten pflegst du selbst. Verträge kommen von den Companies.')+
+  `<div class="grid2"><div class="panel"><div class="hd"><h2>Stammdaten</h2></div><div class="bd"><div class="row2"><div class="field"><label for="fn">Vorname</label><input class="inp" id="fn" value="Lena"></div><div class="field"><label for="ln">Nachname</label><input class="inp" id="ln" value="Vogt"></div></div><div class="field"><label for="ph">Telefon</label><input class="inp" id="ph" value="0151 2345678"></div><div class="field"><label for="ad">Anschrift</label><input class="inp" id="ad" value="Lychener Straße 21, 10437 Berlin"></div>
+  <div class="switchrow"><div><div class="t1">Kleinunternehmer:in (§ 19 UStG)</div><div class="t2">Gutschriften ohne Umsatzsteuer.</div></div><button class="tg on" aria-label="Kleinunternehmer"></button></div>
+  <div class="row2" style="margin-top:12px"><div class="field"><label for="tx">Steuernummer</label><input class="inp" id="tx" value="13/245/67890"></div><div class="field"><label for="ib">IBAN</label><input class="inp" id="ib" value="DE89 •••• •••• •••• 3000"></div></div>
+  <div class="switchrow"><div><div class="t1">Zustimmung zum Gutschriftverfahren</div><div class="t2">Erteilt am 02.10.2026</div></div><span class="badge b-ok">Erteilt</span></div><button class="btn p" style="margin-top:10px" data-a="toast" data-v="Gespeichert">Speichern</button></div></div>
+  <div class="stack"><div class="panel"><div class="hd"><h2>Verträge</h2></div>
+   ${S.done.offer?'':`<div class="task" style="background:var(--warnsoft)"><div class="tx"><div class="t1">Neues Angebot · Yogaloft</div><div class="t2">Freiberuflich · 0,55 € / Min. · ab 01.12.2026 · Friedrichshain</div></div><div class="ac"><button class="btn sm p" data-a="offer">Annehmen</button><button class="btn sm" data-a="offer">Ablehnen</button></div></div>`}
+   <div class="task"><div class="tx"><div class="t1">Kraftwerk Fitness <span class="badge b-ok">Aktiv</span></div><div class="t2">Freiberuflich · 32,00 € / Kurs · seit 01.09.2026 · alle Studios</div></div></div>
+   <div class="task"><div class="tx"><div class="t1">Yogaloft <span class="badge b-ok">Aktiv</span></div><div class="t2">Freiberuflich · 0,50 € / Min. · 01.09.–30.11.2026 · Friedrichshain</div></div></div></div>
+  <div class="panel"><div class="hd"><h2>Benachrichtigungen</h2></div><div class="bd"><div class="switchrow"><div><div class="t1">Push nach Kursende</div><div class="t2">15 Minuten nach Kursende: „Kurs gegeben?“ mit Antwort direkt in der Nachricht.</div></div><button class="tg on" aria-label="Push nach Kursende"></button></div><div class="switchrow"><div><div class="t1">Neue Gutschrift</div></div><button class="tg on" aria-label="Neue Gutschrift"></button></div><div class="switchrow"><div><div class="t1">Erinnerung Prüffrist</div></div><button class="tg on" aria-label="Erinnerung"></button></div></div></div></div></div>`;
+}
+function pProfile(){const p=P0();return ph('Profil','Deine persönlichen Daten.')+`<div class="panel" style="max-width:640px"><div class="bd"><div class="row2"><div class="field"><label for="pf">Name</label><input class="inp" id="pf" value="${p.name}"></div><div class="field"><label for="pp">Telefon</label><input class="inp" id="pp" value="030 1234567"></div></div><button class="btn p" data-a="toast" data-v="Gespeichert">Speichern</button></div></div>`}
+
+/* ---------- Drawer ---------- */
+function drawer(){
+  if(!S.drawer)return'';const d=S.drawer;let hd='',bd='',ft='';
+  if(d.k==='person'){
+    const c=co();const p=data(c).team.find(x=>x.name===d.v)||{name:d.v,role:'trainer'};const isS=S.role==='studio';
+    const roleL={admin:'Admin',studio:'Studio-Admin',trainer:'Trainer:in'}[p.role];
+    hd=`<span class="av ${p.role==='trainer'?'t':p.role==='studio'?'s':''}" style="width:44px;height:44px;font-size:15px">${ini(p.name)}</span><div style="flex:1"><h2 style="font-size:19px">${esc(p.name)}</h2><div class="muted sm">${roleL} · ${esc(c.name)}</div></div><button class="btn g sm" data-a="close" aria-label="Schließen">${ic('x')}</button>`;
+    if(p.pending)bd+=`<div class="dsec"><div class="banner" style="margin:0"><span class="sp"><b>Angebot von ${p.pending}</b> wartet auf deine Bestätigung. Die Trainer:in sieht es erst danach.</span></div></div>`;
+    if(p.emp)bd+=`<div class="dsec"><h3>Vertrag</h3><dl class="kv"><dt>Beschäftigung</dt><dd>${p.emp}</dd><dt>Vergütung</dt><dd>${p.rate}</dd><dt>Gültig</dt><dd>${p.pending?'ab 01.12.2026':'seit 01.09.2026, unbefristet'}</dd><dt>Status</dt><dd>${p.pending?'<span class="badge b-warn">Wartet auf Bestätigung</span>':'<span class="badge b-ok">Aktiv, angenommen</span>'}</dd></dl>${isS?'':`<div style="margin-top:10px;display:flex;gap:8px"><button class="btn sm">Bearbeiten</button>${p.pending?'':'<button class="btn sm g">Vertrag beenden</button>'}</div>`}</div>
+    <div class="dsec"><h3>Freigegebene Studios</h3><p class="muted sm" style="margin:0 0 8px">${isS?'Festgelegt vom Company-Admin.':'Ohne Auswahl gilt der Vertrag für alle Studios.'}</p><div class="chips">${c.st.map(s=>{const on=p.studios==='all'||p.studios?.includes(s.id);return `<button class="chip ${on?'on':''}" ${isS?'disabled':''}>${on?ic('check','s'):''}${esc(s.name)}</button>`}).join('')}</div></div>`;
+    if(p.role==='studio')bd+=`<div class="dsec"><h3>Studios als Studio-Admin</h3><div class="chips">${c.st.map(s=>{const on=p.studios?.includes(s.id);return `<button class="chip ${on?'on':''}">${on?ic('check','s'):''}${esc(s.name)}</button>`}).join('')}</div><p class="muted sm" style="margin:8px 0 0">Rechte gelten wie unter Einstellungen › Rechte festgelegt.</p></div>`;
+    bd+=`<div class="dsec"><h3>Stammdaten</h3><p class="muted sm" style="margin:0 0 8px">Pflegt die Person selbst.</p><dl class="kv"><dt>E-Mail</dt><dd>${esc(p.name.split(' ')[0].toLowerCase())}@beispiel.de</dd><dt>Telefon</dt><dd>0151 2345678</dd>${p.role==='trainer'?`<dt>Steuer</dt><dd>${p.klein?'Kleinunternehmer:in':'regelbesteuert'}</dd><dt>Abrechnung</dt><dd>${p.issue?`<span class="badge b-err">${p.issue}</span>`:'<span class="badge b-ok">Daten vollständig</span>'}</dd>`:''}</dl></div>`;
+    if(!isS)bd+=`<div class="dsec"><h3>Datenschutz</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm">${ic('download','s')}Datenauskunft</button><button class="btn sm d">${ic('trash','s')}Konto löschen</button></div></div>`;
+    ft=p.pending&&!isS?`<button class="btn" data-a="reject" data-v="pend:${esc(p.name)}">Ablehnen</button><button class="btn p" data-a="approve" data-v="pend:${esc(p.name)}">${ic('check','s')}Bestätigen</button>`:`<button class="btn" data-a="close">Schließen</button>`;
+  }
+  if(d.k==='add'){
+    const isS=S.role==='studio';
+    hd=`<div style="flex:1"><h2 style="font-size:19px">${isS?'Trainer:in einladen':'Person hinzufügen'}</h2><div class="muted sm">Bekommt eine Einladung per E-Mail.</div></div><button class="btn g sm" data-a="close" aria-label="Schließen">${ic('x')}</button>`;
+    if(!isS)bd+=`<div class="dsec"><div class="flbl" style="margin-bottom:8px">Rolle</div>${[['trainer','Trainer:in','Mit Vertragsangebot. Kann Kurse erfassen.'],['studio','Studio-Admin','Verwaltet einzelne Studios.'],['admin','Admin','Alle Rechte in der Company.']].map(([k,t,h])=>`<button class="opt ${S.addRole===k?'on':''}" data-a="addrole" data-v="${k}"><div><div class="t1">${t}</div><div class="t2">${h}</div></div></button>`).join('')}</div>`;
+    bd+=`<div class="dsec"><div class="row2"><div class="field"><label for="av">Vorname</label><input class="inp" id="av"></div><div class="field"><label for="an">Nachname</label><input class="inp" id="an"></div></div><div class="field"><label for="ae">E-Mail</label><input class="inp" id="ae" type="email" placeholder="name@beispiel.de"></div></div>`;
+    if(isS||S.addRole==='trainer')bd+=`<div class="dsec"><h3>Vertragsangebot</h3><div class="row2"><div class="field"><label for="ce">Beschäftigung</label><select class="sel" id="ce"><option>Freiberuflich</option><option>Minijob</option><option>Festangestellt</option></select></div><div class="field"><label for="cm">Vergütung</label><select class="sel" id="cm"><option>pro Kurs</option><option>pro Minute</option><option>pro Stunde</option><option>Festgehalt</option></select></div></div><div class="row2"><div class="field"><label for="ca">Betrag</label><input class="inp" id="ca" value="30,00 €"></div><div class="field"><label for="cf">Gültig ab</label><input class="inp" id="cf" value="01.12.2026"></div></div>${isS?`<div class="banner info" style="margin:0"><span class="sp">Gilt für alle Studios der Company. Der Company-Admin bestätigt dein Angebot, danach sieht es die Trainer:in.</span></div>`:`<div class="field"><span class="flbl">Studios</span><div class="chips">${co().st.map(s=>`<button class="chip">${esc(s.name)}</button>`).join('')}</div><span class="hint">Ohne Auswahl: alle Studios.</span></div>`}</div>`;
+    if(!isS&&S.addRole==='studio')bd+=`<div class="dsec"><div class="field"><span class="flbl">Studios</span><div class="chips">${co().st.map((s,i)=>`<button class="chip ${i===0?'on':''}">${esc(s.name)}</button>`).join('')}</div></div></div>`;
+    ft=`<button class="btn" data-a="close">Abbrechen</button><button class="btn p" data-a="invite">${ic('send','s')}${isS?'Angebot senden':'Einladen'}</button>`;
+  }
+  if(d.k==='log'){
+    hd=`<div style="flex:1"><h2 style="font-size:19px">Kurs eintragen</h2></div><button class="btn g sm" data-a="close" aria-label="Schließen">${ic('x')}</button>`;
+    bd=logForm();ft=`<button class="btn" data-a="close">Abbrechen</button><button class="btn p" data-a="logsave">Speichern</button>`;
+  }
+  if(d.k==='diff'){
+    const c=co();const sid=S.plan&&c.st.some(x=>x.id===S.plan)?S.plan:(S.studio!=='all'?S.studio:myStudios()[0].id);const ch=planChanges(c,sid);
+    const warns=[ch.add[0].warn,ch.chg.warn].filter(Boolean);
+    hd=`<div style="flex:1"><h2 style="font-size:19px">Version 5 für ${esc(stName(sid))}</h2><div class="muted sm">Gilt ab Mo 30.11. · Version 4 wird archiviert</div></div><button class="btn g sm" data-a="close" aria-label="Schließen">${ic('x')}</button>`;
+    bd=`${warns.length?`<div class="dsec"><h3 style="color:var(--err)">${warns.length===1?'1 Konflikt':warns.length+' Konflikte'}</h3>${warns.map(w=>`<div class="diff"><span style="color:var(--err)">${ic('alert','s')}</span><span>${w}</span></div>`).join('')}</div>`:''}
+    <div class="dsec"><h3>Änderungen gegenüber Version 4</h3>
+    ${ch.add.map(a=>`<div class="diff"><span class="k" style="color:var(--ok)">+</span><span><b>${WDL[a.d-1]} ${a.start}</b> ${esc(a.type.name)} mit ${esc(a.trainer)}</span></div>`).join('')}
+    <div class="diff"><span class="k" style="color:var(--err)">−</span><span><b>${WDL[ch.goneS.d-1]} ${ch.goneS.start}</b> ${esc(ch.goneS.type.name)} mit ${esc(ch.goneS.trainer)}</span></div>
+    <div class="diff"><span class="k" style="color:var(--link)">~</span><span><b>${WDL[ch.chg.s.d-1]} ${ch.chg.s.start}</b> ${esc(ch.chg.s.type.name)}: ${esc(ch.chg.s.trainer)} → ${esc(ch.chg.to)}</span></div></div>
+    <div class="dsec"><h3>Wer benachrichtigt wird</h3><p class="sm muted" style="margin:0">4 Trainer:innen bekommen eine E-Mail mit ihren geänderten Kursen.</p></div>`;
+    ft=`<button class="btn" data-a="close">Zurück zum Plan</button><button class="btn ${warns.length?'d':'p'}" data-a="publish">${warns.length?'Trotz Konflikten veröffentlichen':'Veröffentlichen'}</button>`;
+  }
+  if(d.k==='subreq'){
+    hd=`<div style="flex:1"><h2 style="font-size:19px">Vertretung finden</h2><div class="muted sm">Du bleibst eingetragen, bis jemand zusagt.</div></div><button class="btn g sm" data-a="close" aria-label="Schließen">${ic('x')}</button>`;
+    bd=`<div class="dsec">${[['all','An alle ausschreiben','6 Kolleg:innen, die für dieses Studio freigegeben sind. Wer zuerst übernimmt, bekommt den Kurs.'],['one','Bestimmte Person fragen','Nur diese Person sieht die Anfrage.']].map(([k,t,h])=>`<button class="opt ${(S.subMode||'all')===k?'on':''}" data-a="submode" data-v="${k}"><div><div class="t1">${t}</div><div class="t2">${h}</div></div></button>`).join('')}
+    ${(S.subMode||'all')==='one'?`<div class="field"><label for="sp">Kolleg:in</label><select class="sel" id="sp"><option>Jonas Brandt</option><option>Aylin Demir</option><option>Marco Pohl</option></select></div>`:''}<div class="field"><label for="sn">Nachricht (optional)</label><textarea class="inp" id="sn" rows="2" placeholder="z. B. Musik liegt im Spind"></textarea></div></div>`;
+    ft=`<button class="btn" data-a="close">Abbrechen</button><button class="btn p" data-a="subsend" data-v="${d.v}">${ic('send','s')}${(S.subMode||'all')==='one'?'Anfragen':'Ausschreiben'}</button>`;
+  }
+  return `<div class="scrim" data-a="close"></div><aside class="drawer" role="dialog" aria-label="Details"><div class="dhd">${hd}</div><div class="dbd">${bd}</div><div class="dft">${ft}</div></aside>`;
+}
+function logForm(){
+  const c=coById('c1');const sl=data(c).slots.filter(s=>s.studio==='c1s1'&&s.d===TODAY);
+  return `<div class="dsec"><div class="tog" style="width:100%"><button style="flex:1;justify-content:center" class="${S.logMode==='plan'?'on':''}" data-a="logmode" data-v="plan">Aus dem Plan</button><button style="flex:1;justify-content:center" class="${S.logMode==='adhoc'?'on':''}" data-a="logmode" data-v="adhoc">Ad-hoc</button></div></div>
+  <div class="dsec"><div class="row2"><div class="field"><label for="ls">Studio</label><select class="sel" id="ls"><option>Kraftwerk · Kreuzberg</option><option>Kraftwerk · Mitte</option><option>Yogaloft · Friedrichshain</option></select></div><div class="field"><label for="ld">Datum</label><input class="inp" id="ld" value="Sa 28.11.2026"></div></div>
+  ${S.logMode==='plan'?`<div class="flbl" style="margin-bottom:6px">Kurs aus dem Plan</div>${sl.map((s,i)=>`<button class="opt ${i===0?'on':''}"><div style="font:800 15px Manrope;width:50px">${s.start}</div><div><div class="t1">${esc(s.type.name)}</div><div class="t2">${s.trainer==='Lena Vogt'?'Dein Kurs':'Vertretung für '+esc(s.trainer)}</div></div></button>`).join('')||'<p class="muted">Keine Plan-Kurse an diesem Tag.</p>'}`:
+  `<div class="row2"><div class="field"><label for="lt">Kurstyp</label><select class="sel" id="lt"><option>Yoga Flow</option><option>HIIT</option></select></div><div class="field"><label for="lz">Zeit</label><input class="inp" id="lz" value="18:00 – 19:00"></div></div>`}</div>
+  <div class="dsec"><div class="flbl" style="margin-bottom:6px">Status</div><div class="tog"><button class="on">${ic('check','s')}Gegeben</button><button>Ausgefallen</button></div><div class="field" style="margin-top:12px"><label for="ln2">Notiz</label><textarea class="inp" id="ln2" rows="2" placeholder="Optional, z. B. Teilnehmerzahl"></textarea></div></div>`;
+}
+
+/* ---------- Mobil (Trainer) ---------- */
+function pushCard(conf){
+  if(!S.push)return'';const s=conf[0];
+  if(!s)return `<div class="push"><div class="r1">${LOGO}<b>class-y</b><span style="margin-left:auto">jetzt</span></div><div class="t">Alles bestätigt</div><div class="sm muted">Keine offenen Kurse.</div></div>`;
+  return `<div class="push"><div class="r1">${LOGO}<b>class-y</b><span style="margin-left:auto">jetzt</span></div><div class="t">${esc(s.type.name)} um ${s.start} gegeben?</div><div class="sm muted">${esc(s.co.name)} · ${esc(stName(s.studio))}</div><div class="acts"><button class="btn ok" data-a="pushdone" data-v="s${s.id}${s.co.id}">${ic('check','s')}Gegeben</button><button class="btn" data-a="pushdone" data-v="s${s.id}${s.co.id}">Ausgefallen</button></div></div>`;
+}
+function mobile(){
+  const ss=tSess();const conf=ss.filter(s=>(s.st==='overdue'||s.st==='open')&&!S.done['s'+s.id+s.co.id]);const up=ss.filter(s=>s.st==='planned');const nx=up[0];
+  let title='Meine Woche',body='';
+  const sr=(s,act)=>`<div class="sess"><div><div class="tm">${s.start}</div><div class="dt">${WD[s.d-1]} ${22+s.d}.</div></div><div><div class="c"><span class="tdot" style="background:${s.type.color}"></span>${esc(s.type.name)}</div><div class="m">${esc(s.co.name)} · ${esc(stName(s.studio))}</div></div>${act?`<div class="ac">${act}</div>`:''}</div>`;
+  if(S.mpage==='week'){
+    body=`${nx?`<div class="next" style="margin-bottom:12px"><div class="k">Nächster Kurs · ${nx.d===TODAY?'heute':WDL[nx.d-1]}</div><div class="tm">${nx.start}</div><div class="c">${esc(nx.type.name)}</div><div class="m">${esc(nx.co.name)} · ${esc(stName(nx.studio))}</div></div>`:''}
+    <div class="mtitle"><span>Zu bestätigen</span>${conf.length>1?`<button class="btn sm ok" data-a="tall" style="min-height:28px">Alle gegeben</button>`:`<span class="badge ${conf.length?'b-warn':'b-ok'}">${conf.length||'erledigt'}</span>`}</div>
+    ${conf.length?`<div class="mcard">${conf.map(s=>sr(s,`<button class="btn ok" data-a="tdone" data-v="s${s.id}${s.co.id}">${ic('check','s')}Gegeben</button><button class="btn" data-a="tdone" data-v="s${s.id}${s.co.id}">Ausgefallen</button>`)).join('')}</div>`:'<div class="mcard"><div class="empty">Alles bestätigt.</div></div>'}
+    ${S.done.req?'':`<div class="mtitle"><span>Vertretungsanfrage</span></div><div class="mcard"><div class="sess"><div><div class="tm">${REQ.start}</div><div class="dt">So 29.</div></div><div><div class="c">${REQ.type} für ${REQ.from}</div><div class="m">Kraftwerk · ${REQ.studio}</div></div><div class="ac"><button class="btn ok" data-a="req">Annehmen</button><button class="btn" data-a="req">Ablehnen</button></div></div></div>`}
+    ${openSubs(true)}<div class="mtitle"><span>Kommend</span></div><div class="mcard">${up.slice(0,4).map(s=>sr(s,'')).join('')}</div>`;
+  }
+  if(S.mpage==='plan'){title='Wochenplan';const x=ss.filter(s=>s.d===S.mday);
+    body=`<div class="daystrip">${WD.map((w,i)=>`<button class="${S.mday===i+1?'on':''}" data-a="mday" data-v="${i+1}">${w}<b>${23+i}</b></button>`).join('')}</div><div class="mcard">${x.map(s=>sr(s,'')+'').join('')||'<div class="empty">Keine Kurse an diesem Tag.</div>'}</div>`}
+  if(S.mpage==='bill'){title='Abrechnung';body=`<div class="list">${TDOCS.map((d,i)=>{const st=i===0&&S.done.doc?S.done.doc:d[4];const l={open:['Offen bis 05.12.','b-warn'],issued:['Ausgestellt','b-pri'],approved:['Freigegeben','b-ok'],auto:['Automatisch freigegeben','b-ok'],corr:['Korrektur angefordert','b-err']}[st];return `<div class="li"><div class="doc" style="padding:0;border:0;grid-template-columns:40px minmax(0,1fr)"><div class="ic">${ic(d[3]?'receipt':'file')}</div><div><div style="font-weight:700">${d[0]}</div><div class="muted sm">${d[1]}${d[3]?' · '+eur(d[3]):''}</div><span class="badge ${l[1]}">${l[0]}</span></div></div></div>${i===0&&st==='open'?`<div style="display:flex;gap:8px;padding:0 14px 14px"><button class="btn p" style="flex:1;justify-content:center;min-height:42px" data-a="docst" data-v="approved">Freigeben</button><button class="btn" style="flex:1;justify-content:center;min-height:42px" data-a="docst" data-v="corr">Korrektur</button></div>`:''}`}).join('')}</div>`}
+  if(S.mpage==='profile'){title='Profil';body=`<div class="list">${[['user','Stammdaten','Name, Telefon, Anschrift'],['euro','Steuer & Bank','Kleinunternehmer:in · IBAN …3000'],['file','Verträge',S.done.offer?'2 aktiv':'1 neues Angebot'],['mail','E-Mails','2 aktiv'],['moon','Darstellung',S.theme==='dark'?'Dunkel':'Hell'],['help','Hilfe','Handbuch und Kontakt']].map(([i,t,h])=>`<button class="li" ${i==='moon'?'data-a="theme" data-v="'+(S.theme==='dark'?'light':'dark')+'"':''}>${ic(i)}<div class="tx"><div style="font-weight:700">${t}</div><div class="muted sm">${h}</div></div>${t==='Verträge'&&!S.done.offer?'<span class="badge b-warn">neu</span>':ic('right','s')}</button>`).join('')}</div>`}
+  const nb=(k,l,i)=>`<button class="${S.mpage===k?'on':''}" data-a="mpage" data-v="${k}">${ic(i)}${l}</button>`;
+  const sheet=S.sheet?`<div class="scrim" data-a="sheetclose"></div><div class="sheet"><div class="grab"></div><div style="display:flex;justify-content:space-between;align-items:center;padding:4px 18px"><h2 style="font-size:19px">Kurs eintragen</h2><button class="btn g sm" data-a="sheetclose" aria-label="Schließen">${ic('x')}</button></div><div style="overflow:auto;padding:0 18px">${logForm()}</div><div style="padding:12px 18px 26px"><button class="btn p" style="width:100%;justify-content:center;min-height:46px" data-a="logsave">Speichern</button></div></div>`:'';
+  return `<div class="phonestage"><div class="phone"><div class="screen"><div class="sbar"><span>16:10</span><span>●●● ▮</span></div><div class="mhd"><h1>${title}</h1>${S.mpage==='week'?`<span class="per" style="padding:0"><button data-a="per" data-k="tper" data-v="-1" aria-label="Zurück">${ic('left','s')}</button><span class="lbl" style="padding:0 2px;font-size:13px">KW ${isoW(new Date(2026,10,23+7*S.tper.o))}</span><button data-a="per" data-k="tper" data-v="1" aria-label="Weiter">${ic('right','s')}</button></span>`:''}</div><div class="mbody">${body}</div>
+  <nav class="mnav">${nb('week','Woche','week')}${nb('plan','Plan','cal')}<button data-a="sheet" aria-label="Kurs eintragen"><span class="fab">${ic('plus')}</span></button>${nb('bill','Abrechnung','receipt')}${nb('profile','Profil','user')}</nav>${sheet}${pushCard(conf)}${S.toast?`<div class="toast">${ic('check','s')}${esc(S.toast)}</div>`:''}</div></div>
+  <div class="notes"><h2>Trainer:in mobil</h2><button class="btn ${S.push?'':'p'}" data-a="push" style="margin-bottom:12px">${ic('mail','s')}${S.push?'Push-Erinnerung ausblenden':'Push-Erinnerung nach Kursende zeigen'}</button><ul><li>15 Minuten nach Kursende kommt eine Push-Nachricht. Gegeben oder Ausgefallen lässt sich direkt darin bestätigen, ohne die App zu öffnen.</li><li>Offene Vertretungen: Wer ausfällt, schreibt aus, alle freigegebenen Kolleg:innen sehen es, wer zuerst übernimmt, bekommt den Kurs.</li><li>Unten vier Ziele und ein großer Plus-Knopf: Kurs eintragen ist eine Aktion, keine Seite.</li><li>„Zu bestätigen“ steht oben, mit Daumen-großen Knöpfen direkt in der Liste.</li><li>Keine Company-Auswahl: alle Verträge in einer Woche, Company steht an jedem Kurs.</li><li>Eintragen als Bottom-Sheet, der Plan-Kurs des Tages ist schon vorausgewählt.</li></ul></div></div>`;
+}
+
+/* ---------- Konzept ---------- */
+function concept(){
+  const M=[['Companies anlegen, löschen, Support','y','n','n','n'],['Plattform-Admins verwalten','y','n','n','n'],['Studios anlegen und bearbeiten','y','y','lesend (eigene)','n'],['Kurspläne','y','y','eigene Studios','lesend, freigegebene Studios'],['Kurstypen','y','y','Recht: darf / mit Bestätigung / nicht','n'],['Verträge anbieten','y','y','Recht, Standard mit Bestätigung','annehmen / ablehnen'],['Verträge bestätigen, auf Studios beschränken','y','y','n','n'],['Admins und Studio-Admins einladen','y','y','n','n'],['Kurse (Monitoring)','y','y','eigene Studios','eigene Kurse'],['Kurse erfassen, Vertretungen','n','n','n','y, freigegebene Studios'],['Gutschriften erstellen','y','y','bei Abrechnung je Studio, sonst Recht','prüfen, freigeben, Korrektur'],['Monats-Export','y','y','eigene Studios','eigene Kurse'],['Rechte der Studio-Admins festlegen','y','y','lesend','n'],['Datenschutz: Auskunft, Löschung, Offboarding','y','y','n','eigene Daten']];
+  const cell=v=>v==='y'?'<span class="y">✓</span>':v==='n'?'<span class="n">–</span>':`<span class="cc">${v}</span>`;
+  const sb=`<div style="display:grid;grid-template-columns:30% 1fr;height:100%"><div style="background:var(--side);border-right:1px solid var(--line);padding:8px 6px"><div style="height:14px;border:1px solid var(--line);border-radius:4px;margin-bottom:6px;background:var(--panel)"></div>${[1,0,0,0,0].map(o=>`<div style="height:7px;border-radius:3px;margin:5px 2px;background:${o?'var(--pri)':'var(--line)'}"></div>`).join('')}</div><div style="padding:8px"><div style="height:8px;width:40%;background:var(--ink);border-radius:3px;opacity:.7"></div><div style="margin-top:8px;height:96px;border:1px solid var(--line);border-radius:5px;background:var(--panel)"></div></div></div>`;
+  const tb=`<div style="display:grid;grid-template-rows:16px 16px 1fr;height:100%"><div style="background:var(--side);border-bottom:1px solid var(--line);display:flex;gap:4px;padding:4px 6px">${[1,0,0,0].map(o=>`<div style="width:28px;border-radius:3px;background:${o?'var(--pri)':'var(--line)'}"></div>`).join('')}</div><div style="border-bottom:1px solid var(--line);display:flex;gap:4px;padding:4px 6px;background:var(--panel)">${[1,0,0,0,0].map(o=>`<div style="width:22px;border-radius:3px;background:${o?'var(--pri)':'var(--line)'}"></div>`).join('')}</div><div style="padding:8px"><div style="height:8px;width:40%;background:var(--ink);border-radius:3px;opacity:.7"></div><div style="margin-top:8px;height:64px;border:1px solid var(--line);border-radius:5px;background:var(--panel)"></div></div></div>`;
+  return `<div class="concept-pane"><div class="cwrap"><div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start"><h1>Sidebar mit Company-Wechsler statt zwei Tab-Leisten</h1><button class="btn" data-a="concept">${ic('x','s')}Zum Prototyp</button></div>
+  <p class="lead">Deine Idee löst das richtige Problem: man muss immer sehen, in welcher Company man ist, und schnell wechseln können. Ich würde es trotzdem anders bauen. Beide Varianten sind im Prototyp oben umschaltbar, damit du sie direkt vergleichen kannst.</p>
+  <div class="cgrid">
+   <div class="panel"><div class="hd"><h2>Warum Sidebar</h2></div><div class="bd"><div class="mini"><div><div class="fr">${sb}</div><div class="cap">Sidebar: volle Höhe für Inhalt</div></div><div><div class="fr">${tb}</div><div class="cap">Zwei Leisten: rund 100 px weniger</div></div></div><ul style="margin-top:12px"><li><b>Platz:</b> Am Desktop fehlt Höhe, nicht Breite. Zwei Leisten kosten auf jeder Seite so viel Höhe, wie dich heute an den KPI-Karten stört.</li><li><b>Skaliert:</b> Tabs passen für 2 bis 4 Companies. Plattform-Admins sehen alle 14 (später mehr), also bräuchte die obere Leiste ohnehin ein „Weitere“-Menü mit Suche. Der Wechsler mit Suche funktioniert für 2 genauso wie für 200.</li><li><b>Klare Ebenen:</b> „Plattform“ ist keine Company. In der Sidebar ist es ein eigener Abschnitt oben, nicht ein Tab neben den Companies.</li><li><b>Studio-Filter</b> sitzt direkt unter der Company und gilt für alle Bereiche.</li></ul></div></div>
+   <div class="panel"><div class="hd"><h2>Gestaffelt nach Anzahl Companies</h2></div><div class="bd"><ul><li><b>1:</b> kein Wechsler, nur der Name.</li><li><b>2 bis 5:</b> einfache Liste, Tasten 1 bis 5 springen direkt.</li><li><b>6 bis 19:</b> Suchfeld, Angepinnt (Stern) und Zuletzt geöffnet oben, Strg K von überall.</li><li><b>Ab 20</b> (Plattform-Admin): Startseite ist eine Übersicht mit durchsuchbarer Company-Tabelle, offenen Freigaben und letzter Aktivität. In einer Company zeigt eine Kontextleiste „Du bist in X“ mit Zurück zur Plattform.</li><li>Die Sidebar lässt sich auf Icons einklappen, das wird gemerkt.</li></ul><p class="muted sm">Im Prototyp: Rolle Company-Admin und oben „Companies 2 / 8 / 24“ umschalten, Plattform-Admin hat 64.</p></div></div>
+   <div class="panel"><div class="hd"><h2>Neue Aufteilung: 5 statt 8 Bereiche</h2></div><div class="bd"><ul><li><b>Übersicht</b> (neu): „Wartet auf dich“ mit Bestätigungen, Überfälligem, Korrekturen, dazu der heutige Tag.</li><li><b>Kurse</b> statt Monitoring, Liste oder pro Trainer:in.</li><li><b>Kurspläne</b> mit Versionen direkt im Kopf.</li><li><b>Team</b> für alle Personen, Vertrag, Studio-Freigabe und Datenschutz im Seitenpanel der Person.</li><li><b>Abrechnung</b> mit Prüfliste rechts.</li><li>Studios, Kurstypen, Rechte, Abrechnungsregeln und Company-Export wandern in die <b>Einstellungen</b>, weil man sie selten braucht. Darstellung ist im Avatar-Menü.</li></ul></div></div>
+   <div class="panel"><div class="hd"><h2>Weniger Platz für Kennzahlen, Desktop zuerst, hellerer Darkmode</h2></div><div class="bd"><ul><li>Statt KPI-Karten eine Zeile Status-Chips mit Zahlen. Die Chips filtern gleichzeitig die Tabelle, rund 36 statt 120 px.</li><li>Volle Breite bis 1480 px, dichte Tabellen, Details im Seitenpanel. Die Liste bleibt dabei sichtbar.</li><li>Darkmode in warmem Anthrazit #2B2926 statt fast schwarz #131211. Flächen heben sich klar ab, Petrol wird zu hellem Türkis.</li><li>Trainer:innen wechseln keine Company. Alle Verträge erscheinen in einer Woche, die Company ist ein Filter.</li></ul></div></div>
+  </div>
+  <h2 style="font-size:22px;margin-bottom:10px">Wer darf was</h2><p class="muted" style="margin-top:0">Abgeleitet aus dem neuen Rollenmodell (Studio-Admin-Rechte, Vertragsbestätigung, Studio-Freigabe).</p>
+  <div class="tblw"><table class="matrix"><thead><tr><th>Bereich</th><th>Plattform-Admin</th><th>Company-Admin</th><th>Studio-Admin</th><th>Trainer:in</th></tr></thead><tbody>${M.map(r=>`<tr><td><b>${r[0]}</b></td>${r.slice(1).map(cell).join('')}</tr>`).join('')}</tbody></table></div>
+  <p class="muted sm" style="margin-top:14px">Alle Namen, Companies und Zahlen im Prototyp sind Beispieldaten.</p></div></div>`;
+}
+
+/* ---------- Render ---------- */
+function content(){
+  const pg={overview:pOverview,courses:pCourses,plans:pPlans,team:pTeam,billing:pBilling,settings:pSettings,companies:pCompanies,admins:pAdmins,support:pSupport,help:pHelp,'t-courses':tCourses,'t-bill':tBilling,'t-profile':tProfile,profile:pProfile};
+  return (pg[S.page]||pOverview)();
+}
+function render(){
+  if(S.theme==='dim')S.theme='dark';root.dataset.theme=S.theme;
+  let stage;
+  if(S.device==='mobile'&&S.role==='trainer')stage=mobile();
+  else{
+    const t3=tier()===3&&S.role!=='trainer'&&S.ctx!=='platform'&&!['companies','admins','support'].includes(S.page);
+    const c=co();
+    const bar=t3?`<div class="ctxbar"><span class="sq" style="background:${c.color}">${ini(c.name)}</span><span>Du bist in <b>${esc(c.name)}</b></span><button class="pinb ${S.pins.includes(c.id)?'on':''}" data-a="pin" data-v="${c.id}" title="Anheften">${ic('star','s')}</button><span class="sp"></span><button class="btn sm g" data-a="pop" data-v="co">Wechseln <span class="kbd" style="font-size:11px;color:var(--mute)">Strg K</span></button>${S.role==='platform'?`<button class="btn sm g" data-a="imp">${ic('user','s')}Als Company-Admin ansehen</button>`:''}<button class="btn sm" data-a="page" data-v="companies">${ic('back','s')}${S.role==='platform'?'Zur Plattform':'Alle Companies'}</button></div>`:'';
+    const imp=S.imp&&S.role==='platform'&&S.ctx!=='platform'?`<div class="impbar">${ic('lock','s')}<span style="flex:1">Du siehst <b>${esc(c.name)}</b> wie der Company-Admin, nur lesend. Der Zugriff steht im Verlauf der Company.</span><button class="btn sm" data-a="imp">Beenden</button></div>`:'';
+    const main=`<main class="main">${imp||bar}<div class="wrap ${imp?'ro':''}">${content()}</div></main>`;
+    stage=S.nav==='sidebar'?`<div class="app side-layout ${S.col?'col':''}">${sidebar()}${main}${drawer()}${pop()}${S.toast?`<div class="toast">${ic('check','s')}${esc(S.toast)}</div>`:''}</div>`
+      :`<div class="app bars-layout">${bars()}${main}${drawer()}${pop()}${S.toast?`<div class="toast">${ic('check','s')}${esc(S.toast)}</div>`:''}</div>`;
+  }
+  const sc=document.querySelector('.main')?.scrollTop||0;
+  document.getElementById('root').innerHTML=proto()+`<div class="stage">${stage}${S.concept?concept():''}</div>`;
+  const m=document.querySelector('.main');if(m&&!S._reset)m.scrollTop=sc;S._reset=false;
+  const cs=document.getElementById('cosearch');if(cs)cs.focus();
+}
+function go(p){S._reset=true;Object.assign(S,{pop:null,drawer:null,edit:false},p);set({})}
+
+/* ---------- Ereignisse ---------- */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-a]');if(!el)return;
+  const a=el.dataset.a,v=el.dataset.v;
+  const A={
+   role:()=>{const p=PERSONA[v];go({role:v,ctx:v==='platform'?'platform':p.cos[0],page:v==='platform'?'companies':v==='trainer'?'t-courses':'overview',studio:'all',device:v==='trainer'?S.device:'desktop',team:'all',kst:'all'})},
+   nav:()=>set({nav:v,pop:null}),device:()=>set({device:v}),theme:()=>{try{localStorage.setItem('cy-theme',v)}catch(e){}set({theme:v,pop:null})},concept:()=>set({concept:!S.concept}),
+   page:()=>go(v==='companies'&&S.role==='platform'?{page:v,ctx:'platform'}:{page:v}),ctx:()=>{S.tsel=[];S.ksel=[];if(v!=='platform')S.recent=[v,...S.recent.filter(x=>x!==v)].slice(0,6);go(v==='platform'?{ctx:'platform',page:'companies'}:{ctx:v,page:['companies','admins','support'].includes(S.page)||S.ctx==='platform'?'overview':S.page,studio:'all'})},
+   pin:()=>{S.pins=S.pins.includes(v)?S.pins.filter(x=>x!==v):[...S.pins,v];render()},
+   ncos:()=>go({ncos:+v,ctx:'c1',page:'overview',studio:'all'}),col:()=>set({col:!S.col}),cof:()=>set({cof:v}),per:()=>{const k=el.dataset.k;S[k]={...S[k],o:v==='0'?0:S[k].o+ +v};render()},
+   pop:()=>set({pop:S.pop===v?null:v}),close:()=>set({pop:null,drawer:null}),
+   kst:()=>set({kst:v}),kview:()=>set({kview:v}),team:()=>set({team:v}),bill:()=>set({bill:v}),setsub:()=>set({set:v}),
+   plan:()=>set({plan:v}),'plan-go':()=>go({page:'plans',plan:v}),edit:()=>set({edit:v==='1'}),publish:()=>{S.edit=false;S.drawer=null;toast('Version 5 gilt ab Mo 30.11. Version 4 archiviert.')},
+   goto:()=>{const [p,f]=v.split(':');go({page:p,kst:f,kview:'list'})},
+   approve:()=>{S.done[v]=true;S.drawer=null;toast(v.startsWith('pend:')?`Vertrag bestätigt. ${v.slice(5)} wird benachrichtigt.`:'Kurstyp „Aerial Yoga“ bestätigt.')},
+   reject:()=>{S.done[v]=true;S.drawer=null;toast('Abgelehnt. Der Studio-Admin wird benachrichtigt.')},
+   approveall:()=>{const l=pendList();l.forEach(p=>S.done['pend:'+p.name]=true);toast(`${l.length} Verträge bestätigt.`)},
+   goto2:()=>{const [p,f]=v.split(':');go({page:p,team:f})},
+   tsel:()=>{S.tsel=S.tsel.includes(v)?S.tsel.filter(x=>x!==v):[...S.tsel,v];render()},
+   selall:()=>{const ids=[...document.querySelectorAll('[data-a="tsel"]')].map(x=>x.dataset.v);S.tsel=ids.every(i=>S.tsel.includes(i))?[]:ids;render()},
+   tclear:()=>set({tsel:[]}),
+   bulkapprove:()=>{const l=data(co()).team.filter(p=>S.tsel.includes(p.name)&&p.pending&&!S.done['pend:'+p.name]);l.forEach(p=>S.done['pend:'+p.name]=true);S.tsel=[];toast(`${l.length} Verträge bestätigt.`)},
+   ksel:()=>{S.ksel=S.ksel.includes(v)?S.ksel.filter(x=>x!==v):[...S.ksel,v];render()},
+   kall:()=>{const ids=[...document.querySelectorAll('[data-a="ksel"]')].map(x=>x.dataset.v);S.ksel=ids.every(i=>S.ksel.includes(i))?[]:ids;render()},
+   kclear:()=>set({ksel:[]}),kbulk:()=>{const n=S.ksel.length;S.ksel=[];toast(`${v} (${n} Kurse).`)},
+   diff:()=>set({drawer:{k:'diff'}}),
+   setupdone:()=>{S.done['setup'+v]=true;render()},setupgo:()=>{const [t,k]=v.split('|');const [p,sub]=t.split(':');S.done[k]=true;go(sub?{page:p,set:sub}:{page:p})},
+   logf:()=>set({logf:v}),imp:()=>set({imp:!S.imp}),
+   tall:()=>{tSess().filter(s=>s.st==='overdue'||s.st==='open').forEach(s=>S.done['s'+s.id+s.co.id]=true);toast('Alle als gegeben bestätigt.')},
+   take:()=>{S.done[v]=true;toast('Vertretung übernommen. Der Kurs steht jetzt in deiner Woche.')},
+   subreq:()=>set({drawer:{k:'subreq',v},subMode:'all'}),submode:()=>set({subMode:v}),
+   subsend:()=>{S.open[v]=true;S.drawer=null;toast(S.subMode==='one'?'Anfrage an Jonas Brandt gesendet.':'An 6 Kolleg:innen ausgeschrieben.')},
+   push:()=>set({push:!S.push}),pushdone:()=>{S.done[v]=true;S.push=false;toast('Danke, Kurs bestätigt.')},
+   person:()=>set({drawer:{k:'person',v}}),add:()=>set({drawer:{k:'add'}}),addrole:()=>set({addRole:v}),
+   invite:()=>{S.drawer=null;toast(S.role==='studio'?'Angebot gespeichert. Der Company-Admin bestätigt es.':'Einladung gesendet.')},
+   perm:()=>{const [k,l]=v.split(':');S.perm[k]=l;toast('Rechte gespeichert.')},tg:()=>{S.tg[v]=!S.tg[v];render()},
+   msg:()=>set({msg:+v}),markread:()=>{S.done.inbox=true;toast('Als erledigt markiert.')},
+   toast:()=>{S.pop=null;toast(v)},studio:()=>{},
+   tco:()=>set({tco:v}),tview:()=>set({tview:v}),tdone:()=>{S.done[v]=true;toast('Kurs bestätigt.')},req:()=>{S.done.req=true;toast('Antwort an Jonas Brandt gesendet.')},
+   expand:()=>set({expand:S.expand===v?null:v}),docst:()=>{S.done.doc=v;S.expand=null;toast(v==='approved'?'Gutschrift freigegeben.':'Korrekturwunsch gesendet.')},
+   offer:()=>{S.done.offer=true;toast('Antwort an Yogaloft gesendet.')},
+   log:()=>set({drawer:{k:'log'}}),logmode:()=>set({logMode:v}),logsave:()=>{S.drawer=null;S.sheet=false;toast('Kurs eingetragen.')},
+   mpage:()=>set({mpage:v}),mday:()=>set({mday:+v}),sheet:()=>set({sheet:true}),sheetclose:()=>set({sheet:false})
+  };
+  if(A[a]){e.preventDefault();A[a]()}
+});
+document.addEventListener('change',e=>{if(e.target.dataset.a==='studio')go({studio:e.target.value});if(e.target.dataset.a==='perunit'){S[e.target.dataset.k]={u:e.target.value,o:0};render()}});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='cosearch'){const q=t.value.trim().toLowerCase();const L=document.getElementById('colist');L.querySelector('.fixed').style.display=q?'none':'';L.querySelector('.all').style.display=q?'':'none';let n=0;L.querySelectorAll('.all .pi').forEach(b=>{const m=b.dataset.n.includes(q);b.style.display=m?'':'none';if(m)n++});L.querySelector('.nohit').style.display=n?'none':''}
+  if(t.dataset.f){const q=t.value.toLowerCase();document.querySelectorAll('#'+t.dataset.f+' tr').forEach(r=>r.style.display=(r.dataset.q||'').includes(q)?'':'none')}
+});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&S.role!=='trainer'&&P0().cos.length>1){e.preventDefault();set({pop:'co'})}
+  if(e.key==='Escape')set({pop:null,drawer:null,sheet:false,concept:false});
+  if(S.pop==='co'&&/^[1-9]$/.test(e.key)&&document.activeElement?.id!=='cosearch'){const id=quick()[+e.key-1];if(id){S.recent=[id,...S.recent.filter(x=>x!==id)].slice(0,6);go({ctx:id,page:S.ctx==='platform'||S.page==='companies'?'overview':S.page,studio:'all'})}}
+});
+if(S.role==='platform'){S.ctx='platform';S.page='companies'}else if(S.role==='trainer'){S.page='t-courses'}else S.ctx=P0().cos[0];
+render();
+}
+</script>
+</body>
+</html>

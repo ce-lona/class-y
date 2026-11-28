@@ -5,10 +5,10 @@ import Link from "next/link";
 import {
   Building2,
   CalendarCheck,
+  CalendarDays,
+  List,
   CalendarRange,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   FileText,
   MapPin,
@@ -52,18 +52,18 @@ import {
   formatShortDayMonth,
   formatTimeShort,
   getCourseTypeAccent,
-  getWeekDays,
   toLocalISO,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CourseTypeIcon } from "@/components/course-type-icon";
 import { NoSearchResults, SearchInput, matchesSearch } from "@/components/list-toolbar";
+import { PeriodControl } from "@/components/period-control";
+import { DEFAULT_PERIOD, getDaysInRange, periodLabel, type Period } from "@/lib/period";
+import { useWorkspace } from "@/hooks/useWorkspace";
 import { t } from "@/i18n/de";
 
 type CoursesTab = "upcoming" | "logged";
 
-/** Wie weit Trainer:innen in kommende Wochen blättern können. */
-const MAX_WEEK_OFFSET = 26;
 
 interface WeekSlotOccurrence {
   key: string;
@@ -529,6 +529,7 @@ function PlannedCourseCard({
 
 export default function TrainerCoursesPage() {
   const session = useAuthStore((s) => s.session);
+  const { showTrainerArea } = useWorkspace();
   const { data: myContracts, isLoading: contractsLoading } = useMyContracts();
   const { data: studioSlots, isLoading: slotsLoading } = useTrainerStudioSlots();
   const { data: mySessions, isLoading: sessionsLoading } = useMyCourseSessions();
@@ -542,19 +543,17 @@ export default function TrainerCoursesPage() {
   const [loggedSearch, setLoggedSearch] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
   const [subDrawerItem, setSubDrawerItem] = useState<WeekSlotOccurrence | null>(null);
-  const [weekOffset, setWeekOffset] = useState(0);
+  // Zeitraum-Steuerung: Woche/Monat/Quartal/Jahr, unbegrenzt zurück und vor.
+  const [period, setPeriod] = useState<Period>(DEFAULT_PERIOD);
+  const [view, setView] = useState<"list" | "week">("list");
 
   const hasActiveContract = (myContracts ?? []).some((c) => c.status === "active");
-  const weekDays = getWeekDays(weekOffset);
+  const weekDays = getDaysInRange(period);
   const weekStart = weekDays[0].isoDate;
-  const weekEnd = weekDays[6].isoDate;
-  const weekRangeLabel = `${formatShortDayMonth(weekStart)} – ${formatShortDayMonth(weekEnd)}`;
-  const weekLabel =
-    weekOffset === 0
-      ? t.trainer.thisWeek
-      : weekOffset === 1
-        ? t.trainer.nextWeek
-        : t.trainer.inWeeks.replace("{n}", String(weekOffset));
+  const weekEnd = weekDays[weekDays.length - 1].isoDate;
+  const weekLabel = periodLabel(period);
+  const isCurrentWeek = period.unit === "week" && period.offset === 0;
+  const isFuturePeriod = weekStart > toLocalISO(new Date());
 
   const incomingPendingRequests = (mySubstitutions ?? []).filter(
     (s) => s.direction === "incoming" && s.status === "pending"
@@ -596,7 +595,7 @@ export default function TrainerCoursesPage() {
     .filter((st) => companyFilter === "all" || st.companyId === companyFilter)
     .sort((a, b) => a.name.localeCompare(b.name, "de"));
 
-  const showFilterBar = companies.length > 1 || studios.length > 1;
+  const showFilterBar = studios.length > 1;
 
   // Für jeden Tag der aktuellen Woche die geplanten eigenen Slots + angenommene Vertretungen sammeln
   const weekOccurrences: WeekSlotOccurrence[] = [];
@@ -788,38 +787,6 @@ export default function TrainerCoursesPage() {
       <p className="hidden text-xs font-bold tracking-wide text-muted-foreground uppercase lg:block">
         {t.trainer.filtersTitle}
       </p>
-      {companies.length > 1 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground lg:w-full">
-            <Building2 className="size-3.5" />
-            <span>{t.trainer.filterCompany}:</span>
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              setCompanyFilter("all");
-              setStudioFilter("all");
-            }}
-            className={chipClass(companyFilter === "all")}
-          >
-            {t.trainer.filterAll}
-          </button>
-          {companies.map(([id, name]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => {
-                setCompanyFilter(id);
-                setStudioFilter("all");
-              }}
-              className={chipClass(companyFilter === id)}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      )}
-
       {studios.length > 1 && (
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground lg:w-full">
@@ -919,57 +886,17 @@ export default function TrainerCoursesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-heading text-[28px] font-extrabold tracking-tight">
+          <h1 className="font-heading text-2xl font-extrabold tracking-tight">
             {t.trainer.title}
           </h1>
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon-sm"
-              aria-label={t.trainer.prevWeek}
-              title={t.trainer.prevWeek}
-              disabled={weekOffset <= 0}
-              onClick={() => setWeekOffset((w) => Math.max(0, w - 1))}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <p
-              className="min-w-40 text-center text-sm font-medium text-muted-foreground tabular-nums"
-              aria-live="polite"
-              data-testid="week-label"
-            >
-              {weekLabel} · {weekRangeLabel}
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon-sm"
-              aria-label={t.trainer.nextWeek}
-              title={t.trainer.nextWeek}
-              disabled={weekOffset >= MAX_WEEK_OFFSET}
-              onClick={() => setWeekOffset((w) => Math.min(MAX_WEEK_OFFSET, w + 1))}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-            {weekOffset > 0 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setWeekOffset(0)}
-                className="text-xs"
-              >
-                {t.trainer.backToThisWeek}
-              </Button>
-            )}
-          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{t.trainer.periodHint}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <PeriodControl value={period} onChange={setPeriod} />
           <Link
             href="/courses/schedule"
             className={cn(buttonVariants({ variant: "outline", size: "default" }), "gap-1.5")}
@@ -977,13 +904,13 @@ export default function TrainerCoursesPage() {
             <CalendarRange className="size-4" />
             <span>{t.trainer.navSchedule}</span>
           </Link>
-          <Link
-            href="/courses/log"
-            className={cn(buttonVariants({ size: "default" }), "gap-1.5")}
-          >
-            <Plus className="size-4" />
-            <span>{t.trainer.logCourse}</span>
-          </Link>
+          {/* Trainer:innen haben „Kurs eintragen“ in der Sidebar bzw. Bottom-Bar */}
+          {!showTrainerArea && (
+            <Link href="/courses/log" className={cn(buttonVariants(), "gap-1.5")}>
+              <Plus className="size-4" />
+              <span>{t.shell.trainerLogCourse}</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -1085,7 +1012,7 @@ export default function TrainerCoursesPage() {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <span>{weekOffset === 0 ? t.trainer.tabUpcoming : weekLabel}</span>
+              <span>{isCurrentWeek ? t.trainer.tabUpcoming : weekLabel}</span>
               {toConfirm.length > 0 ? (
                 <span className="rounded-full bg-warning-bg px-1.5 py-0.5 text-[11px] leading-none font-bold text-warning">
                   {toConfirm.length}
@@ -1118,23 +1045,79 @@ export default function TrainerCoursesPage() {
             </button>
           </div>
 
+          {/* Company als Filter-Chips, Umschalter Liste | Woche */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5" data-testid="my-courses-toolbar">
+            <div role="group" aria-label={t.trainer.filterCompany} className="flex flex-wrap gap-1.5">
+              {companies.length > 1 &&
+                [["all", t.trainer.filterAll] as const, ...companies].map(([id, name]) => {
+                  const selected = companyFilter === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => {
+                        setCompanyFilter(id);
+                        setStudioFilter("all");
+                      }}
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-[13.5px] font-semibold whitespace-nowrap transition-colors",
+                        selected
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border bg-card text-foreground/80 hover:border-muted-foreground"
+                      )}
+                    >
+                      {name}
+                    </button>
+                  );
+                })}
+            </div>
+            {tab === "upcoming" && (
+              <div role="tablist" aria-label={t.trainer.viewLabel} className="inline-flex rounded-[9px] border border-border bg-card p-0.5">
+                {(
+                  [
+                    { key: "list", label: t.trainer.viewList, Icon: List },
+                    { key: "week", label: t.trainer.viewWeek, Icon: CalendarDays },
+                  ] as const
+                ).map(({ key, label, Icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={view === key}
+                    onClick={() => setView(key)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-[7px] px-3 py-1.5 text-[13.5px] font-semibold",
+                      view === key ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="size-4" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {actionError && (
             <div className="rounded-xl bg-destructive-bg px-4 py-3 text-sm text-destructive">
               {actionError}
             </div>
           )}
 
-          {tab === "upcoming" ? (
+          {tab === "upcoming" && view === "week" && !slotsLoading && !sessionsLoading ? (
+            <TrainerWeekGrid days={weekDays} items={weekOccurrences} todayIso={todayIso} />
+          ) : tab === "upcoming" ? (
             slotsLoading || sessionsLoading ? (
               <p className="text-sm text-muted-foreground">{t.common.loading}</p>
             ) : weekOccurrences.length > 0 ? (
               <div className="space-y-6">
-                {weekOffset > 0 && (
+                {isFuturePeriod && (
                   <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
                     {t.trainer.futureWeekHint}
                   </p>
                 )}
-                {weekOffset === 0 && toConfirm.length === 0 && (
+                {!isFuturePeriod && toConfirm.length === 0 && (
                   <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success-bg px-4 py-3 text-sm font-medium text-success">
                     <Check className="size-4 shrink-0" />
                     <span>{t.trainer.allConfirmed}</span>
@@ -1154,7 +1137,7 @@ export default function TrainerCoursesPage() {
                 </div>
                 <div className="space-y-1">
                   <p className="font-heading text-base font-bold">
-                    {weekOffset === 0 ? t.trainer.emptyWeek : t.trainer.emptyFutureWeek}
+                    {isCurrentWeek ? t.trainer.emptyWeek : t.trainer.emptyFutureWeek}
                   </p>
                   <p className="max-w-sm text-sm text-muted-foreground">
                     {t.trainer.emptyWeekHint}
@@ -1289,6 +1272,71 @@ export default function TrainerCoursesPage() {
         currentUserId={session?.user.id ?? ""}
         onClose={() => setSubDrawerItem(null)}
       />
+    </div>
+  );
+}
+
+/** Woche-Ansicht „Meine Kurse“: Tage als Spalten (bei Monat/Quartal/Jahr als Kalender). */
+function TrainerWeekGrid({
+  days,
+  items,
+  todayIso,
+}: {
+  days: { weekday: number; isoDate: string; isToday: boolean }[];
+  items: WeekSlotOccurrence[];
+  todayIso: string;
+}) {
+  const lead = days.length > 7 ? days[0].weekday - 1 : 0;
+  const statusOf = (item: WeekSlotOccurrence) => {
+    if (item.session?.status === "completed") return { label: t.trainer.statusCompleted, cls: "bg-success-bg text-success" };
+    if (item.session?.status === "cancelled") return { label: t.trainer.statusCancelled, cls: "text-muted-foreground line-through" };
+    if (item.outgoingSubstitution?.status === "accepted") return { label: t.trainer.substitutionBadge, cls: "bg-link-500/12 text-link-600 dark:text-link-400" };
+    if (item.isoDate <= todayIso) return { label: t.trainer.statOpen, cls: "bg-warning-bg text-warning" };
+    return { label: t.trainer.statusPlanned, cls: "bg-muted text-muted-foreground" };
+  };
+  return (
+    <div className="overflow-x-auto pb-1" data-testid="trainer-week-grid">
+      <div className="grid min-w-[910px] grid-cols-7 gap-2.5">
+        {Array.from({ length: lead }, (_, i) => (
+          <div key={`lead-${i}`} />
+        ))}
+        {days.map((day) => {
+          const list = items
+            .filter((item) => item.isoDate === day.isoDate)
+            .sort((a, b) => a.slot.start_time.localeCompare(b.slot.start_time));
+          return (
+            <div
+              key={day.isoDate}
+              className={cn(
+                "flex min-h-40 flex-col rounded-xl border border-border bg-card",
+                day.isToday && "border-primary ring-1 ring-primary ring-inset"
+              )}
+            >
+              <div className="flex items-baseline justify-between border-b border-border/60 px-3 py-2">
+                <b className="font-heading text-sm">
+                  {t.plans.weekdaysShort[day.weekday as keyof typeof t.plans.weekdaysShort]}{" "}
+                  {formatShortDayMonth(day.isoDate)}
+                </b>
+                <span className="text-xs text-muted-foreground">{list.length || ""}</span>
+              </div>
+              {list.map((item) => {
+                const accent = getCourseTypeAccent(item.slot.course_type_id);
+                const status = statusOf(item);
+                return (
+                  <div key={item.key} className={cn("mx-2 mt-2 rounded-lg border-l-[3px] bg-background px-2.5 py-2", accent.border)}>
+                    <div className="font-heading text-sm font-bold tabular-nums">{formatTimeShort(item.slot.start_time)}</div>
+                    <div className="text-sm leading-tight font-semibold">{item.slot.course_type_name}</div>
+                    <div className="text-xs text-muted-foreground">{item.slot.studio_name}</div>
+                    <span className={cn("mt-1 inline-block rounded-md px-1.5 text-[11.5px] font-bold", status.cls)}>
+                      {status.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

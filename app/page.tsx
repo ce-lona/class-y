@@ -19,7 +19,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useIsPlatformAdmin } from "@/hooks/useRoles";
-import { useMyCompany } from "@/hooks/useCompanyAdmins";
+import { useMyCompanies, useMyCompany } from "@/hooks/useCompanyAdmins";
+import { PLATFORM_OVERVIEW_THRESHOLD } from "@/components/app-shell/company-switcher";
 import { useMyContracts } from "@/hooks/useContracts";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
@@ -35,6 +36,7 @@ export default function Home() {
   const { session, isLoading: sessionLoading } = useAuthStore();
   const { data: isPlatformAdmin, isLoading: platformAdminLoading } = useIsPlatformAdmin();
   const { data: company, isLoading: companyLoading } = useMyCompany();
+  const { data: companies } = useMyCompanies();
   const { data: myContracts, isLoading: contractsLoading } = useMyContracts();
 
   const hasActiveTrainerContract = (myContracts ?? []).some((c) => c.status === "active");
@@ -44,14 +46,15 @@ export default function Home() {
 
   useEffect(() => {
     if (roleLoading) return;
-    if (isPlatformAdmin) {
+    // Plattform-Admins starten ab 20 Companies (oder ohne Company) in der Plattform-Übersicht.
+    if (isPlatformAdmin && (!company || (companies?.length ?? 0) >= PLATFORM_OVERVIEW_THRESHOLD)) {
       router.replace("/companies");
     } else if (company) {
-      router.replace("/monitoring");
+      router.replace("/overview");
     } else if (hasActiveTrainerContract) {
       router.replace("/courses");
     }
-  }, [roleLoading, isPlatformAdmin, company, hasActiveTrainerContract, router]);
+  }, [roleLoading, isPlatformAdmin, company, companies, hasActiveTrainerContract, router]);
 
   if (sessionLoading || (session && roleLoading)) {
     return (

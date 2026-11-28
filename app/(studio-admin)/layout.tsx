@@ -43,5 +43,5 @@ export default function StudioAdminLayout({
     );
   }
 
-  return <div className="min-w-0 flex-1 bg-background px-4 py-6 sm:px-8 sm:py-10">{children}</div>;
+  return <div className="w-full min-w-0 max-w-[1480px] flex-1 px-4 py-6 sm:px-8">{children}</div>;
 }

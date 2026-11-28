@@ -28,14 +28,16 @@ export interface TourStep {
 
 export const TOURS: Record<HelpRole, TourStep[]> = {
   admin: [
+    { target: "/overview", ...steps.overview },
     { target: "/monitoring", ...steps.monitoring },
     { target: "/plans", ...steps.plans },
-    { target: "/studios", ...steps.studios },
-    { target: "/trainers", ...steps.trainers },
+    { target: "/team", ...steps.trainers },
     { target: "/billing", ...steps.billing },
+    { target: "/settings", ...steps.studios },
     { target: "/help", ...steps.help },
   ],
   coordinator: [
+    { target: "/overview", ...steps.overview },
     { target: "/monitoring", ...steps.monitoring },
     { target: "/plans", ...steps.plans },
     { target: "/trainers", ...steps.trainersCoordinator },
@@ -51,7 +53,7 @@ export const TOURS: Record<HelpRole, TourStep[]> = {
   ],
   platform: [
     { target: "/companies", ...steps.companies },
-    { target: "/platform-settings", ...steps.platformSettings },
+    { target: "/platform-admins", ...steps.platformSettings },
     { target: "/help", ...steps.help },
   ],
 };

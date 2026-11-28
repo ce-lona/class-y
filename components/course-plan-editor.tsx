@@ -260,7 +260,7 @@ export function CoursePlanEditor({
             </span>
           </div>
           <Link
-            href={noCourseTypes ? "/settings?tab=config" : "/trainers"}
+            href={noCourseTypes ? "/settings?section=courseTypes" : "/trainers"}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
             {noCourseTypes ? t.plans.goToCourseTypes : t.plans.goToTrainers}

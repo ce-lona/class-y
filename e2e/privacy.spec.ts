@@ -18,8 +18,10 @@ test("Datenschutz: Company-Export, Datenauskunft und Konto löschen", async ({ p
   await page.getByRole("button", { name: "Angebot senden" }).click();
   await expect(page.getByText("Einladung und Angebot gesendet.")).toBeVisible();
 
+  // /privacy leitet in Einstellungen › Datenschutz um
   await page.goto("/privacy");
-  await expect(page.getByRole("heading", { name: "Datenschutz", level: 1 })).toBeVisible();
+  await expect(page).toHaveURL(/\/settings\?section=privacy/);
+  await expect(page.getByRole("heading", { name: "Einstellungen", level: 1 })).toBeVisible();
 
   // Company-Export als CSV
   const companyDownload = page.waitForEvent("download");

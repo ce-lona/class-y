@@ -97,7 +97,7 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await page.goto("/courses/schedule");
   await expect(page.getByRole("heading", { name: "Mein Stundenplan" })).toBeVisible();
   await expect(page.getByText(courseTypeName).first()).toBeVisible();
-  await expect(page.getByText(studioName).first()).toBeVisible();
+  await expect(page.getByRole("main").getByText(studioName).first()).toBeVisible();
 
   await page.goto("/courses");
   const todayCard = page
@@ -110,8 +110,10 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
 
   // 3b. In die nächste Woche blättern: derselbe Slot steht dort als anstehender Kurs,
   // "Vertreten" ist möglich, "Als gegeben markieren" für zukünftige Termine nicht.
-  await page.getByRole("button", { name: "Nächste Woche", exact: true }).click();
-  await expect(page.getByTestId("week-label")).toContainText("Nächste Woche");
+  const periodLabel = page.getByTestId("period-label");
+  const thisWeekLabel = await periodLabel.textContent();
+  await page.getByRole("button", { name: "Nächster Zeitraum" }).click();
+  await expect(periodLabel).not.toHaveText(thisWeekLabel ?? "");
   const nextWeekCard = page
     .locator("div.rounded-2xl")
     .filter({ hasText: courseTypeName })
@@ -119,8 +121,8 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await expect(nextWeekCard).toBeVisible();
   await expect(nextWeekCard.getByRole("button", { name: "Vertreten" })).toBeVisible();
   await expect(nextWeekCard.getByRole("button", { name: "Als gegeben markieren" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Zur aktuellen Woche" }).click();
-  await expect(page.getByTestId("week-label")).toContainText("Diese Woche");
+  await page.getByRole("button", { name: "Heute", exact: true }).click();
+  await expect(periodLabel).toHaveText(thisWeekLabel ?? "");
 
   // 4. Ad-hoc-Vertretungskurs über /courses/log erfassen
   await page.getByRole("link", { name: "Kurs eintragen" }).click();
@@ -128,7 +130,7 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await page.getByRole("tab", { name: "Ad-hoc" }).click();
 
   await page.locator("#adhoc-studio").click();
-  await page.getByRole("option", { name: new RegExp(studioName) }).click();
+  await page.getByRole("listbox").getByRole("option", { name: new RegExp(studioName) }).click();
   await page.locator("#adhoc-start").fill("19:00");
   await page.locator("#adhoc-end").fill("19:45");
   await page.locator("#adhoc-course-type").click();

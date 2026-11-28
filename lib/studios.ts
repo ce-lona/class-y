@@ -23,6 +23,16 @@ export async function getStudios(companyId: string): Promise<Studio[]> {
   return data;
 }
 
+/** Plattform-Übersicht: Anzahl Studios je Company (RLS liefert nur sichtbare Studios). */
+export async function getStudioCountsByCompany(): Promise<Record<string, number>> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("studios").select("company_id");
+  if (error) throw error;
+  const counts: Record<string, number> = {};
+  for (const row of data ?? []) counts[row.company_id] = (counts[row.company_id] ?? 0) + 1;
+  return counts;
+}
+
 export async function getStudio(id: string): Promise<Studio> {
   const supabase = createClient();
   const { data, error } = await supabase

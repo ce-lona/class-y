@@ -38,8 +38,22 @@ in [`app/globals.css`](../../app/globals.css) und [`app/layout.tsx`](../../app/l
 **Link — Indigo** (`--link-400/500/600`, Links/Fokus/Badges — nie für Status)
 `#8B8AE8 #6C6ADD #5450C4`
 
-**Status** — `success #1D8A5F` (bg `#E7F6EE`) · `warning #B87503` (bg `#FCF1DC`) ·
-`error #DC2626` (bg `#FDECEC`)
+**Flächen (Redesign 2026-11)** — Hell: Hintergrund `#F5F4F1`, Karten `#FFFFFF`, Sidebar `#FBFAF8`,
+Rand `#E5E3DF`, gedämpfter Text `--muted-foreground #6B675F` (5,1:1 auf `#F5F4F1`).
+Dunkel (einziger Dark-Modus): Hintergrund `#2B2926`, Karten `#35332F`, Sidebar `#302E2A`,
+Rand `#4A4741`, gedämpfter Text `#ADA99F`, Primary `#79B0AD` mit Text `#0F2E2D`.
+
+**Eingabefelder** — eigenes Token `--input` mit 3:1 (hell `#8D8980`, dunkel `#86827A`) für
+Input, Select, Textarea, Checkbox. Karten- und Tabellenränder bleiben bei `--border`.
+
+**Status** — `success #3D7A1F` (bg `#EAF4E2`, dunkel `#7DB35C` / `rgba(61,122,31,.25)`; bewusst
+gelbgrün, damit es sich von Petrol abhebt) · `warning #9A6203` (bg `#FCF1DC`, 4,6:1) ·
+`error #C81E1E` (bg `#FDECEC`)
+
+**Kurstypen** — 8 Tokens `--course-1 … --course-8`, ohne Status-Rot/Grün/Amber.
+Hell: `#5450C4 #8A4FA0 #B83A7A #2B6CB0 #1F8AA8 #5C6B7A #8A5A3C #6D4AC7`
+Dunkel: `#A3A2F0 #C79BD6 #E58AB6 #7FB0E8 #6CC3DB #A3B0BD #C79A7A #A993EE`
+Zuordnung über `getCourseTypeAccent()` in `lib/format.ts`.
 
 **Typografie**
 - `font-heading` (Manrope, 600/700/800) — alle UI-Headlines
