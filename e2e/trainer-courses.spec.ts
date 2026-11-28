@@ -110,8 +110,10 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
 
   // 3b. In die nächste Woche blättern: derselbe Slot steht dort als anstehender Kurs,
   // "Vertreten" ist möglich, "Als gegeben markieren" für zukünftige Termine nicht.
-  await page.getByRole("button", { name: "Nächste Woche", exact: true }).click();
-  await expect(page.getByTestId("week-label")).toContainText("Nächste Woche");
+  const periodLabel = page.getByTestId("period-label");
+  const thisWeekLabel = await periodLabel.textContent();
+  await page.getByRole("button", { name: "Weiter", exact: true }).click();
+  await expect(periodLabel).not.toHaveText(thisWeekLabel ?? "");
   const nextWeekCard = page
     .locator("div.rounded-2xl")
     .filter({ hasText: courseTypeName })
@@ -119,8 +121,8 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await expect(nextWeekCard).toBeVisible();
   await expect(nextWeekCard.getByRole("button", { name: "Vertreten" })).toBeVisible();
   await expect(nextWeekCard.getByRole("button", { name: "Als gegeben markieren" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Zur aktuellen Woche" }).click();
-  await expect(page.getByTestId("week-label")).toContainText("Diese Woche");
+  await page.getByRole("button", { name: "Heute", exact: true }).click();
+  await expect(periodLabel).toHaveText(thisWeekLabel ?? "");
 
   // 4. Ad-hoc-Vertretungskurs über /courses/log erfassen
   await page.getByRole("link", { name: "Kurs eintragen" }).click();

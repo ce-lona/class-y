@@ -7,8 +7,6 @@ import {
   CalendarCheck,
   CalendarRange,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   FileText,
   MapPin,
@@ -52,18 +50,17 @@ import {
   formatShortDayMonth,
   formatTimeShort,
   getCourseTypeAccent,
-  getWeekDays,
   toLocalISO,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CourseTypeIcon } from "@/components/course-type-icon";
 import { NoSearchResults, SearchInput, matchesSearch } from "@/components/list-toolbar";
+import { PeriodControl } from "@/components/period-control";
+import { DEFAULT_PERIOD, getDaysInRange, periodLabel, type Period } from "@/lib/period";
 import { t } from "@/i18n/de";
 
 type CoursesTab = "upcoming" | "logged";
 
-/** Wie weit Trainer:innen in kommende Wochen blättern können. */
-const MAX_WEEK_OFFSET = 26;
 
 interface WeekSlotOccurrence {
   key: string;
@@ -542,19 +539,16 @@ export default function TrainerCoursesPage() {
   const [loggedSearch, setLoggedSearch] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
   const [subDrawerItem, setSubDrawerItem] = useState<WeekSlotOccurrence | null>(null);
-  const [weekOffset, setWeekOffset] = useState(0);
+  // Zeitraum-Steuerung: Woche/Monat/Quartal/Jahr, unbegrenzt zurück und vor.
+  const [period, setPeriod] = useState<Period>(DEFAULT_PERIOD);
 
   const hasActiveContract = (myContracts ?? []).some((c) => c.status === "active");
-  const weekDays = getWeekDays(weekOffset);
+  const weekDays = getDaysInRange(period);
   const weekStart = weekDays[0].isoDate;
-  const weekEnd = weekDays[6].isoDate;
-  const weekRangeLabel = `${formatShortDayMonth(weekStart)} – ${formatShortDayMonth(weekEnd)}`;
-  const weekLabel =
-    weekOffset === 0
-      ? t.trainer.thisWeek
-      : weekOffset === 1
-        ? t.trainer.nextWeek
-        : t.trainer.inWeeks.replace("{n}", String(weekOffset));
+  const weekEnd = weekDays[weekDays.length - 1].isoDate;
+  const weekLabel = periodLabel(period);
+  const isCurrentWeek = period.unit === "week" && period.offset === 0;
+  const isFuturePeriod = weekStart > toLocalISO(new Date());
 
   const incomingPendingRequests = (mySubstitutions ?? []).filter(
     (s) => s.direction === "incoming" && s.status === "pending"
@@ -919,70 +913,23 @@ export default function TrainerCoursesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-extrabold tracking-tight">
             {t.trainer.title}
           </h1>
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon-sm"
-              aria-label={t.trainer.prevWeek}
-              title={t.trainer.prevWeek}
-              disabled={weekOffset <= 0}
-              onClick={() => setWeekOffset((w) => Math.max(0, w - 1))}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <p
-              className="min-w-40 text-center text-sm font-medium text-muted-foreground tabular-nums"
-              aria-live="polite"
-              data-testid="week-label"
-            >
-              {weekLabel} · {weekRangeLabel}
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon-sm"
-              aria-label={t.trainer.nextWeek}
-              title={t.trainer.nextWeek}
-              disabled={weekOffset >= MAX_WEEK_OFFSET}
-              onClick={() => setWeekOffset((w) => Math.min(MAX_WEEK_OFFSET, w + 1))}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-            {weekOffset > 0 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setWeekOffset(0)}
-                className="text-xs"
-              >
-                {t.trainer.backToThisWeek}
-              </Button>
-            )}
-          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{t.trainer.periodHint}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <PeriodControl value={period} onChange={setPeriod} />
           <Link
             href="/courses/schedule"
             className={cn(buttonVariants({ variant: "outline", size: "default" }), "gap-1.5")}
           >
             <CalendarRange className="size-4" />
             <span>{t.trainer.navSchedule}</span>
-          </Link>
-          <Link
-            href="/courses/log"
-            className={cn(buttonVariants({ size: "default" }), "gap-1.5")}
-          >
-            <Plus className="size-4" />
-            <span>{t.trainer.logCourse}</span>
           </Link>
         </div>
       </div>
@@ -1085,7 +1032,7 @@ export default function TrainerCoursesPage() {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <span>{weekOffset === 0 ? t.trainer.tabUpcoming : weekLabel}</span>
+              <span>{isCurrentWeek ? t.trainer.tabUpcoming : weekLabel}</span>
               {toConfirm.length > 0 ? (
                 <span className="rounded-full bg-warning-bg px-1.5 py-0.5 text-[11px] leading-none font-bold text-warning">
                   {toConfirm.length}
@@ -1129,12 +1076,12 @@ export default function TrainerCoursesPage() {
               <p className="text-sm text-muted-foreground">{t.common.loading}</p>
             ) : weekOccurrences.length > 0 ? (
               <div className="space-y-6">
-                {weekOffset > 0 && (
+                {isFuturePeriod && (
                   <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
                     {t.trainer.futureWeekHint}
                   </p>
                 )}
-                {weekOffset === 0 && toConfirm.length === 0 && (
+                {!isFuturePeriod && toConfirm.length === 0 && (
                   <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success-bg px-4 py-3 text-sm font-medium text-success">
                     <Check className="size-4 shrink-0" />
                     <span>{t.trainer.allConfirmed}</span>
@@ -1154,7 +1101,7 @@ export default function TrainerCoursesPage() {
                 </div>
                 <div className="space-y-1">
                   <p className="font-heading text-base font-bold">
-                    {weekOffset === 0 ? t.trainer.emptyWeek : t.trainer.emptyFutureWeek}
+                    {isCurrentWeek ? t.trainer.emptyWeek : t.trainer.emptyFutureWeek}
                   </p>
                   <p className="max-w-sm text-sm text-muted-foreground">
                     {t.trainer.emptyWeekHint}

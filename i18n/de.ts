@@ -566,6 +566,7 @@ export const t = {
   },
   trainer: {
     navMyCourses: "Meine Kurse",
+    periodHint: "Blättere beliebig weit zurück oder wähle Monat, Quartal oder Jahr.",
     navSchedule: "Stundenplan",
     navLogCourse: "Eintragen",
     navProfile: "Profil",

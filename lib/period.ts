@@ -94,3 +94,18 @@ export function periodLabel(period: Period, now = new Date()): string {
       return `${dmy(start)}–${dmy(end)}`;
   }
 }
+
+/** Alle Tage im Zeitraum (für Listen über Woche, Monat, Quartal, Jahr). */
+export function getDaysInRange(
+  period: Period,
+  now = new Date(),
+): { weekday: number; isoDate: string; isToday: boolean }[] {
+  const { start, end } = bounds(period, now);
+  const today = toLocalISO(now);
+  const days: { weekday: number; isoDate: string; isToday: boolean }[] = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const isoDate = toLocalISO(d);
+    days.push({ weekday: d.getDay() === 0 ? 7 : d.getDay(), isoDate, isToday: isoDate === today });
+  }
+  return days;
+}
