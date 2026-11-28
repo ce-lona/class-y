@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, Building2, CheckCircle2, Receipt } from "lucide-react";
+import { AlertTriangle, Building2, CheckCircle2, Mail, Receipt } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,9 @@ const settingsSchema = z.object({
     .trim()
     .toUpperCase()
     .regex(/^[A-Z0-9]{1,8}$/, t.creditNotes.prefixInvalid),
+  notify_document_ready: z.boolean(),
+  notify_review_reminder: z.boolean(),
+  notify_correction_request: z.boolean(),
 });
 type SettingsForm = z.input<typeof settingsSchema>;
 type SettingsValues = z.output<typeof settingsSchema>;
@@ -166,6 +169,9 @@ export function BillingSettingsPanel({ company }: { company: ManagedCompany }) {
       employee_statements: false,
       payment_days: 10,
       number_prefix: "GS",
+      notify_document_ready: true,
+      notify_review_reminder: true,
+      notify_correction_request: true,
     },
   });
   const mode = useWatch({ control, name: "mode" });
@@ -181,6 +187,9 @@ export function BillingSettingsPanel({ company }: { company: ManagedCompany }) {
       employee_statements: settings.employee_statements,
       payment_days: settings.payment_days,
       number_prefix: settings.number_prefix,
+      notify_document_ready: settings.notify_document_ready,
+      notify_review_reminder: settings.notify_review_reminder,
+      notify_correction_request: settings.notify_correction_request,
     });
   }, [settings, reset]);
 
@@ -290,6 +299,39 @@ export function BillingSettingsPanel({ company }: { company: ManagedCompany }) {
                   {fillTemplate(t.creditNotes.prefixHint, { example })}
                 </p>
               )}
+            </div>
+
+            <div className="space-y-3 border-t border-border pt-5">
+              <div className="flex items-start gap-3.5">
+                <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-900/40">
+                  <Mail className="size-4" />
+                </div>
+                <div>
+                  <h3 className="font-heading text-base font-bold">{t.creditNotes.notificationsTitle}</h3>
+                  <p className="mt-0.5 text-sm text-muted-foreground">{t.creditNotes.notificationsHint}</p>
+                </div>
+              </div>
+              <Toggle
+                id="notify_document_ready"
+                label={t.creditNotes.notifyDocumentReadyLabel}
+                hint={t.creditNotes.notifyDocumentReadyHint}
+                disabled={!canEdit}
+                {...register("notify_document_ready")}
+              />
+              <Toggle
+                id="notify_review_reminder"
+                label={t.creditNotes.notifyReviewReminderLabel}
+                hint={t.creditNotes.notifyReviewReminderHint}
+                disabled={!canEdit}
+                {...register("notify_review_reminder")}
+              />
+              <Toggle
+                id="notify_correction_request"
+                label={t.creditNotes.notifyCorrectionRequestLabel}
+                hint={t.creditNotes.notifyCorrectionRequestHint}
+                disabled={!canEdit}
+                {...register("notify_correction_request")}
+              />
             </div>
           </fieldset>
 

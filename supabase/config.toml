@@ -425,6 +425,14 @@ verify_jwt = true
 import_map = "./functions/send-support-message/deno.json"
 entrypoint = "./functions/send-support-message/index.ts"
 
+# Mails zu Gutschriften/Nachweisen aus der Outbox billing_notifications. Aufruf durch pg_cron
+# ohne Nutzer-JWT; die Function prüft selbst Authorization: Bearer <BILLING_NOTIFY_SECRET>.
+[functions.send-billing-notifications]
+enabled = true
+verify_jwt = false
+import_map = "./functions/send-billing-notifications/deno.json"
+entrypoint = "./functions/send-billing-notifications/index.ts"
+
 # Nur für die lokale Entwicklung: die Function verweigert sich auf gehosteten Projekten
 # (SUPABASE_URL nicht lokal) und ohne Secret ALLOW_TEST_ADMIN=true; die UI zeigt sie nur in `next dev`.
 [functions.create-test-admin]

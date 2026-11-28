@@ -33,6 +33,9 @@ export interface BillingSettings {
   employee_statements: boolean;
   payment_days: number;
   number_prefix: string;
+  notify_document_ready: boolean;
+  notify_review_reminder: boolean;
+  notify_correction_request: boolean;
   billing_address_complete: boolean;
   can_edit: boolean;
 }

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMyProfile, updateMyProfile } from "@/lib/profiles";
+import { getMyProfile, updateMyMailPreferences, updateMyProfile } from "@/lib/profiles";
 
 export function useMyProfile() {
   return useQuery({
@@ -16,6 +16,17 @@ export function useUpdateMyProfile() {
       queryClient.setQueryData(["profile", "me"], profile);
       queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
       queryClient.invalidateQueries({ queryKey: ["contracts"] });
+    },
+  });
+}
+
+export function useUpdateMyMailPreferences() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateMyMailPreferences,
+    onSuccess: (profile) => {
+      queryClient.setQueryData(["profile", "me"], profile);
+      queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
     },
   });
 }

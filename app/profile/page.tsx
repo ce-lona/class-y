@@ -30,6 +30,7 @@ import { useMyProfile, useUpdateMyProfile } from "@/hooks/useProfile";
 import { useMyContracts, useRespondToContract } from "@/hooks/useContracts";
 import { ContractAcceptanceDrawer } from "@/components/contract-acceptance-drawer";
 import { BillingDetailsSection } from "@/components/billing-details-section";
+import { MailPreferencesSection } from "@/components/mail-preferences-section";
 import type { MyContract } from "@/lib/contracts";
 import { fillTemplate } from "@/lib/format";
 import type { ProfileCountry } from "@/lib/profiles";
@@ -507,6 +508,7 @@ function ProfileContent() {
         <>
           <MyProfileSection userEmail={session.user.email} />
           {hasContracts && <BillingDetailsSection />}
+          <MailPreferencesSection />
         </>
       ) : (
         <MyContractsSection />

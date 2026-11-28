@@ -142,6 +142,20 @@ Verträge zwischen Company und Trainer:in sind erst wirksam, wenn die Trainer:in
 
 Die Oberflächen dafür liegen unter **Einstellungen** (`/settings`, Stammdaten & eigene Vertragsangebote für Trainer:innen) und **Trainer** (`/trainers`, Angebote senden, Status filtern und Verträge beenden für Company-Admins). Die Datenzugriffe stehen in `lib/contracts.ts`.
 
+## E-Mails zu Gutschriften
+
+Neue Gutschrift/neuer Nachweis (an die Trainer:in), Erinnerung am letzten Prüftag (an die
+Trainer:in) und Korrekturwünsche/Kommentare (an Company-Admins + Koordinator:innen der
+betroffenen Studios). Jede Art ist company-weit (**Einstellungen → Abrechnung**) und persönlich
+(**Profil**) abschaltbar; eine Mail entsteht nur, wenn beides an ist.
+
+- Trigger und `billing_run_daily` legen Zeilen in der Outbox `billing_notifications` an.
+- pg_cron (`billing-notifications`, alle 10 Min.) ruft per pg_net die Edge Function
+  `send-billing-notifications` auf, sofern die Vault-Secrets `billing_notify_url` und
+  `billing_notify_secret` existieren. Die Function nutzt die `SUPPORT_SMTP_*`-Secrets und
+  zusätzlich `BILLING_NOTIFY_SECRET` (gleicher Wert wie im Vault) und `APP_URL` (für Links).
+- Fehlgeschlagene Mails werden bis zu 5-mal erneut versucht, ältere als 7 Tage verworfen.
+
 ## Tests
 
 - Lint: `npm run lint`
