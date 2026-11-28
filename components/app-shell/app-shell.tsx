@@ -85,7 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </header>
         )}
         <ContextBar />
-        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+        <main className="flex min-w-0 flex-1 flex-col">{children}</main>
       </div>
       {showTrainerArea && <TrainerBottomBar />}
     </div>

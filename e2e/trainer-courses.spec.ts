@@ -130,7 +130,7 @@ test("Trainer-Kurserfassung: geplanten Kurs als gegeben markieren, Ad-hoc-Vertre
   await page.getByRole("tab", { name: "Ad-hoc" }).click();
 
   await page.locator("#adhoc-studio").click();
-  await page.getByRole("option", { name: new RegExp(studioName) }).click();
+  await page.getByRole("listbox").getByRole("option", { name: new RegExp(studioName) }).click();
   await page.locator("#adhoc-start").fill("19:00");
   await page.locator("#adhoc-end").fill("19:45");
   await page.locator("#adhoc-course-type").click();

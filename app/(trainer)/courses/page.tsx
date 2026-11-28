@@ -57,6 +57,7 @@ import { CourseTypeIcon } from "@/components/course-type-icon";
 import { NoSearchResults, SearchInput, matchesSearch } from "@/components/list-toolbar";
 import { PeriodControl } from "@/components/period-control";
 import { DEFAULT_PERIOD, getDaysInRange, periodLabel, type Period } from "@/lib/period";
+import { useWorkspace } from "@/hooks/useWorkspace";
 import { t } from "@/i18n/de";
 
 type CoursesTab = "upcoming" | "logged";
@@ -526,6 +527,7 @@ function PlannedCourseCard({
 
 export default function TrainerCoursesPage() {
   const session = useAuthStore((s) => s.session);
+  const { showTrainerArea } = useWorkspace();
   const { data: myContracts, isLoading: contractsLoading } = useMyContracts();
   const { data: studioSlots, isLoading: slotsLoading } = useTrainerStudioSlots();
   const { data: mySessions, isLoading: sessionsLoading } = useMyCourseSessions();
@@ -931,6 +933,13 @@ export default function TrainerCoursesPage() {
             <CalendarRange className="size-4" />
             <span>{t.trainer.navSchedule}</span>
           </Link>
+          {/* Trainer:innen haben „Kurs eintragen“ in der Sidebar bzw. Bottom-Bar */}
+          {!showTrainerArea && (
+            <Link href="/courses/log" className={cn(buttonVariants(), "gap-1.5")}>
+              <Plus className="size-4" />
+              <span>{t.shell.trainerLogCourse}</span>
+            </Link>
+          )}
         </div>
       </div>
 

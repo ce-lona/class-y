@@ -56,7 +56,7 @@ test("Studio-Monitoring: erfasste Ad-hoc-Vertretung erscheint in Kurs- und Train
   await page.goto("/courses/log");
   await page.getByRole("tab", { name: "Ad-hoc" }).click();
   await page.locator("#adhoc-studio").click();
-  await page.getByRole("option", { name: new RegExp(studioName) }).click();
+  await page.getByRole("listbox").getByRole("option", { name: new RegExp(studioName) }).click();
   await page.locator("#adhoc-start").fill("14:00");
   await page.locator("#adhoc-end").fill("15:00");
   await page.locator("#adhoc-course-type").click();

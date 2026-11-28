@@ -41,7 +41,7 @@ test("Stammdaten unter /profile im Read-Only-Modus ansehen, bearbeiten und nach 
   await expect(page.getByText("Stammdaten gespeichert.")).toBeVisible();
 
   // Nach dem Speichern zurück im Read-Only-Modus
-  await expect(page.getByText(fullName)).toBeVisible();
+  await expect(page.getByRole("main").getByText(fullName)).toBeVisible();
   await expect(page.getByText(phone)).toBeVisible();
   await expect(page.getByText(`${street} ${houseNumber}, ${postalCode} ${city}`)).toBeVisible();
   await expect(
@@ -50,7 +50,7 @@ test("Stammdaten unter /profile im Read-Only-Modus ansehen, bearbeiten und nach 
 
   // Nach Reload bleiben Werte im Read-Only-Modus erhalten
   await page.reload();
-  await expect(page.getByText(fullName)).toBeVisible();
+  await expect(page.getByRole("main").getByText(fullName)).toBeVisible();
   await expect(page.getByText(phone)).toBeVisible();
   await expect(page.getByText(`${street} ${houseNumber}, ${postalCode} ${city}`)).toBeVisible();
   await expect(
