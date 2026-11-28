@@ -126,6 +126,7 @@ export type CourseTypeFormInput = z.infer<typeof courseTypeSchema>;
 
 export const offerContractSchema = z
   .object({
+    fullName: z.string().trim().max(200).optional(),
     email,
     employmentType: z.enum(["freelancer", "minijob", "festangestellt"]),
     rateModel: z.enum(["per_course", "hourly", "per_minute", "fixed"]),

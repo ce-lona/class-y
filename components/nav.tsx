@@ -40,6 +40,7 @@ const studioNavItems = [
   { href: "/monitoring", label: t.studioAdmin.nav.monitoring, icon: LayoutGrid },
   { href: "/plans", label: t.studioAdmin.nav.plans, icon: Calendar },
   { href: "/studios", label: t.studioAdmin.nav.studios, icon: Building2 },
+  // Company-Admins: „Team“ (/team), Studio-Admins: „Trainer“ (/trainers), siehe unten
   { href: "/trainers", label: t.studioAdmin.nav.trainers, icon: Users },
   { href: "/billing", label: t.billing.navLabel, icon: Receipt },
 ] as const;
@@ -126,8 +127,14 @@ export function Nav() {
           )}
 
           {hasAdminRole &&
-            studioNavItems.map((item) => {
-              const active = !!pathname?.startsWith(item.href);
+            studioNavItems.map((baseItem) => {
+              const item =
+                baseItem.href === "/trainers" && myCompany?.role !== "coordinator"
+                  ? { ...baseItem, href: "/team", label: t.team.nav }
+                  : baseItem;
+              const active =
+                !!pathname?.startsWith(item.href) ||
+                (item.href === "/team" && !!pathname?.startsWith("/trainers"));
               const Icon = item.icon;
               return (
                 <Link

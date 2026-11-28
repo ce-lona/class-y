@@ -9,7 +9,7 @@ test("Studio-Admin-Shell: Studio anlegen und Detailseite prüfen", async ({ page
   await expect(nav.getByRole("link", { name: "Monitoring" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Kurspläne" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Studios" })).toBeVisible();
-  await expect(nav.getByRole("link", { name: "Trainer" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Team" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Studios" })).toBeVisible();
 
   const studioName = uniqueName("E2E Shell Studio");

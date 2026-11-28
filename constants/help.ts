@@ -31,7 +31,7 @@ export const TOURS: Record<HelpRole, TourStep[]> = {
     { target: "/monitoring", ...steps.monitoring },
     { target: "/plans", ...steps.plans },
     { target: "/studios", ...steps.studios },
-    { target: "/trainers", ...steps.trainers },
+    { target: "/team", ...steps.trainers },
     { target: "/billing", ...steps.billing },
     { target: "/help", ...steps.help },
   ],
