@@ -44,11 +44,11 @@ import {
 import {
   NoSearchResults,
   SearchInput,
-  StudioFilterChips,
   matchesSearch,
 } from "@/components/list-toolbar";
 import { useAddCompanyAdmin, useMyCompany } from "@/hooks/useCompanyAdmins";
 import { TeamOverview } from "@/components/team-overview";
+import { useStudioFilter } from "@/hooks/useStudioFilter";
 import { CompanyAdminsPanel } from "@/components/company-admins-panel";
 import { setTeamMemberName, type TeamMember } from "@/lib/team";
 import {
@@ -126,7 +126,10 @@ export default function TrainersPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [filter, setFilter] = useState<ContractFilter>("activeOpen");
-  const [studioFilter, setStudioFilter] = useState<string>("all");
+  // Globaler Studio-Filter aus der Sidebar.
+  const globalStudio = useStudioFilter();
+  const studioFilter = globalStudio.studioId;
+  const setStudioFilter = globalStudio.setStudioId;
   const [search, setSearch] = useState("");
 
   // Studio scope for new contract
@@ -1057,11 +1060,6 @@ export default function TrainersPage() {
       {((section === "contracts" && contracts && contracts.length > 0) ||
         (section === "coordinators" && coordinators && coordinators.length > 0)) && (
         <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
-          <StudioFilterChips
-            studios={studios ?? []}
-            value={studioFilter}
-            onChange={setStudioFilter}
-          />
           <SearchInput
             value={search}
             onChange={setSearch}
@@ -1072,7 +1070,7 @@ export default function TrainersPage() {
       )}
 
       {section === "all" ? (
-        <TeamOverview companyId={companyId} studios={studios ?? []} onOpen={openMember} />
+        <TeamOverview companyId={companyId} companyName={company?.name ?? ""} onOpen={openMember} />
       ) : section === "admins" ? (
         <CompanyAdminsPanel companyId={companyId} />
       ) : section === "coordinators" && isFullAdmin ? (

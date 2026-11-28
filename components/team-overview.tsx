@@ -1,22 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronRight, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { ContractStatusBadge } from "@/components/contract-status-badge";
-import {
-  matchesSearch,
-  NoSearchResults,
-  SearchInput,
-  StudioFilterChips,
-} from "@/components/list-toolbar";
+import { useMemo, useState } from "react";
+import { Users } from "lucide-react";
+import { ContractStatusBadge, formatContractTerms } from "@/components/contract-status-badge";
+import { matchesSearch, NoSearchResults, SearchInput } from "@/components/list-toolbar";
+import { TeamMemberPanel } from "@/components/team-member-panel";
 import { useCompanyTeam } from "@/hooks/useTeam";
+import { useCompanyContracts } from "@/hooks/useContracts";
+import { useStudioFilter } from "@/hooks/useStudioFilter";
 import { sortTeam, type TeamMember, type TeamRole } from "@/lib/team";
-import { formatDateDE, getInitials } from "@/lib/format";
+import type { CompanyContract } from "@/lib/contracts";
+import { fillTemplate, formatDateDE, getInitials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
-type RoleFilter = "all" | TeamRole;
+type RoleFilter = "all" | TeamRole | "pending";
 
 const roleLabel: Record<TeamRole, string> = {
   company_admin: t.team.roleAdmin,
@@ -24,54 +22,100 @@ const roleLabel: Record<TeamRole, string> = {
   trainer: t.team.roleTrainer,
 };
 
-const roleAvatar: Record<TeamRole, string> = {
-  company_admin: "bg-primary text-primary-foreground",
-  coordinator: "bg-link-500 text-white",
-  trainer: "bg-muted text-foreground",
+const roleBadge: Record<TeamRole, string> = {
+  company_admin: "bg-accent text-accent-foreground",
+  coordinator: "bg-link-500/12 text-link-600 dark:text-link-400",
+  trainer: "bg-muted text-foreground/80",
 };
 
+const roleAvatar: Record<TeamRole, string> = {
+  company_admin: "bg-primary text-primary-foreground",
+  coordinator: "bg-link-600 text-white",
+  trainer: "border border-border bg-muted text-foreground",
+};
+
+/** Neuester Vertrag je E-Mail (aktiv/offen vor beendet). */
+function latestContracts(contracts: CompanyContract[]): Map<string, CompanyContract> {
+  const rank = { pending: 0, active: 0, ended: 1, declined: 2 } as const;
+  const map = new Map<string, CompanyContract>();
+  for (const c of contracts) {
+    const key = c.trainer_email.toLowerCase();
+    const prev = map.get(key);
+    if (
+      !prev ||
+      rank[c.status] < rank[prev.status] ||
+      (rank[c.status] === rank[prev.status] && c.valid_from > prev.valid_from)
+    ) {
+      map.set(key, c);
+    }
+  }
+  return map;
+}
+
 /**
- * Alle Personen der Company (Admins, Studio-Admins, Trainer:innen) in einer Liste.
- * Standard-Sortierung: Rolle, dann zuletzt geändert. Klick öffnet den passenden Bereich.
+ * Team (Company-Admins): alle Personen in einer Tabelle mit Rollen-Chips. Klick öffnet das
+ * Seitenpanel (Vertrag, Studio-Freigabe, Stammdaten, Datenschutz). Studio-Filter aus der Sidebar.
  */
 export function TeamOverview({
   companyId,
-  studios,
+  companyName,
   onOpen,
 }: {
   companyId: string;
-  studios: { id: string; name: string }[];
+  companyName: string;
+  /** Person in den bisherigen Bereichen (Verträge, Studio-Admins) bearbeiten. */
   onOpen: (member: TeamMember) => void;
 }) {
   const { data: team, isLoading, isError } = useCompanyTeam(companyId);
+  const { data: contracts } = useCompanyContracts(companyId);
+  const { studios, studioId, isAll } = useStudioFilter();
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
-  const [studioFilter, setStudioFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [openKey, setOpenKey] = useState<string | null>(null);
 
+  const contractByEmail = useMemo(() => latestContracts(contracts ?? []), [contracts]);
   const studioName = new Map(studios.map((s) => [s.id, s.name]));
-  const studioNamesFor = (ids: string[] | null) =>
-    (ids ?? []).map((id) => studioName.get(id)).filter((n): n is string => Boolean(n));
+  const contractOf = (m: TeamMember) =>
+    m.role === "trainer" ? (contractByEmail.get(m.email.toLowerCase()) ?? null) : null;
+  const isPending = (m: TeamMember) => {
+    const c = contractOf(m);
+    return c?.status === "pending" && c.approval_status === "pending_approval";
+  };
+  const studioIdsOf = (m: TeamMember) =>
+    m.role === "trainer" ? (contractOf(m)?.studio_ids ?? m.studio_ids ?? []) : (m.studio_ids ?? []);
 
   if (isLoading) return <p className="text-sm text-muted-foreground">{t.common.loading}</p>;
   if (isError) return <p className="text-sm text-destructive">{t.team.loadError}</p>;
 
   const members = sortTeam(team ?? []);
-  const inScope = members.filter(
-    (m) =>
-      // Ohne Studio-Zuordnung gilt die Person für alle Studios (Admins, unbeschränkte Verträge).
-      (studioFilter === "all" || !m.studio_ids || m.studio_ids.length === 0 || m.studio_ids.includes(studioFilter)) &&
-      matchesSearch(search, m.full_name, m.email, ...studioNamesFor(m.studio_ids)),
-  );
-  const count = (role: RoleFilter) =>
-    role === "all" ? inScope.length : inScope.filter((m) => m.role === role).length;
-  const visible = roleFilter === "all" ? inScope : inScope.filter((m) => m.role === roleFilter);
+  const inScope = members.filter((m) => {
+    const ids = studioIdsOf(m);
+    // Admins und Verträge ohne Studio-Beschränkung gelten für alle Studios.
+    const studioOk = isAll || m.role === "company_admin" || ids.length === 0 || ids.includes(studioId);
+    const names = ids.map((id) => studioName.get(id) ?? "");
+    return studioOk && matchesSearch(search, m.full_name, m.email, ...names);
+  });
+  const filterFn: Record<RoleFilter, (m: TeamMember) => boolean> = {
+    all: () => true,
+    company_admin: (m) => m.role === "company_admin",
+    coordinator: (m) => m.role === "coordinator",
+    trainer: (m) => m.role === "trainer",
+    pending: isPending,
+  };
+  const visible = inScope.filter(filterFn[roleFilter]);
+  // Wartende Angebote oben, damit sie nicht untergehen.
+  visible.sort((a, b) => Number(isPending(b)) - Number(isPending(a)));
 
   const filters: { id: RoleFilter; label: string }[] = [
     { id: "all", label: t.team.filterAll },
     { id: "company_admin", label: t.team.filterAdmins },
     { id: "coordinator", label: t.team.filterStudioAdmins },
     { id: "trainer", label: t.team.filterTrainers },
+    { id: "pending", label: t.team.filterPending },
   ];
+
+  const keyOf = (m: TeamMember) => `${m.role}:${m.user_id}`;
+  const openMember = members.find((m) => keyOf(m) === openKey) ?? null;
 
   if (members.length === 0) {
     return (
@@ -84,44 +128,32 @@ export function TeamOverview({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
-        <StudioFilterChips studios={studios} value={studioFilter} onChange={setStudioFilter} />
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder={t.team.searchPlaceholder}
-          className="sm:ml-auto"
-        />
-      </div>
-
-      <div role="group" aria-label={t.team.roleFilterLabel} className="flex flex-wrap gap-1.5">
-        {filters.map((f) => {
-          const selected = roleFilter === f.id;
-          return (
-            <button
-              key={f.id}
-              type="button"
-              aria-pressed={selected}
-              onClick={() => setRoleFilter(f.id)}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
-                selected
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <span>{f.label}</span>
-              <span
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
+        <div role="group" aria-label={t.team.roleFilterLabel} className="flex flex-wrap gap-1.5">
+          {filters.map((f) => {
+            const selected = roleFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => setRoleFilter(f.id)}
                 className={cn(
-                  "rounded-full px-1.5 py-0.5 text-[11px] leading-none",
-                  selected ? "bg-primary-foreground/20" : "bg-muted text-foreground",
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[13.5px] font-semibold whitespace-nowrap transition-colors",
+                  selected
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-card text-foreground/80 hover:border-muted-foreground",
                 )}
               >
-                {count(f.id)}
-              </span>
-            </button>
-          );
-        })}
+                <span>{f.label}</span>
+                <span className={cn("font-bold tabular-nums", selected ? "text-background/75" : "text-muted-foreground")}>
+                  {inScope.filter(filterFn[f.id]).length}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <SearchInput value={search} onChange={setSearch} placeholder={t.team.searchPlaceholder} />
       </div>
 
       {visible.length === 0 ? (
@@ -129,62 +161,126 @@ export function TeamOverview({
           <NoSearchResults
             onReset={() => {
               setSearch("");
-              setStudioFilter("all");
               setRoleFilter("all");
             }}
           />
         </div>
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-          {visible.map((m) => {
-            const studiosText = m.role === "company_admin" ? t.team.allStudios : studioNamesFor(m.studio_ids).join(", ") || t.team.allStudios;
-            return (
-              <li key={`${m.role}:${m.user_id}`}>
-                <button
-                  type="button"
-                  onClick={() => onOpen(m)}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50"
-                >
-                  <span
+        <div className="overflow-x-auto rounded-xl border border-border bg-card">
+          <table className="w-full border-collapse text-[14.5px]">
+            <thead>
+              <tr className="text-left text-[12.5px] font-bold text-muted-foreground">
+                {[t.team.colPerson, t.team.colRole, t.team.colStudios, t.team.colContract, t.team.colStatus, t.team.colUpdated].map(
+                  (h) => (
+                    <th key={h} className="border-b border-border px-3.5 py-2.5 whitespace-nowrap">
+                      {h}
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((m) => {
+                const contract = contractOf(m);
+                const pending = isPending(m);
+                const ids = studioIdsOf(m);
+                const studiosText =
+                  m.role === "company_admin"
+                    ? t.team.wholeCompany
+                    : ids.length === 0
+                      ? t.team.allStudios
+                      : ids.map((id) => studioName.get(id)).filter(Boolean).join(", ");
+                return (
+                  <tr
+                    key={keyOf(m)}
+                    onClick={() => setOpenKey(keyOf(m))}
                     className={cn(
-                      "flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                      roleAvatar[m.role],
+                      "cursor-pointer border-b border-border/60 last:border-b-0 hover:bg-muted/60",
+                      pending && "bg-warning-bg/50",
+                      openKey === keyOf(m) && "bg-accent",
                     )}
                   >
-                    {getInitials(m.full_name, m.email)}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">
-                      {m.full_name || m.email}
-                    </span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {m.full_name ? `${m.email} · ${studiosText}` : studiosText}
-                    </span>
-                  </span>
-                  <span className="hidden shrink-0 flex-col items-end gap-1 sm:flex">
-                    <span className="flex items-center gap-1.5">
-                      {m.role === "trainer" && m.contract_status && (
-                        <ContractStatusBadge status={m.contract_status} />
-                      )}
-                      <Badge variant="secondary" className="font-semibold">
+                    <td className="px-3.5 py-2.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenKey(keyOf(m));
+                        }}
+                        className="flex items-center gap-2.5 text-left"
+                      >
+                        <span
+                          className={cn(
+                            "grid size-7 shrink-0 place-items-center rounded-full font-heading text-[11px] font-extrabold",
+                            roleAvatar[m.role],
+                          )}
+                        >
+                          {getInitials(m.full_name, m.email)}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block leading-tight font-semibold">{m.full_name || m.email}</span>
+                          {m.full_name && (
+                            <span className="block text-[12.5px] leading-tight text-muted-foreground">{m.email}</span>
+                          )}
+                        </span>
+                      </button>
+                    </td>
+                    <td className="px-3.5 py-2.5">
+                      <span className={cn("rounded-md px-2 py-px text-[12.5px] font-bold whitespace-nowrap", roleBadge[m.role])}>
                         {roleLabel[m.role]}
-                      </Badge>
-                    </span>
-                    {m.updated_at && (
-                      <span className="text-[11px] text-muted-foreground">
-                        {t.team.updatedAt} {formatDateDE(m.updated_at.slice(0, 10))}
                       </span>
-                    )}
-                  </span>
-                  <Badge variant="secondary" className="shrink-0 font-semibold sm:hidden">
-                    {roleLabel[m.role]}
-                  </Badge>
-                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+                    </td>
+                    <td className={cn("px-3.5 py-2.5 text-[13px]", m.role === "company_admin" && "text-muted-foreground")}>
+                      {studiosText}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-[13px]">
+                      {contract ? formatContractTerms(contract) : <span className="text-muted-foreground">—</span>}
+                    </td>
+                    <td className="px-3.5 py-2.5">
+                      {pending ? (
+                        <>
+                          <span className="rounded-md bg-warning-bg px-2 py-px text-[12.5px] font-bold whitespace-nowrap text-warning">
+                            {t.team.statusPending}
+                          </span>
+                          {contract?.created_by_name && (
+                            <div className="text-[13px] text-muted-foreground">
+                              {fillTemplate(t.team.offeredBy, { name: contract.created_by_name })}
+                            </div>
+                          )}
+                        </>
+                      ) : contract ? (
+                        <ContractStatusBadge status={contract.status} />
+                      ) : (
+                        <span className="rounded-md bg-success-bg px-2 py-px text-[12.5px] font-bold text-success">
+                          {t.team.statusActive}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-[13px] whitespace-nowrap text-muted-foreground">
+                      {m.updated_at ? formatDateDE(m.updated_at.slice(0, 10)) : "—"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {openMember && (
+        <TeamMemberPanel
+          member={openMember}
+          contract={contractOf(openMember)}
+          companyId={companyId}
+          companyName={companyName}
+          studios={studios}
+          canManage
+          onClose={() => setOpenKey(null)}
+          onOpenDetails={(m) => {
+            setOpenKey(null);
+            onOpen(m);
+          }}
+        />
       )}
     </div>
   );
