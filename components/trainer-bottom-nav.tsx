@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarCheck, CalendarRange, PlusCircle, Receipt, User } from "lucide-react";
+import { CalendarCheck, CalendarRange, PlusCircle, Receipt, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/de";
 
@@ -11,7 +11,8 @@ const items = [
   { href: "/courses/schedule", label: t.trainer.navSchedule, icon: CalendarRange, exact: false },
   { href: "/courses/log", label: t.trainer.navLogCourse, icon: PlusCircle, exact: false },
   { href: "/courses/billing", label: t.billing.navLabel, icon: Receipt, exact: false },
-  { href: "/profile", label: t.trainer.navProfile, icon: User, exact: false },
+  // Profil über den Avatar oben rechts
+  { href: "/courses/settings", label: t.trainer.navSettings, icon: Settings, exact: false },
 ] as const;
 
 export function TrainerBottomNav() {

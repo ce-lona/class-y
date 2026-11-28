@@ -33,6 +33,11 @@ export const t = {
     light: "Hell",
     dark: "Dunkel",
   },
+  appearance: {
+    title: "Darstellung",
+    hint: "Hell, Dunkel oder wie im System eingestellt. Gilt für diesen Browser.",
+    tab: "Darstellung",
+  },
   nav: {
     workspaceLabel: "Ansicht wechseln",
     roleTrainer: "Trainer:in",
@@ -128,7 +133,8 @@ export const t = {
   },
   settings: {
     title: "Einstellungen",
-    subtitle: "Konfiguration deiner Company. Deine persönlichen Daten findest du im Profil.",
+    subtitle: "Konfiguration deiner Company. Deine persönlichen Daten findest du im Profil (Avatar oben rechts).",
+    trainerSubtitle: "Persönliche Einstellungen. Deine Stammdaten und Verträge findest du im Profil (Avatar oben rechts).",
     unauthorized: "Bitte melde dich an.",
     tabConfig: "Konfiguration",
     coordinatorReadOnly:
@@ -394,6 +400,7 @@ export const t = {
     navSchedule: "Stundenplan",
     navLogCourse: "Eintragen",
     navProfile: "Profil",
+    navSettings: "Einstellungen",
     title: "Meine Kurse",
     scheduleTitle: "Mein Stundenplan",
     scheduleSubtitle: "Alle deine geplanten Kurse über deine Companies und Studios hinweg.",
@@ -1022,7 +1029,7 @@ export const t = {
         },
         profile: {
           title: "Profil",
-          text: "Deine Stammdaten und deine Verträge. Neue Vertragsangebote nimmst du hier an.",
+          text: "Klick auf deinen Avatar oben rechts: Dort findest du deine Stammdaten und Verträge. Neue Vertragsangebote nimmst du hier an.",
         },
         companies: {
           title: "Companies",
@@ -1130,7 +1137,7 @@ export const t = {
           title: "Vertrag annehmen",
           summary: "Angebot im Profil bestätigen",
           steps: [
-            "Öffne dein „Profil“ und dort den Reiter „Verträge“.",
+            "Klicke oben rechts auf deinen Avatar, um dein Profil zu öffnen, und wähle den Reiter „Verträge“.",
             "Klicke beim Angebot auf „Annehmen“. Erst danach erscheinen deine Kurse und die Company sieht dein Profil.",
           ],
         },

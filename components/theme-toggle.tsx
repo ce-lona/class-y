@@ -23,7 +23,14 @@ function useMounted() {
   )
 }
 
-function ThemeToggle({ className }: { className?: string }) {
+function ThemeToggle({
+  className,
+  withLabels = false,
+}: {
+  className?: string
+  /** Beschriftung neben den Symbolen (z. B. in den Einstellungen). */
+  withLabels?: boolean
+}) {
   const { theme, setTheme } = useTheme()
   const mounted = useMounted()
 
@@ -43,11 +50,13 @@ function ThemeToggle({ className }: { className?: string }) {
           aria-pressed={mounted && theme === value}
           onClick={() => setTheme(value)}
           className={cn(
-            "flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground",
+            "flex items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground",
+            withLabels ? "h-8 gap-1.5 px-3 text-sm font-semibold" : "size-7",
             mounted && theme === value && "bg-card text-foreground shadow-sm"
           )}
         >
           <Icon className="size-4" />
+          {withLabels && <span>{label}</span>}
         </button>
       ))}
     </div>

@@ -15,11 +15,9 @@ import {
   Settings,
   Shield,
   ShieldCheck,
-  User,
   Users,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkspace, type WorkspaceRole } from "@/hooks/useWorkspace";
@@ -44,6 +42,7 @@ const trainerNavItems = [
   { href: "/courses/schedule", label: t.trainer.navSchedule, icon: CalendarRange, exact: false },
   { href: "/courses/log", label: t.trainer.navLogCourse, icon: PlusCircle, exact: false },
   { href: "/courses/billing", label: t.billing.navLabel, icon: Receipt, exact: false },
+  { href: "/courses/settings", label: t.trainer.navSettings, icon: Settings, exact: false },
 ] as const;
 
 export function Nav() {
@@ -166,8 +165,7 @@ export function Nav() {
             </Link>
           )}
 
-          {/* Admin-Arbeit (Konfiguration) und eigene Trainertätigkeit (Profil, Verträge) getrennt */}
-          {activeRole === "admin" && hasAdminRole ? (
+          {activeRole === "admin" && hasAdminRole && (
             <Link
               href="/settings"
               data-tour="/settings"
@@ -176,14 +174,17 @@ export function Nav() {
               <Settings className="size-4 shrink-0" />
               <span>{t.settings.title}</span>
             </Link>
-          ) : (
+          )}
+
+          {/* Ohne Rolle (z. B. Vertragsangebot noch offen): Einstellungen der Trainer-Ansicht */}
+          {availableRoles.length === 0 && (
             <Link
-              href="/profile"
-              data-tour="/profile"
-              className={linkClass(!!pathname?.startsWith("/profile"))}
+              href="/courses/settings"
+              data-tour="/courses/settings"
+              className={linkClass(!!pathname?.startsWith("/courses/settings"))}
             >
-              <User className="size-4 shrink-0" />
-              <span>{t.profilePage.title}</span>
+              <Settings className="size-4 shrink-0" />
+              <span>{t.trainer.navSettings}</span>
             </Link>
           )}
 
@@ -232,14 +233,14 @@ export function Nav() {
             <span className="hidden lg:inline">{t.help.nav}</span>
           </Link>
 
-          <ThemeToggle />
-
+          {/* Profil (Stammdaten, Verträge) über den Avatar, kein eigener Tab */}
           <Link
             href="/profile"
+            data-tour="/profile"
             title={`${t.profilePage.openProfile} · ${profile?.full_name || session.user.email || ""}`}
             aria-label={t.profilePage.openProfile}
             className={cn(
-              "hidden size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground transition-shadow hover:ring-2 hover:ring-primary/40 sm:flex",
+              "flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground transition-shadow hover:ring-2 hover:ring-primary/40",
               pathname?.startsWith("/profile") && "ring-2 ring-primary/50 ring-offset-2 ring-offset-sidebar"
             )}
           >

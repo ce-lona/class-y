@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { AppearanceSettingsCard } from "@/components/appearance-settings-card";
 import { SupportInbox } from "@/components/help/support-inbox";
 import { SupportRecipientsCard } from "@/components/help/support-recipients-card";
 import { useAuthStore } from "@/store/authStore";
@@ -43,6 +44,7 @@ export default function PlatformSettingsPage() {
       </div>
       <SupportRecipientsCard />
       <SupportInbox />
+      <AppearanceSettingsCard />
     </div>
   );
 }

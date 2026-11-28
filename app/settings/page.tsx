@@ -1,12 +1,11 @@
 "use client";
 
 import { Suspense, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Info, Receipt, SlidersHorizontal, User } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { Info, Palette, Receipt, SlidersHorizontal } from "lucide-react";
 import { CourseTypesConfig } from "@/components/course-types-config";
 import { BillingSettingsPanel } from "@/components/billing-settings-panel";
+import { AppearanceSettingsCard } from "@/components/appearance-settings-card";
 import { useAuthStore } from "@/store/authStore";
 import { useMyCompany } from "@/hooks/useCompanyAdmins";
 import { useStudios } from "@/hooks/useStudios";
@@ -16,7 +15,9 @@ import { t } from "@/i18n/de";
 function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeTab = searchParams.get("tab") === "billing" ? "billing" : "config";
+  const tabParam = searchParams.get("tab");
+  const activeTab =
+    tabParam === "billing" ? "billing" : tabParam === "appearance" ? "appearance" : "config";
   const { session, isLoading: sessionLoading } = useAuthStore();
   const { data: company, isLoading: companyLoading } = useMyCompany();
   const { data: studios } = useStudios(company?.id ?? "");
@@ -60,6 +61,7 @@ function SettingsContent() {
               [
                 { key: "config", label: t.settings.tabConfig, Icon: SlidersHorizontal },
                 { key: "billing", label: t.creditNotes.settingsTab, Icon: Receipt },
+                { key: "appearance", label: t.appearance.tab, Icon: Palette },
               ] as const
             ).map(({ key, label, Icon }) => (
               <button
@@ -68,7 +70,7 @@ function SettingsContent() {
                 role="tab"
                 aria-selected={activeTab === key}
                 onClick={() =>
-                  router.replace(key === "billing" ? "/settings?tab=billing" : "/settings", {
+                  router.replace(key === "config" ? "/settings" : `/settings?tab=${key}`, {
                     scroll: false,
                   })
                 }
@@ -84,17 +86,12 @@ function SettingsContent() {
               </button>
             ))}
           </div>
-          <Link
-            href="/profile"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
-          >
-            <User className="size-3.5" />
-            <span>{t.profilePage.openProfile}</span>
-          </Link>
         </div>
       </div>
 
-      {activeTab === "billing" ? (
+      {activeTab === "appearance" ? (
+        <AppearanceSettingsCard />
+      ) : activeTab === "billing" ? (
         <BillingSettingsPanel company={company} />
       ) : (
         <>
