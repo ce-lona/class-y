@@ -134,6 +134,7 @@ export const t = {
     subtitle: "{period} · {scope}",
     waitingTitle: "Wartet auf dich",
     waitingCount: "{count} Punkte",
+    waitingCountOne: "1 Punkt",
     waitingEmpty: "Nichts offen. Alles erledigt.",
     todayTitle: "Heute, {date}",
     todayCount: "{count} Kurse",

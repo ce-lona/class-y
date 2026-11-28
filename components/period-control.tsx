@@ -51,7 +51,7 @@ export function PeriodControl({
         aria-label={t.period.label}
         value={value.unit}
         onChange={(e) => changeUnit(e.target.value as PeriodUnit)}
-        className="h-7 rounded-md border-0 bg-muted px-2 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="h-7 w-auto rounded-md border-0 bg-muted px-2 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
       >
         {units.map((u) => (
           <option key={u.value} value={u.value}>
